@@ -11,6 +11,18 @@ const TALLY = {
   en: ""
 };
 
+/* ---- Contact email ------------------------------------------------------- *
+ * Assembled from parts at runtime so the literal address isn't in page source
+ * (deters naive email scrapers). Fills every <a class="mail"> link. */
+const _MAIL = ['maxime.ilaria', 'gmail.com'];
+window.fillEmails = function(){
+  const addr = _MAIL[0] + String.fromCharCode(64) + _MAIL[1];
+  document.querySelectorAll('a.mail').forEach(a=>{
+    a.setAttribute('href', 'mailto:' + addr);
+    if(a.hasAttribute('data-addr')) a.textContent = addr;
+  });
+};
+
 window.swapRsvp = function(lang){
   const host = document.getElementById('rsvp-embed');
   if(!host) return;
@@ -81,6 +93,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /* language buttons */
   document.querySelectorAll('.lang-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
+  });
+
+  /* copy-to-clipboard for gift details (IBAN, number, …) */
+  const COPIED = { it:'Copiato', fr:'Copié', en:'Copied' };
+  document.querySelectorAll('.copy[data-copy]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const val = btn.textContent.trim();
+      try{ await navigator.clipboard.writeText(val); }catch(_){ /* clipboard unavailable */ }
+      if(btn.dataset.orig === undefined) btn.dataset.orig = val;
+      const lang = document.documentElement.lang || 'it';
+      btn.textContent = COPIED[lang] || COPIED.en;
+      btn.classList.add('is-copied');
+      clearTimeout(btn._t);
+      btn._t = setTimeout(()=>{ btn.textContent = btn.dataset.orig; btn.classList.remove('is-copied'); }, 1400);
+    });
   });
 
   /* sticky top bar background on scroll */
