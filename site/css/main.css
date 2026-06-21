@@ -290,6 +290,21 @@ html.locked #gate{ display:flex; }
 .gift-card__h{ font-family:var(--f-display); font-size:1.5rem; }
 .gift-card__p{ color:var(--muted); font-size:1rem; margin:0; }
 .gift-card .btn{ align-self:flex-start; margin-top:auto; }
+/* featured (preferred) gift card — gold border, badge, warmer fill */
+.gift-card--featured{
+  position:relative;
+  border:1.5px solid var(--oro);
+  background:color-mix(in srgb, var(--salvia-light) 30%, var(--panna));
+  box-shadow:0 12px 32px color-mix(in srgb, var(--oro) 16%, transparent);
+}
+.gift-card--featured .gift-card__p strong{ color:var(--salvia-deep); font-weight:600; }
+.gift-card__badge{
+  position:absolute; top:-.72rem; left:50%; transform:translateX(-50%);
+  font-family:var(--f-ui); text-transform:uppercase; letter-spacing:.14em;
+  font-size:.6rem; white-space:nowrap; color:var(--panna);
+  background:var(--oro); padding:.32rem .85rem; border-radius:999px;
+  box-shadow:0 3px 10px color-mix(in srgb, var(--oro) 30%, transparent);
+}
 .gift-qr{
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.3rem;
   width:100%; max-width:180px; aspect-ratio:1; margin:.4rem auto 0; align-self:center;
