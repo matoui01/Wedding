@@ -59,6 +59,28 @@ function initRsvpForm(){
     ok:{ it:'Grazie! La vostra risposta è arrivata. ❤', fr:'Merci ! Votre réponse nous est bien parvenue. ❤', en:'Thank you! Your reply has reached us. ❤' },
     err:{ it:'Qualcosa è andato storto. Scriveteci a ', fr:'Une erreur s’est produite. Écrivez-nous à ', en:'Something went wrong. Please email us at ' }
   };
+
+  /* dynamic fields: show/hide + toggle `required` based on answers */
+  const coming   = form.querySelector('[data-coming]');
+  const plusBox  = form.querySelector('[data-plusname]');
+  const stayBox  = form.querySelector('[data-staying]');
+  const val = (sel)=>{ const el = form.querySelector(sel + ':checked'); return el ? el.value : ''; };
+  const req = (el, on)=>{ if(el){ on ? el.setAttribute('required','') : el.removeAttribute('required'); } };
+  function update(){
+    const yes = val('[data-attending]') === 'yes';
+    coming.hidden = !yes;
+    req(form.querySelector('#rsvp-phone'), yes);
+    req(form.querySelector('#rsvp-address'), yes);
+    req(form.querySelector('input[name="party"]'), yes);
+    req(form.querySelector('input[name="shuttle"]'), yes);
+    const plus = yes && val('[data-party]') === 'plus';
+    plusBox.hidden = !plus;
+    req(plusBox.querySelector('input'), plus);
+    stayBox.hidden = !(yes && val('[data-shuttle]') === 'yes');
+  }
+  form.addEventListener('change', update);
+  update();
+
   const showErr = ()=>{
     const addr = 'maxime.ilaria' + String.fromCharCode(64) + 'gmail.com';
     status.hidden = false; status.className = 'rsvp-form__status is-err';
@@ -75,10 +97,30 @@ function initRsvpForm(){
     try{
       await fetch(RSVP_ENDPOINT, { method:'POST', mode:'no-cors', body:data });
       status.className = 'rsvp-form__status is-ok'; status.textContent = MSG.ok[L()]||MSG.ok.en;
-      form.reset();
+      form.reset(); update();
     }catch(_){ showErr(); }
     finally{ btn.disabled = false; }
   });
+}
+
+/* ---- RSVP modal --------------------------------------------------------- */
+function initRsvpModal(){
+  const modal = document.getElementById('rsvp-modal');
+  const openBtn = document.getElementById('rsvp-open');
+  if(!modal || !openBtn) return;
+  let lastFocus = null;
+  const open = ()=>{
+    lastFocus = document.activeElement;
+    modal.hidden = false; document.body.style.overflow = 'hidden';
+    const f = modal.querySelector('input, textarea, button'); if(f) f.focus();
+  };
+  const close = ()=>{
+    modal.hidden = true; document.body.style.overflow = '';
+    if(lastFocus && lastFocus.focus) lastFocus.focus();
+  };
+  openBtn.addEventListener('click', open);
+  modal.querySelectorAll('[data-close]').forEach(el=> el.addEventListener('click', close));
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !modal.hidden) close(); });
 }
 
 /* ---- Password gate ------------------------------------------------------- *
@@ -147,8 +189,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
   });
 
-  /* RSVP form */
+  /* RSVP form + modal */
   initRsvpForm();
+  initRsvpModal();
 
   /* copy-to-clipboard for gift details (IBAN, number, …) */
   const COPIED = { it:'Copiato', fr:'Copié', en:'Copied' };
