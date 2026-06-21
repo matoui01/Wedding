@@ -46,7 +46,7 @@ window.swapRsvp = function(lang){
  * Posts each reply as a row to a Google Apps Script web app (which appends it
  * to the couple's own Sheet). Paste the deployed /exec URL below to switch it
  * on; until then (or on a network error) the form shows the email fallback. */
-const RSVP_ENDPOINT = ""; // <-- paste the Apps Script web-app URL (…/exec) here
+const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbwbRcRclZhOdY8DbNeaRSPZ0kK0cXAxMF9pIFEKtYDLwjKyx05Rklx461ifxUGk3gQK/exec";
 
 function initRsvpForm(){
   const form = document.getElementById('rsvp-form');
