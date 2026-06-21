@@ -116,9 +116,18 @@ h1,h2,h3{ font-weight:500; margin:0; }
 }
 .hero__art{
   position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-  width:min(560px,88vw); z-index:0; opacity:.96; pointer-events:none;
+  width:min(560px,88vw); z-index:0; opacity:.82; pointer-events:none;
 }
 .hero__inner{ position:relative; z-index:1; }
+/* soft ivory halo so the names & date stay legible over the watercolour */
+.hero__inner::before{
+  content:""; position:absolute; z-index:-1; inset:-10% -14%; pointer-events:none;
+  background:radial-gradient(58% 54% at 50% 47%,
+    color-mix(in srgb, var(--panna) 90%, transparent) 0%,
+    color-mix(in srgb, var(--panna) 72%, transparent) 46%,
+    transparent 72%);
+}
+.hero__inner > *{ text-shadow:0 1px 12px color-mix(in srgb, var(--panna) 85%, transparent); }
 .hero__over{
   font-family:var(--f-ui); text-transform:uppercase; letter-spacing:.22em;
   font-size:.72rem; color:var(--salvia-deep); margin:0 0 2rem;
