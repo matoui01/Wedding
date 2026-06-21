@@ -31,7 +31,7 @@ cd site && python3 -m http.server 8000   # → http://localhost:8000
 
 A workflow publishes `site/` to Pages on every push to `main` (and the dev branch).
 **One-time setup:** repo **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-Live URL will be `https://matoui01.github.io/wedding/`.
+Live URL: `https://matoui01.github.io/Wedding/`.
 
 ## Languages
 
