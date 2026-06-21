@@ -53,6 +53,9 @@ All copy lives in `js/i18n.js`.
    `TALLY` in `js/main.js`. Until then the RSVP section shows a styled placeholder.
 9. Optional: custom domain.
 
-> The paintings here are the chart's watercolours saved as JPEG (white paper that reads as
-> ivory). If transparent `-cut.png` versions are produced later, drop them into `assets/img/`
-> and update the `src`/dimensions in `index.html`.
+> The paintings are served as transparent `-cut.png` files (`assets/img/<name>-cut.png`):
+> the ivory paper background is flood-filled to transparency so each watercolour blends
+> seamlessly on both the `--panna` and warm `--panna-2` section bands. The original opaque
+> `.jpg` sources are kept alongside them (and `estate.jpg` still backs the `og:image` social
+> card, which must stay opaque). To re-cut after editing a source, run the flood-fill again
+> and overwrite the matching `-cut.png`.
