@@ -59,6 +59,11 @@ h1,h2,h3{ font-weight:500; margin:0; }
 .btn:hover{ background:var(--salvia-deep); border-color:var(--salvia-deep); color:var(--panna); }
 .btn--ghost{ background:transparent; color:var(--salvia-deep); }
 .btn--ghost:hover{ background:var(--salvia); color:var(--panna); }
+/* dress-code illustrations */
+.dresscode{ display:grid; grid-template-columns:1fr 1fr; gap:.9rem; margin-top:1.3rem; }
+.dresscode figure{ margin:0; }
+.dresscode img{ width:100%; border-radius:var(--radius); border:1px solid var(--line); }
+@media(max-width:560px){ .dresscode{ grid-template-columns:1fr; gap:1rem; } }
 
 /* ---- Divider (sprig) ----------------------------------------------------- */
 .divider{ display:flex; justify-content:center; align-items:center; gap:1rem; padding-block:clamp(1.5rem,4vw,3rem); }
