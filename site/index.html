@@ -83,14 +83,16 @@
   <main>
   <!-- ===================== 1 · HERO ===================== -->
   <section id="home" class="hero">
-    <img class="hero__art" src="assets/img/villa-cut.png" width="693" height="860"
-         alt="" data-i18n-attr="alt:alt.hero" fetchpriority="high">
+    <video class="hero__video" muted playsinline preload="auto"
+           poster="assets/img/hero-poster.jpg" aria-hidden="true">
+      <source src="assets/video/villa.mp4" type="video/mp4">
+    </video>
+    <div class="hero__scrim" aria-hidden="true"></div>
     <div class="hero__inner">
       <p class="hero__over" data-i18n="hero.over">VILLA CORSINI A MEZZOMONTE · FIRENZE</p>
       <h1 class="names"><span class="n">Maxime</span><span class="amp">&amp;</span><span class="n">Ilaria</span></h1>
       <p class="hero__tagline" data-i18n="hero.tagline">Ci sposiamo</p>
       <p class="hero__date" data-i18n="hero.date">Venerdì 23 luglio 2027</p>
-      <p class="hero__place" data-i18n="hero.place">Firenze · Italia</p>
     </div>
     <a href="#welcome" class="hero__scroll" data-i18n="hero.scroll">Scorri</a>
   </section>

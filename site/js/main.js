@@ -54,16 +54,29 @@ async function sha256hex(str){
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
+/* ---- Hero video ---------------------------------------------------------- *
+ * Start the cinematic villa video only once the page is visible (after the
+ * gate) and never under reduced-motion — the poster (last frame) then stands
+ * in as a still hero. Muted + playsinline so mobile browsers allow playback. */
+function playHero(){
+  const v = document.querySelector('.hero__video');
+  if(!v) return;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const p = v.play();
+  if(p && p.catch) p.catch(()=>{ /* autoplay blocked → poster stays */ });
+}
+
 function initGate(){
   const gate = document.getElementById('gate');
-  if(!gate) return;
+  if(!gate){ playHero(); return; }
   const unlock = ()=>{
     try{ localStorage.setItem('mi_gate','1'); }catch(e){}
     document.documentElement.classList.remove('locked');
     gate.remove();
     document.body.style.overflow = '';
+    playHero();
   };
-  if(!document.documentElement.classList.contains('locked')){ gate.remove(); return; }
+  if(!document.documentElement.classList.contains('locked')){ gate.remove(); playHero(); return; }
 
   const form  = gate.querySelector('form');
   const input = gate.querySelector('input');
