@@ -167,6 +167,10 @@ h1,h2,h3{ font-weight:500; margin:0; }
 }
 .split__media img{ width:100%; }
 .banner img{ width:100%; }
+@media(min-width:820px){
+  /* on desktop, cap the welcome watercolour so the heading isn't pushed off-screen */
+  .banner img{ width:auto; max-width:100%; max-height:56vh; margin-inline:auto; }
+}
 
 /* ---- Programme / timeline ----------------------------------------------- */
 .timeline{ list-style:none; margin:0; padding:0; }
