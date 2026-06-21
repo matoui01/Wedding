@@ -41,7 +41,7 @@ const I18N = {
 
     "gift.over":"Regali","gift.title":"Il regalo più bello siete voi",
     "gift.body":"Per noi il dono più grande è festeggiare insieme a voi. Se però desiderate contribuire al nostro viaggio di nozze e all'inizio della nostra vita insieme, ecco alcune possibilità — con tutta la nostra gratitudine.",
-    "gift.revolut.h":"Revolut","gift.revolut.p":"Veloce, con carta o app — anche senza un conto Revolut.","gift.revolut.cta":"Apri Revolut",
+    "gift.revolut.h":"Revolut","gift.revolut.badge":"Il nostro preferito","gift.revolut.p":"Il modo più semplice per noi — con carta o app, <strong>anche senza un conto Revolut</strong>.","gift.revolut.cta":"Apri Revolut",
     "gift.twint.h":"TWINT","gift.twint.p":"Per gli ospiti in Svizzera: nell'app TWINT scegliete «Inviare denaro» e inserite questo numero.","gift.twint.num":"Numero",
     "gift.eur.h":"Bonifico · EUR","gift.eur.p":"In euro — per la maggior parte degli ospiti.","gift.eur.qr":"Codice QR per bonifico SEPA","gift.eur.qrcap":"Scansiona con la tua app bancaria.",
     "gift.chf.h":"Bonifico · CHF","gift.chf.p":"In franchi — per gli ospiti in Svizzera.","gift.chf.note":"Importante: indicate la causale «Maxime Atoui, CH», altrimenti il bonifico potrebbe non arrivare.",
@@ -92,7 +92,7 @@ const I18N = {
 
     "gift.over":"Cadeaux","gift.title":"Votre présence est notre plus beau cadeau",
     "gift.body":"Le plus beau des cadeaux, c'est de vous avoir à nos côtés. Si vous souhaitez néanmoins contribuer à notre voyage de noces et à nos débuts à deux, voici quelques possibilités — avec toute notre gratitude.",
-    "gift.revolut.h":"Revolut","gift.revolut.p":"Rapide, par carte ou appli — même sans compte Revolut.","gift.revolut.cta":"Ouvrir Revolut",
+    "gift.revolut.h":"Revolut","gift.revolut.badge":"Notre moyen préféré","gift.revolut.p":"Le plus simple pour nous — par carte ou appli, <strong>même sans compte Revolut</strong>.","gift.revolut.cta":"Ouvrir Revolut",
     "gift.twint.h":"TWINT","gift.twint.p":"Pour les invités en Suisse : dans l'appli TWINT, choisissez « Envoyer de l'argent » et saisissez ce numéro.","gift.twint.num":"Numéro",
     "gift.eur.h":"Virement · EUR","gift.eur.p":"En euros — pour la plupart des invités.","gift.eur.qr":"Code QR pour virement SEPA","gift.eur.qrcap":"Scannez avec votre appli bancaire.",
     "gift.chf.h":"Virement · CHF","gift.chf.p":"En francs — pour les invités en Suisse.","gift.chf.note":"Important : indiquez la référence « Maxime Atoui, CH », sans quoi le virement risque de ne pas nous parvenir.",
@@ -143,7 +143,7 @@ const I18N = {
 
     "gift.over":"Gifts","gift.title":"Your presence is the greatest gift",
     "gift.body":"Having you celebrate with us is the greatest gift of all. If you'd nonetheless like to contribute to our honeymoon and the start of our life together, here are a few ways — with all our thanks.",
-    "gift.revolut.h":"Revolut","gift.revolut.p":"Fast, by card or app — even without a Revolut account.","gift.revolut.cta":"Open Revolut",
+    "gift.revolut.h":"Revolut","gift.revolut.badge":"Our preferred way","gift.revolut.p":"The easiest for us — by card or app, <strong>even without a Revolut account</strong>.","gift.revolut.cta":"Open Revolut",
     "gift.twint.h":"TWINT","gift.twint.p":"For guests in Switzerland: in the TWINT app, choose 'Send money' and enter this number.","gift.twint.num":"Number",
     "gift.eur.h":"Bank transfer · EUR","gift.eur.p":"In euros — for most guests.","gift.eur.qr":"QR code for a SEPA transfer","gift.eur.qrcap":"Scan with your banking app.",
     "gift.chf.h":"Bank transfer · CHF","gift.chf.p":"In francs — for guests in Switzerland.","gift.chf.note":"Important: include the reference “Maxime Atoui, CH”, otherwise the transfer may not reach us.",
