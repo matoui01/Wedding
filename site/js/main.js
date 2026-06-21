@@ -42,6 +42,45 @@ window.swapRsvp = function(lang){
   }
 };
 
+/* ---- RSVP form → Google Sheet ------------------------------------------- *
+ * Posts each reply as a row to a Google Apps Script web app (which appends it
+ * to the couple's own Sheet). Paste the deployed /exec URL below to switch it
+ * on; until then (or on a network error) the form shows the email fallback. */
+const RSVP_ENDPOINT = ""; // <-- paste the Apps Script web-app URL (…/exec) here
+
+function initRsvpForm(){
+  const form = document.getElementById('rsvp-form');
+  if(!form) return;
+  const status = form.querySelector('.rsvp-form__status');
+  const btn = form.querySelector('button[type=submit]');
+  const L = ()=> document.documentElement.lang || 'it';
+  const MSG = {
+    sending:{ it:'Invio in corso…', fr:'Envoi en cours…', en:'Sending…' },
+    ok:{ it:'Grazie! La vostra risposta è arrivata. ❤', fr:'Merci ! Votre réponse nous est bien parvenue. ❤', en:'Thank you! Your reply has reached us. ❤' },
+    err:{ it:'Qualcosa è andato storto. Scriveteci a ', fr:'Une erreur s’est produite. Écrivez-nous à ', en:'Something went wrong. Please email us at ' }
+  };
+  const showErr = ()=>{
+    const addr = 'maxime.ilaria' + String.fromCharCode(64) + 'gmail.com';
+    status.hidden = false; status.className = 'rsvp-form__status is-err';
+    status.innerHTML = (MSG.err[L()]||MSG.err.en) + `<a class="mail" href="mailto:${addr}">${addr}</a>`;
+  };
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if(!form.reportValidity()) return;
+    if(!RSVP_ENDPOINT){ showErr(); return; }
+    btn.disabled = true;
+    status.hidden = false; status.className = 'rsvp-form__status'; status.textContent = MSG.sending[L()]||MSG.sending.en;
+    const data = new URLSearchParams(new FormData(form));
+    data.append('lang', L());
+    try{
+      await fetch(RSVP_ENDPOINT, { method:'POST', mode:'no-cors', body:data });
+      status.className = 'rsvp-form__status is-ok'; status.textContent = MSG.ok[L()]||MSG.ok.en;
+      form.reset();
+    }catch(_){ showErr(); }
+    finally{ btn.disabled = false; }
+  });
+}
+
 /* ---- Password gate ------------------------------------------------------- *
  * Client-side only: a deterrent for casual visitors, not real security.
  * The page is locked by default (html.locked); a correct password removes the
@@ -107,6 +146,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.querySelectorAll('.lang-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
   });
+
+  /* RSVP form */
+  initRsvpForm();
 
   /* copy-to-clipboard for gift details (IBAN, number, …) */
   const COPIED = { it:'Copiato', fr:'Copié', en:'Copied' };
