@@ -5,8 +5,8 @@
 
 const I18N = {
   it:{
-    "meta.title":"Maxime & Ilaria — 23 luglio 2027, Firenze",
-    "meta.desc":"Maxime & Ilaria si sposano il 23 luglio 2027 a Villa Corsini a Mezzomonte, Firenze. Programma, viaggio e RSVP.",
+    "meta.title":"Ilaria & Maxime — 23 luglio 2027, Firenze",
+    "meta.desc":"Ilaria & Maxime si sposano il 23 luglio 2027 a Villa Corsini a Mezzomonte, Firenze. Programma, viaggio e RSVP.",
     "nav.story":"Storia","nav.day":"Il giorno","nav.venue":"La villa","nav.travel":"Soggiorno","nav.florence":"Firenze","nav.gifts":"Regali","nav.rsvp":"RSVP",
 
     "gate.title":"Un momento privato","gate.hint":"Inserite la password che trovate nel vostro invito.","gate.ph":"Password","gate.btn":"Entra","gate.err":"Password non corretta. Riprovate.",
@@ -22,7 +22,7 @@ const I18N = {
 
     "day.over":"Il giorno","day.title":"Il programma","day.note":"Gli orari saranno confermati.",
     "day.t1":"Arrivo & benvenuto","day.t2":"Cerimonia","day.t3":"Aperitivo nei giardini","day.t4":"Cena nella galleria affrescata","day.t5":"Si balla","day.t6":"Saluti","day.t6.time":"tardi",
-    "day.dress.label":"Dress code","day.dress.value":"Black tie — abito lungo e smoking.","day.dress.women":"Esempi di abiti da sera per le ospiti","day.dress.men":"Esempi di smoking per gli ospiti","day.map.cap":"I giardini e la disposizione dei tavoli.",
+    "day.dress.label":"Dress code","day.dress.value":"Cocktail elegante — lo smoking non è obbligatorio, ma vestitevi eleganti.","day.dress.women":"Esempi di abiti da sera per le ospiti","day.dress.men":"Esempi di completi eleganti per gli ospiti","day.map.cap":"I giardini e la disposizione dei tavoli.",
 
     "venue.over":"Il luogo","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Una villa medicea del Quattrocento sulle colline a sud di Firenze, acquistata da Lorenzo il Magnifico nel 1480 e affrescata negli anni 1630 per il principe Giovan Carlo de' Medici. Dal 1644 è dei Corsini: giardini all'italiana, cipressi e oliveti affacciati sulle colline del Chianti.",
@@ -51,14 +51,14 @@ const I18N = {
     "rsvp.f.name":"Nome e cognome","rsvp.f.email":"Email","rsvp.f.phone":"Telefono","rsvp.f.address":"Indirizzo postale","rsvp.f.attending":"Sarete dei nostri?","rsvp.f.yes":"Sì, con gioia","rsvp.f.no":"Purtroppo no","rsvp.f.party":"Venite da soli o accompagnati?","rsvp.f.alone":"Da solo/a","rsvp.f.plus":"Con un accompagnatore *","rsvp.f.plusnote":"* Solo gli invitati il cui invito indica un accompagnatore possono portarne uno. Ci dispiace tanto — lo spazio è limitato.","rsvp.f.plusname":"Nome dell'accompagnatore","rsvp.f.diet":"Allergie o intolleranze","rsvp.f.shuttle":"Avete bisogno della navetta da/per Firenze?","rsvp.f.staying":"Dove alloggerete? (per organizzare la navetta)","rsvp.f.y":"Sì","rsvp.f.n":"No","rsvp.f.message":"Un messaggio per noi","rsvp.f.submit":"Invia la risposta","rsvp.f.close":"Chiudi",
     "rsvp.fallback":"Problemi con il modulo? Scrivete a <a class='mail' data-addr></a>.",
 
-    "foot.line":"Maxime & Ilaria · 23 luglio 2027 · Villa Corsini a Mezzomonte","foot.contact":"Domande? <a class='mail' data-addr></a>","foot.close":"A presto",
+    "foot.line":"Ilaria & Maxime · 23 luglio 2027 · Villa Corsini a Mezzomonte","foot.contact":"Domande? <a class='mail' data-addr></a>","foot.close":"A presto",
 
     "alt.hero":"Acquerello di Villa Corsini a Mezzomonte","alt.estate":"Veduta della tenuta e dei giardini","alt.couple":"Gli sposi nel giardino","alt.plan":"Pianta dei giardini e dei tavoli","alt.venue":"Villa Corsini a Mezzomonte","alt.duomo":"Il Duomo di Firenze","alt.ponte":"Il Ponte Vecchio a Firenze"
   },
 
   fr:{
-    "meta.title":"Maxime & Ilaria — 23 juillet 2027, Florence",
-    "meta.desc":"Maxime & Ilaria se marient le 23 juillet 2027 à la Villa Corsini a Mezzomonte, Florence. Programme, voyage et RSVP.",
+    "meta.title":"Ilaria & Maxime — 23 juillet 2027, Florence",
+    "meta.desc":"Ilaria & Maxime se marient le 23 juillet 2027 à la Villa Corsini a Mezzomonte, Florence. Programme, voyage et RSVP.",
     "nav.story":"Histoire","nav.day":"Le jour","nav.venue":"Le lieu","nav.travel":"Séjour","nav.florence":"Florence","nav.gifts":"Cadeaux","nav.rsvp":"RSVP",
 
     "gate.title":"Un moment privé","gate.hint":"Saisissez le mot de passe indiqué sur votre invitation.","gate.ph":"Mot de passe","gate.btn":"Entrer","gate.err":"Mot de passe incorrect. Réessayez.",
@@ -74,7 +74,7 @@ const I18N = {
 
     "day.over":"Le jour J","day.title":"Le déroulé","day.note":"Les horaires seront confirmés.",
     "day.t1":"Arrivée & accueil","day.t2":"Cérémonie","day.t3":"Cocktail dans les jardins","day.t4":"Dîner dans la galerie à fresques","day.t5":"Soirée dansante","day.t6":"Fin de soirée","day.t6.time":"tard",
-    "day.dress.label":"Tenue","day.dress.value":"Black tie — robe longue et smoking.","day.dress.women":"Exemples de tenues de soirée pour les invitées","day.dress.men":"Exemples de smoking pour les invités","day.map.cap":"Les jardins et le plan de table.",
+    "day.dress.label":"Tenue","day.dress.value":"Cocktail élégant — le smoking n'est pas obligatoire, mais sur votre trente-et-un.","day.dress.women":"Exemples de tenues de soirée pour les invitées","day.dress.men":"Exemples de costumes élégants pour les invités","day.map.cap":"Les jardins et le plan de table.",
 
     "venue.over":"Le lieu","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Une villa médicéenne du XVᵉ siècle sur les collines au sud de Florence, achetée par Laurent le Magnifique en 1480 et ornée de fresques dans les années 1630 pour le prince Giovan Carlo de' Medici. Aux Corsini depuis 1644 : jardins à l'italienne, cyprès et oliveraies dominant les collines du Chianti.",
@@ -103,14 +103,14 @@ const I18N = {
     "rsvp.f.name":"Nom et prénom","rsvp.f.email":"E-mail","rsvp.f.phone":"Téléphone","rsvp.f.address":"Adresse postale","rsvp.f.attending":"Serez-vous des nôtres ?","rsvp.f.yes":"Oui, avec joie","rsvp.f.no":"Malheureusement non","rsvp.f.party":"Venez-vous seul·e ou accompagné·e ?","rsvp.f.alone":"Seul·e","rsvp.f.plus":"Avec un·e invité·e *","rsvp.f.plusnote":"* Seuls les invités dont l'invitation mentionne un·e accompagnant·e peuvent en amener un·e. Nous en sommes vraiment désolés — la place est limitée.","rsvp.f.plusname":"Nom de votre invité·e","rsvp.f.diet":"Allergies ou intolérances","rsvp.f.shuttle":"Avez-vous besoin de la navette depuis/vers Florence ?","rsvp.f.staying":"Où logerez-vous ? (pour organiser la navette)","rsvp.f.y":"Oui","rsvp.f.n":"Non","rsvp.f.message":"Un mot pour nous","rsvp.f.submit":"Envoyer la réponse","rsvp.f.close":"Fermer",
     "rsvp.fallback":"Un souci avec le formulaire ? Écrivez à <a class='mail' data-addr></a>.",
 
-    "foot.line":"Maxime & Ilaria · 23 juillet 2027 · Villa Corsini a Mezzomonte","foot.contact":"Questions ? <a class='mail' data-addr></a>","foot.close":"À très bientôt",
+    "foot.line":"Ilaria & Maxime · 23 juillet 2027 · Villa Corsini a Mezzomonte","foot.contact":"Questions ? <a class='mail' data-addr></a>","foot.close":"À très bientôt",
 
     "alt.hero":"Aquarelle de la Villa Corsini a Mezzomonte","alt.estate":"Vue du domaine et des jardins","alt.couple":"Les mariés dans le jardin","alt.plan":"Plan des jardins et des tables","alt.venue":"Villa Corsini a Mezzomonte","alt.duomo":"Le Duomo de Florence","alt.ponte":"Le Ponte Vecchio à Florence"
   },
 
   en:{
-    "meta.title":"Maxime & Ilaria — 23 July 2027, Florence",
-    "meta.desc":"Maxime & Ilaria are getting married on 23 July 2027 at Villa Corsini a Mezzomonte, Florence. Programme, travel and RSVP.",
+    "meta.title":"Ilaria & Maxime — 23 July 2027, Florence",
+    "meta.desc":"Ilaria & Maxime are getting married on 23 July 2027 at Villa Corsini a Mezzomonte, Florence. Programme, travel and RSVP.",
     "nav.story":"Story","nav.day":"The day","nav.venue":"Venue","nav.travel":"Travel","nav.florence":"Florence","nav.gifts":"Gifts","nav.rsvp":"RSVP",
 
     "gate.title":"A private moment","gate.hint":"Enter the password from your invitation to come in.","gate.ph":"Password","gate.btn":"Enter","gate.err":"Incorrect password. Please try again.",
@@ -126,7 +126,7 @@ const I18N = {
 
     "day.over":"The day","day.title":"The programme","day.note":"Times to be confirmed.",
     "day.t1":"Arrival & welcome","day.t2":"Ceremony","day.t3":"Aperitivo in the gardens","day.t4":"Dinner in the frescoed gallery","day.t5":"Dancing","day.t6":"Farewell","day.t6.time":"late",
-    "day.dress.label":"Dress code","day.dress.value":"Black tie — floor-length gowns and black tie.","day.dress.women":"Evening-wear inspiration for guests","day.dress.men":"Black-tie inspiration for guests","day.map.cap":"The gardens and the seating plan.",
+    "day.dress.label":"Dress code","day.dress.value":"Elegant cocktail — black tie not required, but dress to impress.","day.dress.women":"Evening-wear inspiration for guests","day.dress.men":"Elegant suit inspiration for guests","day.map.cap":"The gardens and the seating plan.",
 
     "venue.over":"The venue","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"A fifteenth-century Medici villa in the hills south of Florence, bought by Lorenzo the Magnificent in 1480 and frescoed in the 1630s for Prince Giovan Carlo de' Medici. Held by the Corsini family since 1644 — formal box gardens, cypress and olive groves looking over the Chianti hills.",
@@ -155,7 +155,7 @@ const I18N = {
     "rsvp.f.name":"Full name","rsvp.f.email":"Email","rsvp.f.phone":"Phone","rsvp.f.address":"Postal address","rsvp.f.attending":"Will you join us?","rsvp.f.yes":"Yes, with joy","rsvp.f.no":"Sadly, no","rsvp.f.party":"Are you coming alone or with someone?","rsvp.f.alone":"On my own","rsvp.f.plus":"With a plus-one *","rsvp.f.plusnote":"* Only guests whose invitation mentions a plus-one can bring someone. We're truly sorry — space is limited.","rsvp.f.plusname":"Your plus-one's name","rsvp.f.diet":"Allergies or dietary needs","rsvp.f.shuttle":"Do you need the shuttle to/from Florence?","rsvp.f.staying":"Where will you be staying? (to plan the shuttle)","rsvp.f.y":"Yes","rsvp.f.n":"No","rsvp.f.message":"A message for us","rsvp.f.submit":"Send reply","rsvp.f.close":"Close",
     "rsvp.fallback":"Trouble with the form? Email us at <a class='mail' data-addr></a>.",
 
-    "foot.line":"Maxime & Ilaria · 23 July 2027 · Villa Corsini a Mezzomonte","foot.contact":"Questions? <a class='mail' data-addr></a>","foot.close":"See you soon",
+    "foot.line":"Ilaria & Maxime · 23 July 2027 · Villa Corsini a Mezzomonte","foot.contact":"Questions? <a class='mail' data-addr></a>","foot.close":"See you soon",
 
     "alt.hero":"Watercolour of Villa Corsini a Mezzomonte","alt.estate":"View of the estate and gardens","alt.couple":"The couple in the garden","alt.plan":"Plan of the gardens and tables","alt.venue":"Villa Corsini a Mezzomonte","alt.duomo":"The Florence Duomo","alt.ponte":"The Ponte Vecchio in Florence"
   }
