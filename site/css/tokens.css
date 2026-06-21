@@ -1,0 +1,43 @@
+/* ============================================================================
+   tokens.css — design tokens for the Atoui–Cianti wedding site
+   Reconstructed from the locked design chart (Build Brief §2).
+   This is the source of truth for colour & type. main.css must only consume
+   these variables — do not hard-code hexes elsewhere.
+   ========================================================================== */
+
+/* --- Fonts: Pinyon Script, Cormorant Garamond, EB Garamond, Jost --------- */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Pinyon+Script&family=Jost:wght@300;400&display=swap');
+
+:root{
+  /* ---- Palette (soft, never saturated) ---- */
+  --panna:        #FAF6EC;  /* ivory paper — page & section background */
+  --panna-2:      #F2EBD9;  /* warm ivory — alternate band background */
+  --salvia:       #93A586;  /* sage / eucalyptus — the lead colour */
+  --salvia-light: #C3CFB6;  /* soft sage — fills, hovers */
+  --salvia-deep:  #6E7B5B;  /* deep sage — small text accents */
+  --oliva:        #5E6B47;  /* olive — deepest green */
+  --terracotta:   #C47A54;  /* terracotta — the ampersand, warm details */
+  --terracotta-d: #A85F3E;  /* deep terracotta */
+  --oro:          #B08D4F;  /* gold — crest, frames & foil only */
+  --oro-light:    #CBA968;  /* light gold */
+  --azzurro:      #9FB3B6;  /* dusty Chianti blue */
+  --azzurro-d:    #7C969B;  /* deep dusty blue */
+  --ink:          #3D352A;  /* warm charcoal — all body text */
+  --muted:        #897C68;  /* muted brown — secondary text, captions */
+  --line:         rgba(61,53,42,.16);   /* hairline rule */
+  --line-gold:    rgba(176,141,79,.40); /* gold hairline */
+
+  /* ---- Type families ---- */
+  --f-script:  'Pinyon Script', cursive;          /* couple's names only */
+  --f-display: 'Cormorant Garamond', Georgia, serif; /* display & titles */
+  --f-body:    'EB Garamond', Georgia, serif;     /* body copy */
+  --f-ui:      'Jost', system-ui, sans-serif;     /* nav, overlines, labels */
+
+  /* ---- Rhythm ---- */
+  --maxw: 1180px;
+  --measure: 62ch;
+  --pad: clamp(1.25rem, 5vw, 4rem);
+  --section-y: clamp(4rem, 10vw, 8rem);
+  --radius: 2px;
+  --ease: cubic-bezier(.22,.61,.36,1);
+}
