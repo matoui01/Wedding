@@ -120,7 +120,37 @@
       <p class="eyebrow" data-i18n="rsvp.over">RSVP</p>
       <h2 class="title" data-i18n="rsvp.title">Fateci sapere</h2>
       <p class="measure mx-auto" data-i18n="rsvp.by">Vi preghiamo di rispondere entro il [data].</p>
-      <div class="rsvp__embed"><div id="rsvp-embed"></div></div>
+      <form class="rsvp-form measure mx-auto" id="rsvp-form" novalidate>
+        <div class="rsvp-field">
+          <label for="rsvp-name" data-i18n="rsvp.f.name">Nome e cognome</label>
+          <input id="rsvp-name" name="name" type="text" required autocomplete="name">
+        </div>
+        <fieldset class="rsvp-field rsvp-field--choice">
+          <legend data-i18n="rsvp.f.attending">Sarete dei nostri?</legend>
+          <div class="rsvp-radios">
+            <label class="rsvp-radio"><input type="radio" name="attending" value="yes" required><span data-i18n="rsvp.f.yes">Sì, con gioia</span></label>
+            <label class="rsvp-radio"><input type="radio" name="attending" value="no"><span data-i18n="rsvp.f.no">Purtroppo no</span></label>
+          </div>
+        </fieldset>
+        <div class="rsvp-field">
+          <label for="rsvp-guests" data-i18n="rsvp.f.guests">Quante persone (voi inclusi)?</label>
+          <input id="rsvp-guests" name="guests" type="number" min="1" max="12" inputmode="numeric">
+        </div>
+        <div class="rsvp-field">
+          <label for="rsvp-diet" data-i18n="rsvp.f.diet">Allergie o intolleranze</label>
+          <input id="rsvp-diet" name="diet" type="text">
+        </div>
+        <div class="rsvp-field">
+          <label for="rsvp-song" data-i18n="rsvp.f.song">Una canzone per farvi ballare</label>
+          <input id="rsvp-song" name="song" type="text">
+        </div>
+        <div class="rsvp-field">
+          <label for="rsvp-message" data-i18n="rsvp.f.message">Un messaggio per noi</label>
+          <textarea id="rsvp-message" name="message" rows="3"></textarea>
+        </div>
+        <button class="btn" type="submit" data-i18n="rsvp.f.submit">Invia la risposta</button>
+        <p class="rsvp-form__status" role="status" aria-live="polite" hidden></p>
+      </form>
       <p class="rsvp__fallback" data-i18n="rsvp.fallback">Problemi con il modulo? Scrivere a [email].</p>
     </div>
   </section>

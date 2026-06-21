@@ -48,6 +48,7 @@ const I18N = {
     "gift.iban.holder":"Beneficiario","gift.iban.ref":"Causale","gift.iban.bank":"Banca","gift.iban.corr":"BIC corrispondente",
 
     "rsvp.over":"RSVP","rsvp.title":"Fateci sapere","rsvp.by":"Vi preghiamo di rispondere entro il [data].",
+    "rsvp.f.name":"Nome e cognome","rsvp.f.attending":"Sarete dei nostri?","rsvp.f.yes":"Sì, con gioia","rsvp.f.no":"Purtroppo no","rsvp.f.guests":"Quante persone (voi inclusi)?","rsvp.f.diet":"Allergie o intolleranze","rsvp.f.song":"Una canzone per farvi ballare","rsvp.f.message":"Un messaggio per noi","rsvp.f.submit":"Invia la risposta",
     "rsvp.fallback":"Problemi con il modulo? Scrivete a <a class='mail' data-addr></a>.",
 
     "foot.line":"Maxime & Ilaria · 23 luglio 2027 · Villa Corsini a Mezzomonte","foot.contact":"Domande? <a class='mail' data-addr></a>","foot.close":"A presto",
@@ -99,6 +100,7 @@ const I18N = {
     "gift.iban.holder":"Bénéficiaire","gift.iban.ref":"Référence","gift.iban.bank":"Banque","gift.iban.corr":"BIC correspondant",
 
     "rsvp.over":"RSVP","rsvp.title":"Répondez-nous","rsvp.by":"Merci de répondre avant le [date].",
+    "rsvp.f.name":"Nom et prénom","rsvp.f.attending":"Serez-vous des nôtres ?","rsvp.f.yes":"Oui, avec joie","rsvp.f.no":"Malheureusement non","rsvp.f.guests":"Combien de personnes (vous compris) ?","rsvp.f.diet":"Allergies ou intolérances","rsvp.f.song":"Une chanson pour vous faire danser","rsvp.f.message":"Un mot pour nous","rsvp.f.submit":"Envoyer la réponse",
     "rsvp.fallback":"Un souci avec le formulaire ? Écrivez à <a class='mail' data-addr></a>.",
 
     "foot.line":"Maxime & Ilaria · 23 juillet 2027 · Villa Corsini a Mezzomonte","foot.contact":"Questions ? <a class='mail' data-addr></a>","foot.close":"À très bientôt",
@@ -150,6 +152,7 @@ const I18N = {
     "gift.iban.holder":"Beneficiary","gift.iban.ref":"Reference","gift.iban.bank":"Bank","gift.iban.corr":"Correspondent BIC",
 
     "rsvp.over":"RSVP","rsvp.title":"Let us know","rsvp.by":"Kindly reply by [date].",
+    "rsvp.f.name":"Full name","rsvp.f.attending":"Will you join us?","rsvp.f.yes":"Yes, with joy","rsvp.f.no":"Sadly, no","rsvp.f.guests":"How many of you?","rsvp.f.diet":"Allergies or dietary needs","rsvp.f.song":"A song to get you dancing","rsvp.f.message":"A message for us","rsvp.f.submit":"Send reply",
     "rsvp.fallback":"Trouble with the form? Email us at <a class='mail' data-addr></a>.",
 
     "foot.line":"Maxime & Ilaria · 23 July 2027 · Villa Corsini a Mezzomonte","foot.contact":"Questions? <a class='mail' data-addr></a>","foot.close":"See you soon",
