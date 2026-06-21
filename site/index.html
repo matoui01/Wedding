@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maxime & Ilaria — 23 July 2027, Florence</title>
+  <meta name="description" content="Maxime & Ilaria are getting married on 23 July 2027 at Villa Corsini a Mezzomonte, Florence.">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Maxime & Ilaria — 23 July 2027, Florence">
+  <meta property="og:description" content="Join us at Villa Corsini a Mezzomonte. Programme, travel and RSVP.">
+  <meta property="og:image" content="assets/img/estate.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <a href="#home" class="brand" aria-label="Maxime & Ilaria">
+      <svg aria-hidden="true"><use href="assets/marks.svg#crest"></use></svg>
+    </a>
+
+    <nav class="nav" aria-label="Primary">
+      <a href="#story"    data-i18n="nav.story">Storia</a>
+      <a href="#day"      data-i18n="nav.day">Il giorno</a>
+      <a href="#venue"    data-i18n="nav.venue">La villa</a>
+      <a href="#travel"   data-i18n="nav.travel">Soggiorno</a>
+      <a href="#florence" data-i18n="nav.florence">Firenze</a>
+      <a href="#rsvp"     data-i18n="nav.rsvp">RSVP</a>
+    </nav>
+
+    <div class="langs" role="group" aria-label="Language">
+      <button class="lang-btn" data-lang="it" type="button">IT</button><span class="lang-sep">·</span>
+      <button class="lang-btn" data-lang="fr" type="button">FR</button><span class="lang-sep">·</span>
+      <button class="lang-btn" data-lang="en" type="button">EN</button>
+    </div>
+
+    <button class="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- mobile menu -->
+  <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
+    <a href="#story"    data-i18n="nav.story">Storia</a>
+    <a href="#day"      data-i18n="nav.day">Il giorno</a>
+    <a href="#venue"    data-i18n="nav.venue">La villa</a>
+    <a href="#travel"   data-i18n="nav.travel">Soggiorno</a>
+    <a href="#florence" data-i18n="nav.florence">Firenze</a>
+    <a href="#rsvp"     data-i18n="nav.rsvp">RSVP</a>
+  </nav>
+
+  <main>
+  <!-- ===================== 1 · HERO ===================== -->
+  <section id="home" class="hero">
+    <img class="hero__art" src="assets/img/villa.jpg" width="693" height="860"
+         alt="" data-i18n-attr="alt:alt.hero" fetchpriority="high">
+    <div class="hero__inner">
+      <p class="hero__over" data-i18n="hero.over">VILLA CORSINI A MEZZOMONTE · FIRENZE</p>
+      <h1 class="names"><span class="n">Maxime</span><span class="amp">&amp;</span><span class="n">Ilaria</span></h1>
+      <p class="hero__tagline" data-i18n="hero.tagline">Ci sposiamo</p>
+      <p class="hero__date" data-i18n="hero.date">Venerdì 23 luglio 2027</p>
+      <p class="hero__place" data-i18n="hero.place">Firenze · Italia</p>
+    </div>
+    <a href="#welcome" class="hero__scroll" data-i18n="hero.scroll">Scorri</a>
+  </section>
+
+  <!-- ===================== 2 · WELCOME ===================== -->
+  <section id="welcome" class="section">
+    <div class="wrap reveal">
+      <div class="banner">
+        <img src="assets/img/estate.jpg" width="1100" height="734" loading="lazy"
+             alt="" data-i18n-attr="alt:alt.estate">
+      </div>
+      <div class="center measure mx-auto" style="margin-top:clamp(2rem,5vw,3.5rem)">
+        <p class="eyebrow" data-i18n="welcome.over">Benvenuti</p>
+        <h2 class="title" data-i18n="welcome.title">Insieme, in Toscana</h2>
+        <p data-i18n="welcome.body">…</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true"><svg><use href="assets/marks.svg#sprig"></use></svg></div>
+
+  <!-- ===================== 3 · OUR STORY ===================== -->
+  <section id="story" class="section section--alt">
+    <div class="wrap split reveal">
+      <div class="split__media">
+        <img src="assets/img/garden.jpg" width="645" height="860" loading="lazy"
+             alt="" data-i18n-attr="alt:alt.couple">
+      </div>
+      <div class="split__text">
+        <p class="eyebrow" data-i18n="story.over">La nostra storia</p>
+        <h2 class="title" data-i18n="story.title">Da [città] a Firenze</h2>
+        <p data-i18n="story.body">…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 4 · THE DAY ===================== -->
+  <section id="day" class="section">
+    <div class="wrap split split--rev reveal">
+      <div class="split__media">
+        <img src="assets/img/plan.jpg" width="629" height="860" loading="lazy"
+             alt="" data-i18n-attr="alt:alt.plan">
+        <p class="cap center" style="margin-top:.8rem" data-i18n="day.map.cap">…</p>
+      </div>
+      <div class="split__text">
+        <p class="eyebrow" data-i18n="day.over">Il giorno</p>
+        <h2 class="title" data-i18n="day.title">Il programma</h2>
+        <p class="cap" data-i18n="day.note">Gli orari saranno confermati.</p>
+        <ul class="timeline">
+          <li><time>16:00</time><span data-i18n="day.t1">Arrivo &amp; benvenuto</span></li>
+          <li><time>16:30</time><span data-i18n="day.t2">Cerimonia</span></li>
+          <li><time>17:30</time><span data-i18n="day.t3">Aperitivo nei giardini</span></li>
+          <li><time>20:00</time><span data-i18n="day.t4">Cena nella galleria affrescata</span></li>
+          <li><time>23:00</time><span data-i18n="day.t5">Si balla</span></li>
+          <li><time data-i18n="day.t6.time">tardi</time><span data-i18n="day.t6">Saluti</span></li>
+        </ul>
+        <dl class="factbox">
+          <dt data-i18n="day.dress.label">Dress code</dt>
+          <dd data-i18n="day.dress.value">Black tie — abito lungo e smoking.</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true"><svg><use href="assets/marks.svg#sprig"></use></svg></div>
+
+  <!-- ===================== 5 · THE VENUE ===================== -->
+  <section id="venue" class="section section--alt">
+    <div class="wrap split reveal">
+      <div class="split__media">
+        <img src="assets/img/villa.jpg" width="693" height="860" loading="lazy"
+             alt="" data-i18n-attr="alt:alt.venue">
+      </div>
+      <div class="split__text">
+        <p class="eyebrow" data-i18n="venue.over">Il luogo</p>
+        <h2 class="title" data-i18n="venue.title">Villa Corsini a Mezzomonte</h2>
+        <p data-i18n="venue.body">…</p>
+        <blockquote class="quote" data-i18n="venue.quote">…</blockquote>
+        <dl class="factbox">
+          <dt data-i18n="venue.addr.label">Indirizzo</dt>
+          <dd data-i18n="venue.addr.value">Villa Corsini a Mezzomonte, [via e CAP], Impruneta (FI), Italia</dd>
+        </dl>
+        <p><a class="btn btn--ghost" target="_blank" rel="noopener"
+              href="https://www.google.com/maps/search/?api=1&query=Villa+Corsini+a+Mezzomonte+Impruneta"
+              data-i18n="venue.map.cta">Apri in Google Maps</a></p>
+        <p class="cap" style="margin-top:1rem" data-i18n="venue.getting">…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 6 · STAY & TRAVEL ===================== -->
+  <section id="travel" class="section">
+    <div class="wrap reveal">
+      <div class="center measure mx-auto">
+        <p class="eyebrow" data-i18n="travel.over">Soggiorno &amp; viaggio</p>
+        <h2 class="title" data-i18n="travel.title">Come arrivare e dove dormire</h2>
+      </div>
+      <div class="split" style="margin-top:clamp(2rem,5vw,3.5rem)">
+        <div class="split__media">
+          <img src="assets/img/duomo.jpg" width="571" height="860" loading="lazy"
+               alt="" data-i18n-attr="alt:alt.duomo">
+        </div>
+        <div class="split__text grid grid--2">
+          <div class="card"><h3 data-i18n="travel.air.h">In aereo</h3><p data-i18n="travel.air.b">…</p></div>
+          <div class="card"><h3 data-i18n="travel.train.h">In treno</h3><p data-i18n="travel.train.b">…</p></div>
+          <div class="card"><h3 data-i18n="travel.car.h">Transfer</h3><p data-i18n="travel.car.b">…</p></div>
+          <div class="card"><h3 data-i18n="travel.stay.h">Dove dormire</h3><p data-i18n="travel.stay.b">…</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true"><svg><use href="assets/marks.svg#sprig"></use></svg></div>
+
+  <!-- ===================== 7 · FLORENCE ===================== -->
+  <section id="florence" class="section section--alt">
+    <div class="wrap split split--rev reveal">
+      <div class="split__media">
+        <img src="assets/img/ponte.jpg" width="603" height="860" loading="lazy"
+             alt="" data-i18n-attr="alt:alt.ponte">
+      </div>
+      <div class="split__text">
+        <p class="eyebrow" data-i18n="flo.over">Firenze</p>
+        <h2 class="title" data-i18n="flo.title">Cosa fare a Firenze</h2>
+        <p data-i18n="flo.body">…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 8 · RSVP ===================== -->
+  <section id="rsvp" class="section">
+    <div class="wrap center reveal">
+      <p class="eyebrow" data-i18n="rsvp.over">RSVP</p>
+      <h2 class="title" data-i18n="rsvp.title">Fateci sapere</h2>
+      <p class="measure mx-auto" data-i18n="rsvp.by">Vi preghiamo di rispondere entro il [data].</p>
+      <div class="rsvp__embed"><div id="rsvp-embed"></div></div>
+      <p class="rsvp__fallback" data-i18n="rsvp.fallback">Problemi con il modulo? Scrivere a [email].</p>
+    </div>
+  </section>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <svg class="crest" aria-hidden="true"><use href="assets/marks.svg#crest"></use></svg>
+    <p class="names"><span class="n">Maxime</span><span class="amp">&amp;</span><span class="n">Ilaria</span></p>
+    <p class="footer__line" data-i18n="foot.line">Maxime &amp; Ilaria · 23 luglio 2027 · Villa Corsini a Mezzomonte</p>
+    <p class="muted" data-i18n="foot.contact">Domande? [email]</p>
+    <p class="footer__close" data-i18n="foot.close">A presto</p>
+  </footer>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
