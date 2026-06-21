@@ -232,31 +232,37 @@
       <div class="gifts">
 
         <article class="gift-card">
-          <h3 class="gift-card__h" data-i18n="gift.revolut.h">Revolut</h3>
-          <p class="gift-card__p" data-i18n="gift.revolut.p">Veloce, con carta o app.</p>
-          <a class="btn" href="https://revolut.me/[handle]" target="_blank" rel="noopener noreferrer"
-             data-i18n="gift.revolut.cta">Apri Revolut</a>
-        </article>
-
-        <article class="gift-card">
-          <h3 class="gift-card__h" data-i18n="gift.twint.h">TWINT</h3>
-          <p class="gift-card__p" data-i18n="gift.twint.p">Per gli ospiti in Svizzera.</p>
-          <div class="gift-qr" aria-hidden="true"><span>QR&nbsp;TWINT</span><span class="cap">[da aggiungere]</span></div>
-          <p class="gift-num"><span class="cap" data-i18n="gift.twint.num">Numero</span>
-            <button type="button" class="copy" data-copy>[+41 00 000 00 00]</button></p>
-        </article>
-
-        <article class="gift-card">
-          <h3 class="gift-card__h" data-i18n="gift.iban.h">Bonifico</h3>
-          <p class="gift-card__p" data-i18n="gift.iban.p">Bonifico SEPA in euro.</p>
+          <h3 class="gift-card__h" data-i18n="gift.eur.h">Bonifico · EUR</h3>
+          <p class="gift-card__p" data-i18n="gift.eur.p">In euro — per la maggior parte degli ospiti.</p>
           <dl class="gift-iban">
-            <dt data-i18n="gift.iban.holder">Intestatario</dt>
-            <dd><button type="button" class="copy" data-copy>[Nome Cognome]</button></dd>
+            <dt data-i18n="gift.iban.holder">Beneficiario</dt>
+            <dd><button type="button" class="copy" data-copy>Maxime Atoui</button></dd>
             <dt>IBAN</dt>
-            <dd><button type="button" class="copy" data-copy>[IT00 0000 0000 0000 0000 0000 000]</button></dd>
+            <dd><button type="button" class="copy" data-copy>LT76 3250 0423 5593 8288</button></dd>
             <dt>BIC</dt>
-            <dd><button type="button" class="copy" data-copy>[XXXXXXXX]</button></dd>
+            <dd><button type="button" class="copy" data-copy>REVOLT21</button></dd>
           </dl>
+          <figure class="epc-qr">
+            <img src="assets/img/epc-eur.png" width="170" height="170" loading="lazy"
+                 alt="" data-i18n-attr="alt:gift.eur.qr">
+            <figcaption class="cap" data-i18n="gift.eur.qrcap">Scansiona con la tua app bancaria.</figcaption>
+          </figure>
+          <p class="gift-bank"><span data-i18n="gift.iban.bank">Banca</span>: Revolut Bank UAB — Konstitucijos ave. 21B, 08130 Vilnius, Lithuania · <span data-i18n="gift.iban.corr">BIC corrispondente</span>: CHASDEFX.</p>
+        </article>
+
+        <article class="gift-card">
+          <h3 class="gift-card__h" data-i18n="gift.chf.h">Bonifico · CHF</h3>
+          <p class="gift-card__p" data-i18n="gift.chf.p">In franchi — per gli ospiti in Svizzera.</p>
+          <dl class="gift-iban">
+            <dt data-i18n="gift.iban.holder">Beneficiario</dt>
+            <dd><button type="button" class="copy" data-copy>Revolut Bank UAB</button></dd>
+            <dt>IBAN</dt>
+            <dd><button type="button" class="copy" data-copy>CH23 0900 0UZ7 1638 5407 7</button></dd>
+            <dt data-i18n="gift.iban.ref">Causale</dt>
+            <dd><button type="button" class="copy" data-copy>Maxime Atoui, CH</button></dd>
+          </dl>
+          <p class="gift-note" data-i18n="gift.chf.note">Importante: indicate la causale «Maxime Atoui, CH».</p>
+          <p class="gift-bank"><span data-i18n="gift.iban.bank">Banca</span>: PostFinance AG — Mingerstrasse 20, 3030 Bern, Switzerland.</p>
         </article>
 
       </div>

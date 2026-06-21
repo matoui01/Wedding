@@ -43,7 +43,9 @@ const I18N = {
     "gift.body":"Per noi il dono più grande è festeggiare insieme a voi. Se però desiderate contribuire al nostro viaggio di nozze e all'inizio della nostra vita insieme, ecco alcune possibilità — con tutta la nostra gratitudine.",
     "gift.revolut.h":"Revolut","gift.revolut.p":"Veloce, con carta o app — anche senza un conto Revolut.","gift.revolut.cta":"Apri Revolut",
     "gift.twint.h":"TWINT","gift.twint.p":"Per gli ospiti in Svizzera: scansionate il codice nell'app TWINT.","gift.twint.num":"Numero",
-    "gift.iban.h":"Bonifico","gift.iban.p":"Bonifico SEPA in euro.","gift.iban.holder":"Intestatario",
+    "gift.eur.h":"Bonifico · EUR","gift.eur.p":"In euro — per la maggior parte degli ospiti.","gift.eur.qr":"Codice QR per bonifico SEPA","gift.eur.qrcap":"Scansiona con la tua app bancaria.",
+    "gift.chf.h":"Bonifico · CHF","gift.chf.p":"In franchi — per gli ospiti in Svizzera.","gift.chf.note":"Importante: indicate la causale «Maxime Atoui, CH», altrimenti il bonifico potrebbe non arrivare.",
+    "gift.iban.holder":"Beneficiario","gift.iban.ref":"Causale","gift.iban.bank":"Banca","gift.iban.corr":"BIC corrispondente",
 
     "rsvp.over":"RSVP","rsvp.title":"Fateci sapere","rsvp.by":"Vi preghiamo di rispondere entro il [data].",
     "rsvp.fallback":"Problemi con il modulo? Scrivete a <a class='mail' data-addr></a>.",
@@ -92,7 +94,9 @@ const I18N = {
     "gift.body":"Le plus beau des cadeaux, c'est de vous avoir à nos côtés. Si vous souhaitez néanmoins contribuer à notre voyage de noces et à nos débuts à deux, voici quelques possibilités — avec toute notre gratitude.",
     "gift.revolut.h":"Revolut","gift.revolut.p":"Rapide, par carte ou appli — même sans compte Revolut.","gift.revolut.cta":"Ouvrir Revolut",
     "gift.twint.h":"TWINT","gift.twint.p":"Pour les invités en Suisse : scannez le code dans l'appli TWINT.","gift.twint.num":"Numéro",
-    "gift.iban.h":"Virement","gift.iban.p":"Virement SEPA en euros.","gift.iban.holder":"Titulaire",
+    "gift.eur.h":"Virement · EUR","gift.eur.p":"En euros — pour la plupart des invités.","gift.eur.qr":"Code QR pour virement SEPA","gift.eur.qrcap":"Scannez avec votre appli bancaire.",
+    "gift.chf.h":"Virement · CHF","gift.chf.p":"En francs — pour les invités en Suisse.","gift.chf.note":"Important : indiquez la référence « Maxime Atoui, CH », sans quoi le virement risque de ne pas nous parvenir.",
+    "gift.iban.holder":"Bénéficiaire","gift.iban.ref":"Référence","gift.iban.bank":"Banque","gift.iban.corr":"BIC correspondant",
 
     "rsvp.over":"RSVP","rsvp.title":"Répondez-nous","rsvp.by":"Merci de répondre avant le [date].",
     "rsvp.fallback":"Un souci avec le formulaire ? Écrivez à <a class='mail' data-addr></a>.",
@@ -141,7 +145,9 @@ const I18N = {
     "gift.body":"Having you celebrate with us is the greatest gift of all. If you'd nonetheless like to contribute to our honeymoon and the start of our life together, here are a few ways — with all our thanks.",
     "gift.revolut.h":"Revolut","gift.revolut.p":"Fast, by card or app — even without a Revolut account.","gift.revolut.cta":"Open Revolut",
     "gift.twint.h":"TWINT","gift.twint.p":"For guests in Switzerland: scan the code in the TWINT app.","gift.twint.num":"Number",
-    "gift.iban.h":"Bank transfer","gift.iban.p":"SEPA transfer in euros.","gift.iban.holder":"Account holder",
+    "gift.eur.h":"Bank transfer · EUR","gift.eur.p":"In euros — for most guests.","gift.eur.qr":"QR code for a SEPA transfer","gift.eur.qrcap":"Scan with your banking app.",
+    "gift.chf.h":"Bank transfer · CHF","gift.chf.p":"In francs — for guests in Switzerland.","gift.chf.note":"Important: include the reference “Maxime Atoui, CH”, otherwise the transfer may not reach us.",
+    "gift.iban.holder":"Beneficiary","gift.iban.ref":"Reference","gift.iban.bank":"Bank","gift.iban.corr":"Correspondent BIC",
 
     "rsvp.over":"RSVP","rsvp.title":"Let us know","rsvp.by":"Kindly reply by [date].",
     "rsvp.fallback":"Trouble with the form? Email us at <a class='mail' data-addr></a>.",
