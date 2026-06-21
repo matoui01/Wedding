@@ -22,7 +22,7 @@ const I18N = {
 
     "day.over":"Il giorno","day.title":"Il programma","day.note":"Gli orari saranno confermati.",
     "day.t1":"Arrivo & benvenuto","day.t2":"Cerimonia","day.t3":"Aperitivo nei giardini","day.t4":"Cena nella galleria affrescata","day.t5":"Si balla","day.t6":"Saluti","day.t6.time":"tardi",
-    "day.dress.label":"Dress code","day.dress.value":"Black tie — abito lungo e smoking.","day.map.cap":"I giardini e la disposizione dei tavoli.",
+    "day.dress.label":"Dress code","day.dress.value":"Black tie — abito lungo e smoking.","day.dress.women":"Esempi di abiti da sera per le ospiti","day.dress.men":"Esempi di smoking per gli ospiti","day.map.cap":"I giardini e la disposizione dei tavoli.",
 
     "venue.over":"Il luogo","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Una villa medicea del Quattrocento sulle colline a sud di Firenze, acquistata da Lorenzo il Magnifico nel 1480 e affrescata negli anni 1630 per il principe Giovan Carlo de' Medici. Dal 1644 è dei Corsini: giardini all'italiana, cipressi e oliveti affacciati sulle colline del Chianti.",
@@ -74,7 +74,7 @@ const I18N = {
 
     "day.over":"Le jour J","day.title":"Le déroulé","day.note":"Les horaires seront confirmés.",
     "day.t1":"Arrivée & accueil","day.t2":"Cérémonie","day.t3":"Cocktail dans les jardins","day.t4":"Dîner dans la galerie à fresques","day.t5":"Soirée dansante","day.t6":"Fin de soirée","day.t6.time":"tard",
-    "day.dress.label":"Tenue","day.dress.value":"Black tie — robe longue et smoking.","day.map.cap":"Les jardins et le plan de table.",
+    "day.dress.label":"Tenue","day.dress.value":"Black tie — robe longue et smoking.","day.dress.women":"Exemples de tenues de soirée pour les invitées","day.dress.men":"Exemples de smoking pour les invités","day.map.cap":"Les jardins et le plan de table.",
 
     "venue.over":"Le lieu","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Une villa médicéenne du XVᵉ siècle sur les collines au sud de Florence, achetée par Laurent le Magnifique en 1480 et ornée de fresques dans les années 1630 pour le prince Giovan Carlo de' Medici. Aux Corsini depuis 1644 : jardins à l'italienne, cyprès et oliveraies dominant les collines du Chianti.",
@@ -126,7 +126,7 @@ const I18N = {
 
     "day.over":"The day","day.title":"The programme","day.note":"Times to be confirmed.",
     "day.t1":"Arrival & welcome","day.t2":"Ceremony","day.t3":"Aperitivo in the gardens","day.t4":"Dinner in the frescoed gallery","day.t5":"Dancing","day.t6":"Farewell","day.t6.time":"late",
-    "day.dress.label":"Dress code","day.dress.value":"Black tie — floor-length gowns and black tie.","day.map.cap":"The gardens and the seating plan.",
+    "day.dress.label":"Dress code","day.dress.value":"Black tie — floor-length gowns and black tie.","day.dress.women":"Evening-wear inspiration for guests","day.dress.men":"Black-tie inspiration for guests","day.map.cap":"The gardens and the seating plan.",
 
     "venue.over":"The venue","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"A fifteenth-century Medici villa in the hills south of Florence, bought by Lorenzo the Magnificent in 1480 and frescoed in the 1630s for Prince Giovan Carlo de' Medici. Held by the Corsini family since 1644 — formal box gardens, cypress and olive groves looking over the Chianti hills.",
