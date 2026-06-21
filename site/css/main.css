@@ -254,3 +254,43 @@ html.locked #gate{ display:flex; }
 }
 #gate.is-shake .gate__card{ animation:gate-shake .4s var(--ease); }
 @media(prefers-reduced-motion:reduce){ #gate.is-shake .gate__card{ animation:none; } }
+
+/* ---- Gifts -------------------------------------------------------------- */
+.gifts{
+  display:grid; grid-template-columns:1fr; gap:clamp(1rem,3vw,1.6rem);
+  margin-top:clamp(2.2rem,5vw,3.2rem); text-align:left;
+}
+@media(min-width:760px){ .gifts{ grid-template-columns:repeat(3,1fr); } }
+.gift-card{
+  display:flex; flex-direction:column; gap:.7rem;
+  padding:clamp(1.4rem,3vw,1.9rem);
+  background:color-mix(in srgb, var(--salvia-light) 16%, var(--panna));
+  border:1px solid var(--line); border-radius:var(--radius);
+}
+.gift-card__h{ font-family:var(--f-display); font-size:1.5rem; }
+.gift-card__p{ color:var(--muted); font-size:1rem; margin:0; }
+.gift-card .btn{ align-self:flex-start; margin-top:auto; }
+.gift-qr{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.3rem;
+  width:100%; max-width:180px; aspect-ratio:1; margin:.4rem auto 0; align-self:center;
+  border:1px dashed var(--salvia); border-radius:var(--radius);
+  font-family:var(--f-ui); font-size:.85rem; letter-spacing:.08em; color:var(--salvia-deep);
+}
+.gift-num{ margin:auto 0 0; display:flex; flex-wrap:wrap; align-items:baseline; gap:.5rem; }
+.gift-iban{
+  margin:.2rem 0 0; display:grid; grid-template-columns:auto 1fr;
+  gap:.4rem .85rem; align-items:baseline;
+}
+.gift-iban dt{
+  font-family:var(--f-ui); font-size:.7rem; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--salvia-deep);
+}
+.gift-iban dd{ margin:0; min-width:0; }
+.copy{
+  font-family:var(--f-body); font-size:1rem; color:var(--ink); text-align:left;
+  background:transparent; border:0; border-bottom:1px dashed var(--salvia);
+  padding:.05rem .1rem; cursor:pointer; white-space:normal; word-break:break-word;
+  transition:color .2s var(--ease), border-color .2s var(--ease);
+}
+.copy:hover{ color:var(--salvia-deep); }
+.copy.is-copied{ color:var(--oliva); border-bottom-color:transparent; }
