@@ -196,3 +196,52 @@ h1,h2,h3{ font-weight:500; margin:0; }
   .nav{ display:none; }
   .hamburger{ display:block; }
 }
+
+/* ---- Password gate (fail-closed: locked by default) --------------------- */
+html.locked, html.locked body{ height:100%; overflow:hidden; }
+html.locked body > *:not(#gate){ display:none !important; }
+#gate{ display:none; }
+html.locked #gate{ display:flex; }
+
+#gate{
+  position:fixed; inset:0; z-index:1000;
+  align-items:center; justify-content:center; padding:var(--pad);
+  background:radial-gradient(120% 90% at 50% -10%,
+    color-mix(in srgb, var(--salvia-light) 32%, var(--panna)) 0%, var(--panna) 62%);
+}
+.gate__card{
+  width:min(420px,100%); display:flex; flex-direction:column; align-items:center;
+  text-align:center;
+}
+.gate__crest{ width:64px; height:64px; color:var(--oro); margin-bottom:1.1rem; }
+.gate__names{
+  font-family:var(--f-script); color:var(--ink); line-height:1;
+  display:flex; align-items:baseline; gap:.32em; margin:0 0 1.3rem;
+  font-size:clamp(34px,9vw,52px);
+}
+.gate__names .amp{ font-family:var(--f-display); font-style:italic;
+  color:var(--terracotta); font-size:.5em; }
+.gate__title{
+  font-family:var(--f-display); font-size:clamp(1.6rem,5vw,2.3rem);
+  line-height:1.1; margin:0 0 .6rem;
+}
+.gate__hint{ color:var(--muted); font-size:1rem; line-height:1.55;
+  max-width:34ch; margin:0 0 1.8rem; }
+.gate__form{ display:flex; flex-direction:column; gap:.85rem; width:100%; }
+.gate__input{
+  font-family:var(--f-body); font-size:1.1rem; color:var(--ink);
+  text-align:center; letter-spacing:.04em; padding:.85rem 1rem; width:100%;
+  background:var(--panna); border:1px solid var(--line); border-radius:var(--radius);
+}
+.gate__input:focus{ outline:none; border-color:var(--salvia);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--salvia) 28%, transparent); }
+.gate__form .btn{ justify-content:center; }
+.gate__error{ color:var(--terracotta-d); font-size:.95rem; margin:1.1rem 0 0; }
+
+@keyframes gate-shake{
+  0%,100%{ transform:translateX(0); }
+  20%,60%{ transform:translateX(-7px); }
+  40%,80%{ transform:translateX(7px); }
+}
+#gate.is-shake .gate__card{ animation:gate-shake .4s var(--ease); }
+@media(prefers-reduced-motion:reduce){ #gate.is-shake .gate__card{ animation:none; } }

@@ -30,7 +30,51 @@ window.swapRsvp = function(lang){
   }
 };
 
+/* ---- Password gate ------------------------------------------------------- *
+ * Client-side only: a deterrent for casual visitors, not real security.
+ * The page is locked by default (html.locked); a correct password removes the
+ * lock and is remembered in localStorage. We compare a SHA-256 hash so the
+ * literal password isn't sitting in the source. */
+const GATE_HASH = "ad806aa20a169b98ea34767f96f2324836adbbd5bee74b2290bd694b2d3fd9e1";
+
+async function sha256hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function initGate(){
+  const gate = document.getElementById('gate');
+  if(!gate) return;
+  const unlock = ()=>{
+    try{ localStorage.setItem('mi_gate','1'); }catch(e){}
+    document.documentElement.classList.remove('locked');
+    gate.remove();
+    document.body.style.overflow = '';
+  };
+  if(!document.documentElement.classList.contains('locked')){ gate.remove(); return; }
+
+  const form  = gate.querySelector('form');
+  const input = gate.querySelector('input');
+  const err   = gate.querySelector('.gate__error');
+  document.body.style.overflow = 'hidden';
+  setTimeout(()=> input && input.focus(), 60);
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    let ok = false;
+    try{ ok = (await sha256hex(input.value.trim())) === GATE_HASH; }catch(_){ ok = false; }
+    if(ok){ unlock(); return; }
+    err.hidden = false;
+    input.value = ''; input.focus();
+    gate.classList.add('is-shake');
+    setTimeout(()=> gate.classList.remove('is-shake'), 450);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
+  /* password gate */
+  initGate();
+
   /* language: detect → apply (also paints the RSVP embed) */
   setLang(detectLang());
 

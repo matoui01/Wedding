@@ -9,6 +9,8 @@ const I18N = {
     "meta.desc":"Maxime & Ilaria si sposano il 23 luglio 2027 a Villa Corsini a Mezzomonte, Firenze. Programma, viaggio e RSVP.",
     "nav.story":"Storia","nav.day":"Il giorno","nav.venue":"La villa","nav.travel":"Soggiorno","nav.florence":"Firenze","nav.rsvp":"RSVP",
 
+    "gate.title":"Un momento privato","gate.hint":"Inserite la password che trovate nel vostro invito.","gate.ph":"Password","gate.btn":"Entra","gate.err":"Password non corretta. Riprovate.",
+
     "hero.over":"VILLA CORSINI A MEZZOMONTE · FIRENZE",
     "hero.tagline":"Ci sposiamo","hero.date":"Venerdì 23 luglio 2027","hero.place":"Firenze · Italia","hero.scroll":"Scorri",
 
@@ -50,6 +52,8 @@ const I18N = {
     "meta.desc":"Maxime & Ilaria se marient le 23 juillet 2027 à la Villa Corsini a Mezzomonte, Florence. Programme, voyage et RSVP.",
     "nav.story":"Histoire","nav.day":"Le jour","nav.venue":"Le lieu","nav.travel":"Séjour","nav.florence":"Florence","nav.rsvp":"RSVP",
 
+    "gate.title":"Un moment privé","gate.hint":"Saisissez le mot de passe indiqué sur votre invitation.","gate.ph":"Mot de passe","gate.btn":"Entrer","gate.err":"Mot de passe incorrect. Réessayez.",
+
     "hero.over":"VILLA CORSINI A MEZZOMONTE · FLORENCE",
     "hero.tagline":"Nous nous marions","hero.date":"Vendredi 23 juillet 2027","hero.place":"Florence · Italie","hero.scroll":"Défiler",
 
@@ -90,6 +94,8 @@ const I18N = {
     "meta.title":"Maxime & Ilaria — 23 July 2027, Florence",
     "meta.desc":"Maxime & Ilaria are getting married on 23 July 2027 at Villa Corsini a Mezzomonte, Florence. Programme, travel and RSVP.",
     "nav.story":"Story","nav.day":"The day","nav.venue":"Venue","nav.travel":"Travel","nav.florence":"Florence","nav.rsvp":"RSVP",
+
+    "gate.title":"A private moment","gate.hint":"Enter the password from your invitation to come in.","gate.ph":"Password","gate.btn":"Enter","gate.err":"Incorrect password. Please try again.",
 
     "hero.over":"VILLA CORSINI A MEZZOMONTE · FLORENCE",
     "hero.tagline":"We're getting married","hero.date":"Friday, 23 July 2027","hero.place":"Florence · Italy","hero.scroll":"Scroll",
