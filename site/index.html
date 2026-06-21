@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="it">
+<html lang="it" class="locked">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,8 +18,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/main.css">
+
+  <!-- Gate: stay locked unless this visitor has already unlocked (fail-closed). -->
+  <script>
+    try { if (localStorage.getItem('mi_gate') === '1') document.documentElement.classList.remove('locked'); } catch (e) {}
+  </script>
 </head>
 <body>
+
+  <!-- ===================== PASSWORD GATE ===================== -->
+  <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <div class="gate__card">
+      <svg class="gate__crest" aria-hidden="true"><use href="assets/marks.svg#crest"></use></svg>
+      <p class="gate__names"><span>Maxime</span><span class="amp">&amp;</span><span>Ilaria</span></p>
+      <h1 class="gate__title" id="gate-title" data-i18n="gate.title">Un momento privato</h1>
+      <p class="gate__hint" data-i18n="gate.hint">Inserite la password che trovate nel vostro invito.</p>
+      <form class="gate__form" autocomplete="off">
+        <input class="gate__input" type="password" name="pw" inputmode="text"
+               data-i18n-attr="placeholder:gate.ph, aria-label:gate.ph" required>
+        <button class="btn" type="submit" data-i18n="gate.btn">Entra</button>
+      </form>
+      <p class="gate__error" role="alert" hidden data-i18n="gate.err">Password non corretta. Riprovate.</p>
+    </div>
+  </div>
 
   <!-- ===================== TOP BAR ===================== -->
   <header class="topbar">
