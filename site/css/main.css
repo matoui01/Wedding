@@ -261,6 +261,7 @@ html.locked #gate{ display:flex; }
   margin:clamp(2.2rem,5vw,3.2rem) auto 0; max-width:760px; text-align:left;
 }
 @media(min-width:680px){ .gifts{ grid-template-columns:repeat(2,1fr); } }
+@media(min-width:920px){ .gifts{ grid-template-columns:repeat(3,1fr); max-width:1000px; } }
 .gift-card{
   display:flex; flex-direction:column; gap:.7rem;
   padding:clamp(1.4rem,3vw,1.9rem);
