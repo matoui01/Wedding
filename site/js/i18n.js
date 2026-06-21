@@ -27,8 +27,8 @@ const I18N = {
     "venue.over":"Il luogo","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Una villa medicea del Quattrocento sulle colline a sud di Firenze, acquistata da Lorenzo il Magnifico nel 1480 e affrescata negli anni 1630 per il principe Giovan Carlo de' Medici. Dal 1644 è dei Corsini: giardini all'italiana, cipressi e oliveti affacciati sulle colline del Chianti.",
     "venue.quote":"«Le feste del Principe a Mezzomonte superavano in splendore quelle di corte.»",
-    "venue.addr.label":"Indirizzo","venue.addr.value":"Villa Corsini a Mezzomonte, [via e CAP], Impruneta (FI), Italia",
-    "venue.map.cta":"Apri in Google Maps","venue.getting":"A circa 25–30 minuti d'auto dal centro di Firenze.",
+    "venue.addr.label":"Indirizzo","venue.addr.value":"Villa Corsini a Mezzomonte — Via Imprunetana per Pozzolatico 116, 50023 Impruneta (FI), Italia",
+    "venue.map.cta":"Apri in Google Maps","venue.site.cta":"Sito della villa","venue.getting":"A circa 25–30 minuti d'auto dal centro di Firenze.",
 
     "travel.over":"Soggiorno & viaggio","travel.title":"Come arrivare e dove dormire",
     "travel.air.h":"In aereo","travel.air.b":"Firenze (FLR) ~30 min · Pisa (PSA) ~1h20 · Bologna (BLQ) ~1h30.",
@@ -78,8 +78,8 @@ const I18N = {
     "venue.over":"Le lieu","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Une villa médicéenne du XVᵉ siècle sur les collines au sud de Florence, achetée par Laurent le Magnifique en 1480 et ornée de fresques dans les années 1630 pour le prince Giovan Carlo de' Medici. Aux Corsini depuis 1644 : jardins à l'italienne, cyprès et oliveraies dominant les collines du Chianti.",
     "venue.quote":"« Les fêtes du Prince à Mezzomonte surpassaient en splendeur celles de la cour. »",
-    "venue.addr.label":"Adresse","venue.addr.value":"Villa Corsini a Mezzomonte, [rue et code postal], Impruneta (FI), Italie",
-    "venue.map.cta":"Ouvrir dans Google Maps","venue.getting":"À environ 25–30 minutes en voiture du centre de Florence.",
+    "venue.addr.label":"Adresse","venue.addr.value":"Villa Corsini a Mezzomonte — Via Imprunetana per Pozzolatico 116, 50023 Impruneta (FI), Italie",
+    "venue.map.cta":"Ouvrir dans Google Maps","venue.site.cta":"Site de la villa","venue.getting":"À environ 25–30 minutes en voiture du centre de Florence.",
 
     "travel.over":"Séjour & voyage","travel.title":"Venir & se loger",
     "travel.air.h":"En avion","travel.air.b":"Florence (FLR) ~30 min · Pise (PSA) ~1h20 · Bologne (BLQ) ~1h30.",
@@ -129,8 +129,8 @@ const I18N = {
     "venue.over":"The venue","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"A fifteenth-century Medici villa in the hills south of Florence, bought by Lorenzo the Magnificent in 1480 and frescoed in the 1630s for Prince Giovan Carlo de' Medici. Held by the Corsini family since 1644 — formal box gardens, cypress and olive groves looking over the Chianti hills.",
     "venue.quote":"“The Prince's feasts at Mezzomonte outshone in splendour those of the court.”",
-    "venue.addr.label":"Address","venue.addr.value":"Villa Corsini a Mezzomonte, [street & postcode], Impruneta (FI), Italy",
-    "venue.map.cta":"Open in Google Maps","venue.getting":"About 25–30 minutes by car from central Florence.",
+    "venue.addr.label":"Address","venue.addr.value":"Villa Corsini a Mezzomonte — Via Imprunetana per Pozzolatico 116, 50023 Impruneta (FI), Italy",
+    "venue.map.cta":"Open in Google Maps","venue.site.cta":"Villa website","venue.getting":"About 25–30 minutes by car from central Florence.",
 
     "travel.over":"Stay & travel","travel.title":"Getting there & where to stay",
     "travel.air.h":"By air","travel.air.b":"Florence (FLR) ~30 min · Pisa (PSA) ~1h20 · Bologna (BLQ) ~1h30.",
