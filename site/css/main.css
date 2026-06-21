@@ -224,6 +224,31 @@ h1,h2,h3{ font-weight:500; margin:0; }
 .rsvp-form__status{ font-family:var(--f-ui); font-size:.92rem; margin:.3rem 0 0; }
 .rsvp-form__status.is-ok{ color:var(--salvia-deep); }
 .rsvp-form__status.is-err{ color:var(--terracotta-d); }
+.rsvp-coming{ display:grid; gap:1.1rem; }
+.rsvp-coming[hidden]{ display:none; }
+.rsvp-field[hidden]{ display:none; }
+.rsvp-note{ font-size:.82rem; color:var(--muted); margin:.55rem 0 0; line-height:1.45; }
+
+/* RSVP modal */
+.modal[hidden]{ display:none; }
+.modal{
+  position:fixed; inset:0; z-index:60; display:flex; align-items:flex-start; justify-content:center;
+  padding:clamp(1rem,4vw,2.5rem); overflow-y:auto;
+}
+.modal__backdrop{ position:fixed; inset:0; background:rgba(26,23,16,.55); backdrop-filter:blur(3px); }
+.modal__panel{
+  position:relative; z-index:1; width:min(100%,560px); margin:auto; text-align:left;
+  background:var(--panna); border:1px solid var(--line-gold); border-radius:var(--radius);
+  padding:clamp(1.6rem,5vw,2.6rem); box-shadow:0 24px 60px rgba(26,23,16,.32);
+}
+.modal__panel .eyebrow{ margin-bottom:.5rem; }
+.modal__panel .title{ font-size:clamp(1.7rem,4vw,2.4rem); margin:0 0 .4rem; }
+.rsvp-modal__by{ color:var(--muted); font-size:1rem; margin:0 0 1.2rem; }
+.modal__close{
+  position:absolute; top:.5rem; right:.7rem; background:none; border:0;
+  font-size:2rem; line-height:1; color:var(--muted); cursor:pointer; padding:.1rem .4rem;
+}
+.modal__close:hover{ color:var(--ink); }
 
 /* ---- Footer -------------------------------------------------------------- */
 .footer{ background:var(--panna-2); text-align:center; padding:var(--section-y) var(--pad); }
