@@ -258,9 +258,9 @@ html.locked #gate{ display:flex; }
 /* ---- Gifts -------------------------------------------------------------- */
 .gifts{
   display:grid; grid-template-columns:1fr; gap:clamp(1rem,3vw,1.6rem);
-  margin-top:clamp(2.2rem,5vw,3.2rem); text-align:left;
+  margin:clamp(2.2rem,5vw,3.2rem) auto 0; max-width:760px; text-align:left;
 }
-@media(min-width:760px){ .gifts{ grid-template-columns:repeat(3,1fr); } }
+@media(min-width:680px){ .gifts{ grid-template-columns:repeat(2,1fr); } }
 .gift-card{
   display:flex; flex-direction:column; gap:.7rem;
   padding:clamp(1.4rem,3vw,1.9rem);
@@ -289,8 +289,18 @@ html.locked #gate{ display:flex; }
 .copy{
   font-family:var(--f-body); font-size:1rem; color:var(--ink); text-align:left;
   background:transparent; border:0; border-bottom:1px dashed var(--salvia);
-  padding:.05rem .1rem; cursor:pointer; white-space:normal; word-break:break-word;
+  padding:.05rem .1rem; cursor:pointer; white-space:normal; overflow-wrap:break-word;
   transition:color .2s var(--ease), border-color .2s var(--ease);
 }
 .copy:hover{ color:var(--salvia-deep); }
 .copy.is-copied{ color:var(--oliva); border-bottom-color:transparent; }
+
+.epc-qr{ margin:.3rem auto 0; max-width:170px; text-align:center; }
+.epc-qr img{
+  width:100%; height:auto; background:var(--panna);
+  border:1px solid var(--line); border-radius:var(--radius);
+}
+.epc-qr .cap{ display:block; margin-top:.45rem; }
+.gift-bank{ font-size:.82rem; line-height:1.5; color:var(--muted); margin:.2rem 0 0; }
+.gift-bank span[data-i18n]{ color:var(--salvia-deep); }
+.gift-note{ font-size:.9rem; line-height:1.45; color:var(--terracotta-d); margin:.2rem 0 0; }
