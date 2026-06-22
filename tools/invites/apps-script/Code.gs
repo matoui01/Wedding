@@ -211,7 +211,7 @@ function buildEmail_(g){
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:100%;background:${T.panna};border-radius:3px;">
 
     <tr><td align="center" style="padding:40px 0 0;">
-      <img src="${I}${CFG.IMG_CREST}" width="118" height="129" alt="Ilaria & Maxime" style="display:block;border:0;width:118px;height:auto;">
+      <img src="${I}${CFG.IMG_CREST}" width="120" height="138" alt="Ilaria & Maxime" style="display:block;border:0;width:120px;height:auto;">
     </td></tr>
 
     <tr><td align="center" class="px" style="padding:22px 40px 0;font-family:${T.fUi};font-size:11px;letter-spacing:5px;color:${T.salviaDeep};text-transform:uppercase;">${c.over}</td></tr>
