@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ilaria &amp; Maxime — Email invite preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Pinyon+Script&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --panna:#FAF6EC; --panna-2:#F2EBD9; --salvia:#93A586; --salvia-deep:#6E7B5B;
+    --oliva:#5E6B47; --terracotta:#C47A54; --oro:#B08D4F; --oro-l:#CBA968;
+    --ink:#3D352A; --muted:#897C68; --line:rgba(61,53,42,.16); --line-gold:rgba(176,141,79,.40);
+    --f-script:'Pinyon Script',cursive; --f-display:'Cormorant Garamond',Georgia,serif;
+    --f-body:'EB Garamond',Georgia,serif; --f-ui:'Jost',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#e6ddcc;color:var(--ink);font-family:var(--f-body);
+       -webkit-font-smoothing:antialiased;}
+
+  /* ---------- control panel (the tool, not the email) ---------- */
+  .panel{position:sticky;top:0;z-index:5;background:#1f1c17;color:#efe9dc;
+         border-bottom:1px solid rgba(255,255,255,.08);padding:.7rem 1rem;}
+  .panel .row{max-width:680px;margin:0 auto;display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;}
+  .panel .ttl{font-family:var(--f-ui);font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+              font-size:.62rem;color:#c9bfa9;margin-right:auto;}
+  .langs{display:inline-flex;border:1px solid rgba(255,255,255,.2);border-radius:999px;overflow:hidden}
+  .langs button{font-family:var(--f-ui);font-size:.72rem;letter-spacing:.1em;padding:.32rem .7rem;
+                background:transparent;color:#cfc6b2;border:0;cursor:pointer}
+  .langs button.on{background:var(--salvia);color:#22281c}
+  .ctl{display:flex;flex-direction:column;gap:.18rem}
+  .ctl label{font-family:var(--f-ui);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#a99f8a}
+  .ctl input[type=text],.ctl textarea{font-family:var(--f-body);font-size:.85rem;background:#2b2722;
+        color:#efe9dc;border:1px solid rgba(255,255,255,.16);border-radius:6px;padding:.35rem .5rem;min-width:200px}
+  .ctl textarea{resize:vertical;min-height:38px;width:280px;max-width:60vw}
+  .checks{display:flex;gap:1rem;align-items:center}
+  .checks label{display:inline-flex;gap:.35rem;align-items:center;font-family:var(--f-ui);font-size:.68rem;
+                letter-spacing:.04em;text-transform:none;color:#d8cfba;cursor:pointer}
+  .hint{max-width:680px;margin:.45rem auto 0;font-family:var(--f-ui);font-size:.62rem;color:#8d836f;letter-spacing:.02em}
+
+  /* ---------- the email canvas ---------- */
+  .stage{padding:30px 16px 64px;display:flex;justify-content:center}
+  .email{width:600px;max-width:100%;background:var(--panna);
+         box-shadow:0 22px 60px -28px rgba(40,34,24,.55), 0 2px 0 rgba(176,141,79,.18);
+         border-radius:3px;overflow:hidden}
+  .pad{padding:0 clamp(22px,7vw,52px)}
+
+  .crest{display:block;width:118px;height:auto;margin:40px auto 0}
+  .over{font-family:var(--f-ui);font-weight:400;text-align:center;color:var(--salvia-deep);
+        letter-spacing:.34em;text-transform:uppercase;font-size:.6rem;margin:22px 0 0}
+  .names{font-family:var(--f-script);text-align:center;color:var(--ink);line-height:.9;
+         font-size:clamp(56px,15vw,82px);margin:6px 0 0;font-weight:400}
+  .names .amp{color:var(--terracotta);padding:0 .06em}
+  .tag{font-family:var(--f-display);font-style:italic;text-align:center;color:var(--muted);
+       font-size:1.35rem;margin:4px 0 0}
+  .date{font-family:var(--f-ui);text-align:center;color:var(--ink);letter-spacing:.22em;
+        text-transform:uppercase;font-size:.72rem;margin:14px 0 0}
+  .hero{display:block;width:100%;height:auto;margin:26px 0 0}
+
+  .greet{font-family:var(--f-display);font-size:1.5rem;color:var(--ink);margin:30px 0 0}
+  .body{font-family:var(--f-body);font-size:1.06rem;line-height:1.62;color:var(--ink);margin:14px 0 0}
+
+  .note{position:relative;margin:24px 0 0;padding:18px 22px;background:rgba(147,165,134,.12);
+        border-left:2px solid var(--salvia);border-radius:2px}
+  .note p{margin:0;font-family:var(--f-body);font-style:italic;font-size:1.05rem;line-height:1.55;color:var(--ink)}
+
+  .facts{width:100%;border-collapse:collapse;margin:30px 0 0}
+  .facts tr+tr td{border-top:1px solid var(--line)}
+  .facts .k{font-family:var(--f-ui);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
+            color:var(--salvia-deep);padding:12px 14px 12px 0;white-space:nowrap;vertical-align:middle;width:1%}
+  .facts .v{font-family:var(--f-body);font-size:1.02rem;color:var(--ink);padding:12px 0;text-align:right;vertical-align:middle}
+
+  .plus{font-family:var(--f-display);font-style:italic;text-align:center;color:var(--salvia-deep);
+        font-size:1.12rem;margin:24px 0 0}
+
+  .sprig{display:block;width:26px;height:auto;margin:34px auto;opacity:.9}
+
+  .siteLead{font-family:var(--f-body);font-size:1.02rem;line-height:1.55;text-align:center;color:var(--ink);margin:0}
+  .pw{margin:18px auto 0;max-width:300px;border:1px solid var(--line-gold);border-radius:3px;
+      padding:12px 16px;text-align:center;background:var(--panna-2)}
+  .pw .pwk{font-family:var(--f-ui);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .pw .pwv{font-family:var(--f-ui);font-weight:500;font-size:1.25rem;letter-spacing:.28em;color:var(--ink);margin-top:3px}
+  .cta{display:block;width:max-content;max-width:100%;margin:22px auto 0;background:var(--salvia);
+       color:#fbf8ef;text-decoration:none;font-family:var(--f-ui);letter-spacing:.14em;text-transform:uppercase;
+       font-size:.74rem;padding:15px 34px;border-radius:2px}
+  .by{font-family:var(--f-ui);text-align:center;color:var(--muted);font-size:.68rem;letter-spacing:.06em;margin:14px 0 0}
+
+  .close{font-family:var(--f-display);font-style:italic;text-align:center;color:var(--ink);font-size:1.25rem;margin:34px 0 0}
+  .sign{font-family:var(--f-script);text-align:center;color:var(--ink);font-size:2.1rem;margin:2px 0 0}
+
+  .foot{margin:38px 0 0;border-top:1px solid var(--line);padding:20px 0 42px;text-align:center}
+  .foot .fl{font-family:var(--f-ui);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .foot .fc{font-family:var(--f-body);font-size:.86rem;color:var(--muted);margin-top:7px}
+  .foot .fc a{color:var(--salvia-deep)}
+</style>
+</head>
+<body>
+
+<!-- inline brand marks (gold gradient) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#9c7a3e"/><stop offset=".5" stop-color="#d8bd7e"/><stop offset="1" stop-color="#a8863f"/>
+  </linearGradient>
+  <symbol id="crest" viewBox="0 0 220 240">
+    <ellipse cx="110" cy="120" rx="78" ry="94" fill="none" stroke="url(#goldGrad)" stroke-width="1.6"/>
+    <ellipse cx="110" cy="120" rx="72" ry="88" fill="none" stroke="url(#goldGrad)" stroke-width="0.8" opacity="0.7"/>
+    <path d="M86 36 Q110 16 134 36" stroke="url(#goldGrad)" stroke-width="1.4" fill="none"/><circle cx="110" cy="22" r="3" fill="url(#goldGrad)"/>
+    <path d="M70 206 Q110 226 150 206" stroke="url(#goldGrad)" stroke-width="1.2" fill="none"/>
+    <path d="M30 120 q8 -22 20 -10 q-14 4 -8 20 q-10 -2 -12 -10" fill="url(#goldGrad)" opacity="0.85"/>
+    <path d="M190 120 q-8 -22 -20 -10 q14 4 8 20 q10 -2 12 -10" fill="url(#goldGrad)" opacity="0.85"/>
+    <text x="110" y="138" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-weight="600" font-size="74" fill="url(#goldGrad)">I</text>
+    <text x="110" y="172" text-anchor="middle" font-family="'Pinyon Script',cursive" font-size="30" fill="#c47a54">&amp;</text>
+    <text x="110" y="200" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-weight="600" font-size="44" fill="url(#goldGrad)">M</text>
+    <text x="110" y="226" text-anchor="middle" font-family="'Jost',sans-serif" font-size="8.5" letter-spacing="3" fill="url(#goldGrad)">MMXXVII</text>
+  </symbol>
+  <symbol id="sprig" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.1">
+    <path d="M20 34 Q20 18 20 8"/><path d="M20 26 Q12 22 8 14 M20 26 Q28 22 32 14"/><path d="M20 18 Q13 15 10 9 M20 18 Q27 15 30 9"/></g></symbol>
+</defs></svg>
+
+<!-- ============ control panel ============ -->
+<div class="panel">
+  <div class="row">
+    <span class="ttl">Email invite · preview</span>
+    <div class="langs" id="langs">
+      <button data-l="it" class="on">IT</button><button data-l="fr">FR</button><button data-l="en">EN</button>
+    </div>
+    <div class="ctl"><label>Greeting</label><input id="greet" type="text"></div>
+    <div class="ctl"><label>Personal note (optional)</label><textarea id="note"></textarea></div>
+    <div class="checks">
+      <label><input type="checkbox" id="showNote" checked> note</label>
+      <label><input type="checkbox" id="plusOne"> plus-one</label>
+    </div>
+  </div>
+  <div class="hint">This is a live mock-up to judge the design. The real emails are generated per guest from your sheet (greeting, note and plus-one come from the row). Names render in Pinyon Script here; some email apps fall back to an elegant serif.</div>
+</div>
+
+<!-- ============ the email ============ -->
+<div class="stage">
+  <div class="email">
+    <svg class="crest"><use href="#crest"></use></svg>
+    <p class="over" id="f-over"></p>
+    <h1 class="names"><span>Ilaria</span><span class="amp">&amp;</span><span>Maxime</span></h1>
+    <p class="tag" id="f-tag"></p>
+    <p class="date" id="f-date"></p>
+
+    <img class="hero" src="https://matoui01.github.io/Wedding/assets/img/estate-cut.png" alt="Villa Corsini a Mezzomonte">
+
+    <div class="pad">
+      <p class="greet" id="f-greet"></p>
+      <p class="body" id="f-body"></p>
+
+      <div class="note" id="f-noteWrap"><p id="f-note"></p></div>
+
+      <table class="facts">
+        <tr><td class="k" id="f-kDay"></td><td class="v" id="f-vDay"></td></tr>
+        <tr><td class="k" id="f-kWhere"></td><td class="v" id="f-vWhere"></td></tr>
+        <tr><td class="k" id="f-kDress"></td><td class="v" id="f-vDress"></td></tr>
+      </table>
+
+      <p class="plus" id="f-plus"></p>
+
+      <svg class="sprig" style="color:var(--salvia)"><use href="#sprig"></use></svg>
+
+      <p class="siteLead" id="f-siteLead"></p>
+      <div class="pw"><div class="pwk" id="f-pwk"></div><div class="pwv" id="f-pwv">XXXXXX</div></div>
+      <a class="cta" id="f-cta" href="https://matoui01.github.io/Wedding/"></a>
+      <p class="by" id="f-by"></p>
+
+      <p class="close" id="f-close"></p>
+      <p class="sign">Ilaria &amp; Maxime</p>
+    </div>
+
+    <div class="foot">
+      <div class="fl" id="f-fl"></div>
+      <div class="fc" id="f-fc"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* sample placeholders — set the real RSVP date + password in the Apps Script config */
+const SAMPLE_PW = "FIRENZE27";
+const RSVP_DATE = { it:"30 aprile 2027", fr:"30 avril 2027", en:"30 April 2027" };
+
+const COPY = {
+  it:{
+    over:"VILLA CORSINI A MEZZOMONTE · FIRENZE",
+    tag:"Ci sposiamo", date:"Venerdì 23 luglio 2027",
+    greet:"Cari Marco e Giulia,",
+    body:"Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.",
+    note:"Non vediamo l'ora di festeggiare con voi — non sarebbe lo stesso senza di voi.",
+    kDay:"Il giorno", vDay:"Venerdì 23 luglio 2027",
+    kWhere:"Dove", vWhere:"Villa Corsini a Mezzomonte · Impruneta, Firenze",
+    kDress:"Dress code", vDress:"Cocktail elegante",
+    plus:"Saremo felici di accogliere anche il vostro accompagnatore.",
+    siteLead:"Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.",
+    pwk:"Password del sito", cta:"Apri il sito e rispondi",
+    by:d=>`Vi preghiamo di confermare entro il ${d}.`,
+    close:"A presto,",
+    fl:"Ilaria & Maxime · 23 luglio 2027 · Villa Corsini a Mezzomonte",
+    fc:`Domande? <a href="mailto:maxime.ilaria@gmail.com">maxime.ilaria@gmail.com</a>`
+  },
+  fr:{
+    over:"VILLA CORSINI A MEZZOMONTE · FLORENCE",
+    tag:"Nous nous marions", date:"Vendredi 23 juillet 2027",
+    greet:"Chère famille Dupont,",
+    body:"Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.",
+    note:"Nous serions si heureux de vous compter parmi nous — ce ne serait pas pareil sans vous.",
+    kDay:"Le jour", vDay:"Vendredi 23 juillet 2027",
+    kWhere:"Lieu", vWhere:"Villa Corsini a Mezzomonte · Impruneta, Florence",
+    kDress:"Tenue", vDress:"Cocktail élégant",
+    plus:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
+    siteLead:"Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.",
+    pwk:"Mot de passe du site", cta:"Ouvrir le site & répondre",
+    by:d=>`Merci de confirmer avant le ${d}.`,
+    close:"À très bientôt,",
+    fl:"Ilaria & Maxime · 23 juillet 2027 · Villa Corsini a Mezzomonte",
+    fc:`Questions ? <a href="mailto:maxime.ilaria@gmail.com">maxime.ilaria@gmail.com</a>`
+  },
+  en:{
+    over:"VILLA CORSINI A MEZZOMONTE · FLORENCE",
+    tag:"We're getting married", date:"Friday · 23 July 2027",
+    greet:"Dear Sophie & James,",
+    body:"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
+    note:"It wouldn't be the same without you there — we can't wait to celebrate with you.",
+    kDay:"The day", vDay:"Friday 23 July 2027",
+    kWhere:"Where", vWhere:"Villa Corsini a Mezzomonte · Impruneta, Florence",
+    kDress:"Dress code", vDress:"Elegant cocktail",
+    plus:"You're warmly invited to bring a plus-one.",
+    siteLead:"The programme, travel, gifts and your RSVP all live on our site.",
+    pwk:"Site password", cta:"Open the site & RSVP",
+    by:d=>`Kindly reply by ${d}.`,
+    close:"See you soon,",
+    fl:"Ilaria & Maxime · 23 July 2027 · Villa Corsini a Mezzomonte",
+    fc:`Questions? <a href="mailto:maxime.ilaria@gmail.com">maxime.ilaria@gmail.com</a>`
+  }
+};
+
+let lang = "it";
+let userEditedGreet = false, userEditedNote = false;
+const $ = id => document.getElementById(id);
+
+function render(){
+  const c = COPY[lang];
+  $("f-over").textContent = c.over;
+  $("f-tag").textContent = c.tag;
+  $("f-date").textContent = c.date;
+  if(!userEditedGreet) $("greet").value = c.greet;
+  if(!userEditedNote)  $("note").value  = c.note;
+  $("f-greet").textContent = $("greet").value;
+  $("f-body").textContent = c.body;
+  $("f-note").textContent = $("note").value;
+  $("f-kDay").textContent = c.kDay;   $("f-vDay").textContent = c.vDay;
+  $("f-kWhere").textContent = c.kWhere; $("f-vWhere").textContent = c.vWhere;
+  $("f-kDress").textContent = c.kDress; $("f-vDress").textContent = c.vDress;
+  $("f-plus").textContent = c.plus;
+  $("f-siteLead").textContent = c.siteLead;
+  $("f-pwk").textContent = c.pwk;
+  $("f-pwv").textContent = SAMPLE_PW;
+  $("f-cta").textContent = c.cta;
+  $("f-by").textContent = c.by(RSVP_DATE[lang]);
+  $("f-close").textContent = c.close;
+  $("f-fl").textContent = c.fl;
+  $("f-fc").innerHTML = c.fc;
+  $("f-noteWrap").style.display = $("showNote").checked && $("note").value.trim() ? "" : "none";
+  $("f-plus").style.display = $("plusOne").checked ? "" : "none";
+}
+
+document.querySelectorAll("#langs button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll("#langs button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); lang = b.dataset.l; render();
+  });
+});
+$("greet").addEventListener("input", ()=>{ userEditedGreet = true; render(); });
+$("note").addEventListener("input", ()=>{ userEditedNote = true; render(); });
+$("showNote").addEventListener("change", render);
+$("plusOne").addEventListener("change", render);
+render();
+</script>
+</body>
+</html>
