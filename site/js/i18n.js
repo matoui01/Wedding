@@ -13,6 +13,7 @@ const I18N = {
 
     "hero.over":"VILLA CORSINI A MEZZOMONTE · FIRENZE",
     "hero.tagline":"Ci sposiamo","hero.date":"Venerdì 23 luglio 2027","hero.place":"Firenze · Italia","hero.scroll":"Scorri",
+    "cd.label":"Al gran giorno","cd.days":"giorni","cd.hours":"ore","cd.mins":"min","cd.secs":"sec",
 
     "welcome.over":"Benvenuti","welcome.title":"Insieme, in Toscana",
     "welcome.body":"Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.",
@@ -65,6 +66,7 @@ const I18N = {
 
     "hero.over":"VILLA CORSINI A MEZZOMONTE · FLORENCE",
     "hero.tagline":"Nous nous marions","hero.date":"Vendredi 23 juillet 2027","hero.place":"Florence · Italie","hero.scroll":"Défiler",
+    "cd.label":"Avant le grand jour","cd.days":"jours","cd.hours":"heures","cd.mins":"min","cd.secs":"sec",
 
     "welcome.over":"Bienvenue","welcome.title":"Tous ensemble, en Toscane",
     "welcome.body":"Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.",
@@ -117,6 +119,7 @@ const I18N = {
 
     "hero.over":"VILLA CORSINI A MEZZOMONTE · FLORENCE",
     "hero.tagline":"We're getting married","hero.date":"Friday, 23 July 2027","hero.place":"Florence · Italy","hero.scroll":"Scroll",
+    "cd.label":"Until the big day","cd.days":"days","cd.hours":"hours","cd.mins":"min","cd.secs":"sec",
 
     "welcome.over":"Welcome","welcome.title":"Together, in Tuscany",
     "welcome.body":"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",

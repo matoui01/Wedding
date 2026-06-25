@@ -42,6 +42,34 @@ window.swapRsvp = function(lang){
   }
 };
 
+/* ---- Countdown to the wedding ------------------------------------------- *
+ * Ticks down to the ceremony: 23 July 2027, 16:00 Italy time (CEST = UTC+2). */
+function initCountdown(){
+  const el = document.getElementById('countdown');
+  if(!el) return;
+  const target = new Date('2027-07-23T16:00:00+02:00').getTime();
+  const out = {
+    days:  el.querySelector('[data-cd="days"]'),
+    hours: el.querySelector('[data-cd="hours"]'),
+    mins:  el.querySelector('[data-cd="mins"]'),
+    secs:  el.querySelector('[data-cd="secs"]')
+  };
+  const pad = (n)=> String(n).padStart(2,'0');
+  function tick(){
+    let diff = Math.max(0, target - Date.now());
+    const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+    const h = Math.floor(diff / 3600000);  diff -= h * 3600000;
+    const m = Math.floor(diff / 60000);     diff -= m * 60000;
+    const s = Math.floor(diff / 1000);
+    out.days.textContent  = d;
+    out.hours.textContent = pad(h);
+    out.mins.textContent  = pad(m);
+    out.secs.textContent  = pad(s);
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
 /* ---- RSVP form → Google Sheet ------------------------------------------- *
  * Posts each reply as a row to a Google Apps Script web app (which appends it
  * to the couple's own Sheet). Paste the deployed /exec URL below to switch it
@@ -188,6 +216,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.querySelectorAll('.lang-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
   });
+
+  /* countdown */
+  initCountdown();
 
   /* RSVP form + modal */
   initRsvpForm();
