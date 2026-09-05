@@ -31,7 +31,13 @@ cd site && python3 -m http.server 8000   # → http://localhost:8000
 
 A workflow publishes `site/` to Pages on every push to `main` (and the dev branch).
 **One-time setup:** repo **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-Live URL: `https://matoui01.github.io/Wedding/`.
+Live URL: `https://ilariaemaxime.com/` (custom domain, set via `site/CNAME`).
+The `https://matoui01.github.io/Wedding/` address redirects to it.
+
+> The domain is registered for one year and expires **5 Sept 2027**. Before it
+> lapses, remove the custom domain in **Settings → Pages** and delete
+> `site/CNAME` — otherwise both addresses break. The site then serves from
+> `https://matoui01.github.io/Wedding/` indefinitely.
 
 ## Languages
 
