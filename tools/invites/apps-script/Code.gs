@@ -996,7 +996,7 @@ const CARD = {
   SITE:  { font: 'EB Garamond', face: 'ebg', size: 16, lh: 1.62, natural: 1.27, gap: 26, center: true },
   SPRIG: { gap: 22, w: 20, h: 20 },
   THUMB: 'LARGE',                                    // the fallback export
-  MAX_MB: 12                                         // above this the picture is compressed
+  MAX_MB: 1.2                                        // above this a slice is sent as JPEG
 };
 
 /* Where everything goes, in pt, for this guest's words. Line counts are
@@ -1311,12 +1311,16 @@ function exportPage_(id, pageId, i, n, page){
       { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
     return (res.getResponseCode() === 200 && res.getBlob().getBytes().length > 5000) ? res.getBlob() : null;
   };
+  /* PNG where it is small — flat cream and script stay perfectly clean — and
+     Google's own JPEG where it is not, which is the watercolour and the
+     letter beneath it. Eight megabytes of PNG is not a kindness to someone
+     opening this on a phone. */
   let img = null;
   try { img = fetchExport('png'); } catch(_){}
-  if(img && img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
+  if(!img || img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
     let jpg = null;
     try { jpg = fetchExport('jpeg'); } catch(_){}
-    img = jpg || img.getAs('image/jpeg');
+    if(jpg && (!img || jpg.getBytes().length < img.getBytes().length)) img = jpg;
   }
   if(!img){
     const thumb = Slides.Presentations.Pages.getThumbnail(id, pageId, {
@@ -1726,6 +1730,7 @@ function json_(o){
    on, the pixels, the weight — and, on failure, the line that failed. */
 function probeDraw_(params){
   const started = Date.now();
+  let out_files = null;
   try {
     const ctx = readGuests_();
     if(!ctx.data.length) return { ok: false, error: 'no guest rows' };
@@ -1742,8 +1747,17 @@ function probeDraw_(params){
     g.token = String(cell_(ctx, i, 'token') || '').trim() || 'preview';
     g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
     const blob = mailBlobs_(g);
+    if(params.save){
+      // left in the Drive on purpose, so the drawing can be looked at rather
+      // than described; "Clean up leftover scratch files" removes them
+      out_files = blob.map((b, k) => {
+        const f = DriveApp.createFile(b.setName(CFG.SCRATCH + ' ' + (k + 1) +
+          (b.getContentType() === 'image/png' ? '.png' : '.jpg')));
+        return { id: f.getId(), kb: Math.round(b.getBytes().length / 1024) };
+      });
+    }
     const out = { ok: true, row: i + 2, lang: g.lang, greeting: greetingOf_(g),
-                  info: LAST_DRAW, ms: Date.now() - started };
+                  info: LAST_DRAW, files: out_files, ms: Date.now() - started };
     if(params.mailto){
       const imgs = {};
       blob.forEach((b, i) => { imgs['mail' + (i + 1)] = b; });
