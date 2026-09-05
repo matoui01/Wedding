@@ -1,8 +1,7 @@
-# Wedding HQ — the guest list, the invites, the replies
+# Wedding HQ
 
-One Google Sheet runs the whole thing. You fill in guests; the sheet emails
-them; their answers come back onto their own row. Nothing is sent without you
-reading it first.
+One Google Sheet runs the guest list. It drafts the invitations, and the
+replies come back onto each guest's own row.
 
 ```
 Guests sheet ──▶ Gmail drafts ──▶ you press Send ──▶ guest clicks their link
@@ -10,73 +9,59 @@ Guests sheet ──▶ Gmail drafts ──▶ you press Send ──▶ guest cli
      └──────────── answer written back onto their row ◀────────┘
 ```
 
+Nothing is ever sent without you reading it first.
+
 ---
 
-## Setting it up (once, ~15 minutes)
+## Finish the setup
 
-Do all of this signed in as the wedding account — drafts appear wherever the
-script runs.
+Five steps. Everything else is already built and deployed.
 
-1. **Create a blank Google Sheet.** Name it *Wedding HQ*.
-2. **Extensions ▸ Apps Script.** Delete the sample file, paste in
-   `apps-script/Code.gs`, and save. (In Project Settings, show
-   `appsscript.json` and paste that too — it sets the Rome timezone and the
-   permissions.)
-3. Back on the sheet, reload the tab. A **💌 Wedding HQ** menu appears.
-   Run **Set up / repair the workbook**. Approve the permission prompt.
-   The script builds all four tabs, with dropdowns, colours and formulas.
-4. **Set the site password** as a script property — see below.
-5. **Import the guest list**: File ▸ Import ▸ Upload `sheet/guests-seed.csv`
-   ▸ *Replace data at selected cell*, with `A1` of **Guests** selected.
-6. **Deploy for RSVPs**: Deploy ▸ New deployment ▸ Web app ·
-   Execute as **Me** · Who has access **Anyone**. Copy the `/exec` URL into
-   `RSVP_ENDPOINT` in `site/js/main.js`, commit, push.
-7. Run **Send a test to me** and check the email in Gmail on a phone.
+**1 · Put the cards in Drive.** Unzip the invitation cards into a Drive folder
+named exactly **`Wedding cards`** — one file per guest, `card-<token>.jpg`.
+The script reads them from there with the access it already has, so they are
+never published anywhere and no guest's card is reachable by anyone else.
 
-### The site password
+**2 · Install the script.** Open the sheet ▸ **Extensions ▸ Apps Script**.
+Replace the file with `apps-script/Code.gs`, and paste `appsscript.json` under
+Project Settings (show manifest first). Save.
 
-It is **not** in `Code.gs`, and must not be: this repository is public, and the
-site itself only stores a SHA-256 hash so the password cannot be read out of
-it. Writing it into the script in clear would undo that.
+**3 · Set the password.** Project Settings ▸ **Script properties** ▸ add
+`SITE_PASSWORD` = the site password. It is not written down in this
+repository, which is public.
 
-Set it once in Apps Script — **Project Settings ▸ Script properties ▸ Add
-script property**:
+**4 · Publish the RSVP endpoint.** Deploy ▸ New deployment ▸ **Web app**,
+Execute as **Me**, access **Anyone**. Copy the `/exec` URL into
+`RSVP_ENDPOINT` at the top of `site/js/main.js`, then commit and push.
 
-| Property | Value |
-|---|---|
-| `SITE_PASSWORD` | the site password |
+**5 · Fill in the email addresses.** The one thing no script can do. A row
+without an email turns red and is never drafted, and the Dashboard counts how
+many are still missing.
 
-The value is deliberately not written down here. This repository is public.
-
-Everything else in `CFG` is already correct. `RSVP_BY` is only a fallback; the
-real dates live on the **Deadlines** tab.
-
-> `SITE_URL` and `IMG_BASE` point at **`https://ilariaemaxime.com/`**, not the
-> `matoui01.github.io` address — that one 301-redirects to plain `http://`, and
-> Gmail's image proxy will not follow https → http, so every image in the email
-> comes through blank. If the domain ever changes, change it in both keys.
+Then reload the sheet — a **💌 Wedding HQ** menu appears — and run
+**Send a test to me**.
 
 ---
 
 ## The tabs
 
-**Guests** — one row per invitation. You own columns **A–P**; the script writes
+**Guests** — one row per invitation. You own **A–P**; the script writes
 **Q–AD** and tints them so it is obvious which is which.
 
 | | |
 |---|---|
 | `Household` / `Invitee` | who the email is addressed to |
-| `Plus-one` + `Plus-one name` | leave the name blank and the invite says "and guest" rather than naming a placeholder |
-| `Kids?` / `Kids est.` | your own guess, for planning — parents confirm the real number on the RSVP |
+| `Plus-one` + `Plus-one name` | leave the name blank and the invitation says "and guest" rather than naming a placeholder |
+| `Kids?` / `Kids est.` | your own guess, for planning — parents confirm the real number when they reply |
 | `Category` / `Subcategory` / `Side` | the broad band, the circle inside it, and whose guest they are |
 | `Priority` | 1 · 2 · 3 |
 | `Send?` | **Send** · **Hold** · **Cut** — how the list gets down to the target |
 | `Wave` | which batch they go out in |
-| `Email` | the only thing the script cannot do for you. A row without one is never drafted, and shows red |
+| `Greeting` | optional. Whatever you type here wins over the one the card was rendered with |
 
-**Deadlines** — one row per category, and the date it is asked to reply by.
-Each guest's own date goes into their own email, in their own language.
-The `(default)` row covers anyone uncategorised.
+**Deadlines** — one row per category and the date it is asked to reply by.
+Each guest's own date goes into their own email, in their own language. The
+`(default)` row covers anyone uncategorised.
 
 **RSVP** — every reply, appended, never edited. The audit trail when someone
 answers twice.
@@ -84,7 +69,7 @@ answers twice.
 **Dashboard** — the headline is **Room left to offer**: your target, minus who
 has said yes, minus the seats still out with people who have not answered.
 Plus breakdowns by category, subcategory, side and priority, and three working
-lists: who to promote off Hold, who has not replied, and every dietary note.
+lists — who to promote off Hold, who has not replied, and every dietary note.
 
 ---
 
@@ -96,35 +81,48 @@ Everything creates **drafts**. You read them in Gmail and press Send yourself.
 |---|---|
 | Generate missing invite links | gives each guest a private token and builds their link |
 | Create drafts — selected rows | just the rows you highlighted |
-| Create drafts — filtered rows | everything the current filter is showing — this is the per-category send |
+| Create drafts — filtered rows | everything the current filter shows — this is the per-category send |
 | Create drafts — a whole wave… | asks for a wave number and sends that batch |
 | Create reminder drafts | only guests already past *their own* deadline |
 
-`Hold` and `Cut` rows are skipped by all of them.
+`Hold` and `Cut` rows are skipped by all of them. So is any row whose card is
+missing from Drive — the menu says how many, rather than sending a hollow
+invitation.
 
 ### Working down to the target
 
 1. Set `Send?` to `Hold` for anyone beyond the target, worst priority first.
    Nobody is deleted — held rows keep their history.
 2. Send wave 1. Wait.
-3. As declines arrive, **Room left to offer** goes up. **Next to promote** on
-   the dashboard already lists who is on hold, best priority first.
+3. As declines arrive, **Room left to offer** goes up, and **Next to promote**
+   already lists who is on hold, best priority first.
 4. Flip those rows to `Send`, give them the next wave number, send again.
 
 ---
 
-## Reviewing the email design
+## The invitation card
+
+Gmail, Outlook and Yahoo all strip web fonts before rendering, so the design
+could never survive as live text — Pinyon Script and EB Garamond would fall
+back to whatever the device had. The invitation is therefore **an image of the
+invitation**, drawn in a headless browser with the real fonts, which is how
+every stationery service solves the same problem. Everything a guest has to
+*act* on stays live text below it: the password to read, the link to press,
+the date to remember.
 
 ```bash
-python3 tools/invites/preview/build-preview.py     # regenerates the proof sheet
-open tools/invites/preview/invite-preview.html
+# after tokens exist in the sheet, export the Guests tab as CSV, then:
+node tools/invites/assets/render-cards.js path/to/guests.csv
 ```
 
-The proof sheet lifts the template straight out of `Code.gs`, so it always
-shows what Gmail will actually send. Switch language, invitation vs reminder,
-plus-one, personal note and category deadline, and check the plain-text version
-that reaches anyone with images turned off. **Edit the email in `Code.gs`**,
-then re-run the generator — never edit the generated HTML.
+One card per guest, into `tools/invites/assets/cards-out/` — upload them to
+the Drive folder. The run lists every greeting where it had to guess a gender
+from the name; correct any of those in that guest's `Greeting` cell and
+re-render just them.
+
+The card design is plain CSS in `assets/render-card.js`. The email around it
+is `apps-script/Code.gs`; `preview/build-preview.py` regenerates a proof sheet
+straight from that file, so the preview can never drift from what is sent.
 
 ## Re-importing the source spreadsheet
 
@@ -135,3 +133,7 @@ python3 tools/invites/sheet/migrate-xlsx.py Wedding_invitee.xlsx
 Splits the old single `Category` column into Category + Subcategory + Side,
 separates plus-one names from placeholders, guesses a language per circle, and
 drops the pivot tables and scratch columns.
+
+> **No guest data lives in this repository.** It is public. Both guest CSVs are
+> ignored, the cards are ignored, and the password is a script property. Keep
+> it that way.
