@@ -37,6 +37,12 @@
    ========================================================================== */
 
 /* ----------------------------- CONFIG ------------------------------------ */
+/* Which build of this file is running. The menu runs the file as saved; the
+   website and the probe run the last *deployed* version, which is a separate
+   thing — so when a fix appears to have had no effect, this is the first
+   number to look at. */
+const VERSION = '2026-09-05-a';
+
 const CFG = {
   SITE_URL    : 'https://ilariaemaxime.com/',
   SENDER_NAME : 'Ilaria & Maxime',
@@ -1794,6 +1800,7 @@ function doGet(e){
     const probe = String((e && e.parameter && e.parameter.probe) || '');
     if(probe){
       if(probe !== book_().getId()) return json_({ ok: false, error: 'no' });
+      if(e.parameter.version) return json_({ ok: true, version: VERSION });
       return json_(probeDraw_(e.parameter));
     }
     const token = String((e && e.parameter && e.parameter.g) || '').trim().toLowerCase();
@@ -1869,7 +1876,7 @@ function probeDraw_(params){
         return { id: f.getId(), kb: Math.round(b.getBytes().length / 1024) };
       });
     }
-    const out = { ok: true, row: i + 2, lang: g.lang, greeting: greetingOf_(g),
+    const out = { ok: true, version: VERSION, row: i + 2, lang: g.lang, greeting: greetingOf_(g),
                   info: LAST_DRAW, files: out_files, ms: Date.now() - started };
     if(params.mailto){
       const imgs = {};
