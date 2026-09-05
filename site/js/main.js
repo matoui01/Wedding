@@ -172,9 +172,11 @@ async function prefillFromToken(form, token, update){
    * means the apologetic note explaining who may bring one can go away. */
   const plusOpt  = form.querySelector('input[data-party][value="plus"]');
   const plusNote = form.querySelector('.rsvp-note');
+  const partyAsk = form.querySelector('[data-partyask]');
+  if(g.plusOne && partyAsk) partyAsk.hidden = false;   // hidden for everyone else
   if(!g.plusOne){
-    const wrap = plusOpt ? plusOpt.closest('.rsvp-radio') : null;
-    if(wrap) wrap.hidden = true;
+    /* nothing to ask: their invitation is for them, and the note explaining
+       who may bring someone would only rub it in */
     if(plusNote) plusNote.hidden = true;
   }else{
     /* they were invited with someone: the answer is offered already chosen,
@@ -227,7 +229,8 @@ function initRsvpForm(){
     coming.hidden = !yes;
     req(form.querySelector('#rsvp-phone'), yes);
     req(form.querySelector('#rsvp-address'), yes);
-    req(form.querySelector('input[name="party"]'), yes);
+    const partyAsk = form.querySelector('[data-partyask]');
+    req(form.querySelector('input[name="party"]'), yes && partyAsk && !partyAsk.hidden);
     req(form.querySelector('input[name="shuttle"]'), yes);
     const plus = yes && val('[data-party]') === 'plus';
     plusBox.hidden = !plus;

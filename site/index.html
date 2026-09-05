@@ -350,7 +350,9 @@
             <label for="rsvp-address" data-i18n="rsvp.f.address">Indirizzo postale</label>
             <textarea id="rsvp-address" name="address" rows="2" autocomplete="street-address"></textarea>
           </div>
-          <fieldset class="rsvp-field rsvp-field--choice">
+          <!-- hidden until the link says this invitation includes a plus-one:
+               a question nobody can answer yes to is worse than no question -->
+          <fieldset class="rsvp-field rsvp-field--choice" data-partyask hidden>
             <legend data-i18n="rsvp.f.party">Venite da soli o accompagnati?</legend>
             <div class="rsvp-radios">
               <label class="rsvp-radio"><input type="radio" name="party" value="alone" data-party><span data-i18n="rsvp.f.alone">Da solo/a</span></label>

@@ -299,11 +299,19 @@ const MASCULINE = {
        'hippolyte','timothee','timothée','barnabe','barnabé']
 };
 
-// said only to a guest whose plus-one is open — a named one is greeted instead
-const PLUS_COPY = {
-  it:'Saremo felici di accogliere anche il vostro accompagnatore.',
-  fr:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
-  en:"You're warmly invited to bring a plus-one."
+/* What the invitation holds for them, said plainly — a guest should not have
+   to work out from the greeting whether they may bring someone. Three cases:
+   an open plus-one, two named people, one person on their own. */
+const SEATS_COPY = {
+  it:{ open:'Saremo felici di accogliere anche il vostro accompagnatore.',
+       two: 'Abbiamo riservato due posti, per voi due.',
+       one: 'Abbiamo riservato un posto a vostro nome.' },
+  fr:{ open:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
+       two: 'Nous avons réservé deux places, pour vous deux.',
+       one: 'Nous avons réservé une place à votre nom.' },
+  en:{ open:"You're warmly invited to bring a plus-one.",
+       two: 'We have kept two seats, for the two of you.',
+       one: 'We have kept one seat, in your name.' }
 };
 
 function normLang_(v){ v = String(v || '').trim().toLowerCase().slice(0, 2); return (v === 'fr' || v === 'en' || v === 'it') ? v : 'it'; }
@@ -366,11 +374,10 @@ function greetingDoubtful_(g){
   return (normLang_(g.lang) !== 'en' && names.length === 1) ? 'guessed' : '';
 }
 
-// The open-plus-one sentence — or nothing: a couple already named in the
-// greeting ("Chers Paul et Véro,") is not being offered a third.
 function plusLine_(g){
-  if(!g.plusOne || addressees_(g).length > 1) return '';
-  return PLUS_COPY[normLang_(g.lang)];
+  const c = SEATS_COPY[normLang_(g.lang)];
+  if(addressees_(g).length > 1) return c.two;       // both are named in the greeting
+  return g.plusOne ? c.open : c.one;
 }
 
 /* <<< shared */
