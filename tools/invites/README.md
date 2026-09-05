@@ -15,26 +15,21 @@ Nothing is ever sent without you reading it first.
 
 ## Finish the setup
 
-Five steps. Everything else is already built and deployed.
+Two steps. Everything else is built and deployed.
 
-**1 · Put the cards in Drive.** Unzip the invitation cards into a Drive folder
-named exactly **`Wedding cards`** — one file per guest, `card-<token>.jpg`.
-The script reads them from there with the access it already has, so they are
-never published anywhere and no guest's card is reachable by anyone else.
-
-**2 · Install the script.** Open the sheet ▸ **Extensions ▸ Apps Script**.
+**1 · Install the script.** Open the sheet ▸ **Extensions ▸ Apps Script**.
 Replace the file with `apps-script/Code.gs`, and paste `appsscript.json` under
 Project Settings (show manifest first). Save.
 
-**3 · Set the password.** Project Settings ▸ **Script properties** ▸ add
+**2 · Set the password.** Project Settings ▸ **Script properties** ▸ add
 `SITE_PASSWORD` = the site password. It is not written down in this
 repository, which is public.
 
-**4 · Publish the RSVP endpoint.** Deploy ▸ New deployment ▸ **Web app**,
+**3 · Publish the RSVP endpoint.** Deploy ▸ New deployment ▸ **Web app**,
 Execute as **Me**, access **Anyone**. Copy the `/exec` URL into
 `RSVP_ENDPOINT` at the top of `site/js/main.js`, then commit and push.
 
-**5 · Fill in the email addresses.** The one thing no script can do. A row
+**4 · Fill in the email addresses.** The one thing no script can do. A row
 without an email turns red and is never drafted, and the Dashboard counts how
 many are still missing.
 
@@ -110,15 +105,16 @@ every stationery service solves the same problem. Everything a guest has to
 *act* on stays live text below it: the password to read, the link to press,
 the date to remember.
 
-```bash
-# after tokens exist in the sheet, export the Guests tab as CSV, then:
-node tools/invites/assets/render-cards.js path/to/guests.csv
-```
+There is **one card per language**, not one per guest. Everything that differs
+between guests — their greeting, their note, whether they have a plus-one —
+is live text in the email around the card, which is short enough that the
+fallback fonts carry it. So the cards are three small files in `site/assets/`,
+committed like any other asset: nothing to render per guest, nothing to
+upload, nothing personal stored anywhere.
 
-One card per guest, into `tools/invites/assets/cards-out/` — upload them to
-the Drive folder. The run lists every greeting where it had to guess a gender
-from the name; correct any of those in that guest's `Greeting` cell and
-re-render just them.
+```bash
+node tools/invites/assets/render-card.js '{"lang":"fr"}' site/assets/img/card-fr.jpg
+```
 
 The card design is plain CSS in `assets/render-card.js`. The email around it
 is `apps-script/Code.gs`; `preview/build-preview.py` regenerates a proof sheet

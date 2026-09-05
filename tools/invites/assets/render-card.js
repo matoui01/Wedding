@@ -68,7 +68,6 @@ const dataUri = (f, mime) => `data:${mime};base64,` + fs.readFileSync(f).toStrin
 
 function html(g){
   const c = COPY[g.lang] || COPY.it;
-  const plus = g.plusOne ? (g.plusName ? c.plusNamed(esc(g.plusName)) : c.plus) : '';
   const face = (fam, file, style) =>
     `@font-face{font-family:'${fam}';font-style:${style||'normal'};src:url('${dataUri(path.join(FONTS,file),'font/ttf')}');}`;
 
@@ -89,17 +88,13 @@ body{width:600px;background:#FAF6EC;-webkit-font-smoothing:antialiased}
 .tag{font-family:Cormorant;font-style:italic;font-size:23px;color:#897C68;margin-top:2px}
 .date{font-family:Jost;font-size:13px;letter-spacing:4px;color:#3D352A;text-transform:uppercase;margin-top:14px}
 .hero{width:100%;display:block;margin-top:28px}
-.letter{margin:30px 34px 34px;background:#FDFBF5;border:1px solid #DCC9A4;padding:36px 40px 38px}
-.greet{font-family:Cormorant;font-size:24px;color:#3D352A}
-.body{font-family:EBG;font-size:17px;line-height:1.66;color:#3D352A;margin-top:13px}
-.note{background:#EEF1EA;border-left:2px solid #93A586;padding:16px 20px;margin-top:24px;
-      font-family:EBG;font-style:italic;font-size:16px;line-height:1.6;color:#3D352A}
+.letter{margin:30px 34px 34px;background:#FDFBF5;border:1px solid #DCC9A4;padding:34px 40px 34px}
+.body{font-family:EBG;font-size:17px;line-height:1.66;color:#3D352A}
 table.facts{width:100%;border-collapse:collapse;margin-top:28px}
 table.facts td{padding:13px 0;vertical-align:middle}
 table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .k{font-family:Jost;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
 .v{font-family:EBG;font-size:16px;color:#3D352A;text-align:right}
-.plus{font-family:Cormorant;font-style:italic;font-size:18px;color:#6E7B5B;text-align:center;margin-top:26px}
 .sprig{width:22px;display:block;margin:26px auto 0}
 </style>
 <div class="head">
@@ -111,15 +106,12 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 </div>
 <img class="hero" src="${dataUri(path.join(IMG,'email-estate.jpg'),'image/jpeg')}">
 <div class="letter">
-  <div class="greet">${esc(g.greeting)}</div>
   <div class="body">${c.body}</div>
-  ${g.note ? `<div class="note">${esc(g.note)}</div>` : ''}
   <table class="facts">
     <tr><td class="k">${c.kDay}</td><td class="v">${c.vDay}</td></tr>
     <tr><td class="k">${c.kWhere}</td><td class="v">${c.vWhere}</td></tr>
     <tr><td class="k">${c.kDress}</td><td class="v">${c.vDress}</td></tr>
   </table>
-  ${plus ? `<div class="plus">${plus}</div>` : ''}
   <img class="sprig" src="${dataUri(path.join(IMG,'email-sprig.png'),'image/png')}">
 </div>`;
 }

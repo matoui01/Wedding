@@ -271,10 +271,11 @@ const CFG = {
   // will not load Cormorant, and these are where the design lives.
   IMG_TAG  : function(l){ return 'email-tag-' + l + '.png'; },
   IMG_CLOSE: function(l){ return 'email-close-' + l + '.png'; },
-  // The invitation itself, rendered per guest from the real fonts by
-  // tools/invites/assets/render-cards.js. Render and deploy the cards before
-  // creating drafts, or the guest sees alt text where the invitation should be.
-  IMG_CARD : function(token){ return 'cards/card-' + token + '.jpg'; },
+  // One card per language, not one per guest. Everything that varies between
+  // guests — their greeting, their note, whether they have a plus-one — is
+  // live text in the email around it, so there are three files here instead of
+  // eighty-seven, nothing to upload, and nothing personal stored anywhere.
+  IMG_CARD : function(lang){ return 'card-' + lang + '.jpg'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -414,11 +415,16 @@ function buildEmail_(g){
 
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
 
-    <tr><td style="padding:0;">
-      <img src="cid:card" width="600" alt="${esc_(greet)} ${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
+    <tr><td class="px" style="padding:34px 52px 0;font-family:${T.fDisplay};font-size:22px;color:${T.ink};">${esc_(greet)}</td></tr>
+
+    <tr><td style="padding:24px 0 0;">
+      <img src="cid:card" width="600" alt="${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
     </td></tr>
 
-    <tr><td class="px" align="center" style="padding:4px 52px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
+    ${note}
+    ${plus}
+
+    <tr><td class="px" align="center" style="padding:26px 52px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
 
     <tr><td align="center" style="padding:18px 40px 0;">
       <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="border:1px solid ${T.lineGold};background:${T.panna2};">
@@ -578,13 +584,13 @@ function factRow_(k, v, first){
 }
 
 function noteBlock_(noteHtml){
-  return '<tr><td class="lx" style="padding:22px 36px 0;">' +
+  return '<tr><td class="px" style="padding:20px 52px 0;">' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#EEF1EA" style="background:#EEF1EA;border-left:2px solid ' + T.salvia + ';">' +
     '<tr><td style="padding:15px 18px;font-family:' + T.fBody + ';font-style:italic;font-size:15px;line-height:1.6;color:' + T.ink + ';">' + noteHtml + '</td></tr></table></td></tr>';
 }
 
 function plusBlock_(txt){
-  return '<tr><td align="center" class="lx" style="padding:22px 36px 0;font-family:' + T.fDisplay + ';font-style:italic;font-size:16px;color:' + T.salviaDeep + ';">' + txt + '</td></tr>';
+  return '<tr><td align="center" class="px" style="padding:20px 52px 0;font-family:' + T.fDisplay + ';font-style:italic;font-size:16px;color:' + T.salviaDeep + ';">' + txt + '</td></tr>';
 }
 
 function plusLine_(c, g){

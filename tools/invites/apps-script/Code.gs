@@ -61,13 +61,11 @@ const CFG = {
   // will not load Cormorant, and these are where the design lives.
   IMG_TAG  : function(l){ return 'email-tag-' + l + '.png'; },
   IMG_CLOSE: function(l){ return 'email-close-' + l + '.png'; },
-  // The invitation cards live in a Drive folder, not on the website: they are
-  // ~315 KB each and there are one per guest, which is a lot of weight to put
-  // in a git repository and republish on every change. The script runs as the
-  // couple's own account, so it can read them straight out of Drive — nothing
-  // is publicly hosted, and no guest's card is reachable by anyone else.
-  CARDS_FOLDER : 'Wedding cards',
-  IMG_CARD : function(token){ return 'card-' + token + '.jpg'; },
+  // One card per language, not one per guest. Everything that varies between
+  // guests — their greeting, their note, whether they have a plus-one — is
+  // live text in the email around it, so there are three files here instead of
+  // eighty-seven, nothing to upload, and nothing personal stored anywhere.
+  IMG_CARD : function(lang){ return 'card-' + lang + '.jpg'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -629,30 +627,6 @@ function fetchBlob_(file, name){
   } catch(_){ return null; }
 }
 
-/* The guest's card, read from the Drive folder named in CFG.CARDS_FOLDER.
-   The folder handle is looked up once per run rather than per guest — 87
-   folder searches to send one wave is 86 more than the job needs. */
-let CARDS_FOLDER_ = undefined;
-function cardsFolder_(){
-  if(CARDS_FOLDER_ !== undefined) return CARDS_FOLDER_;
-  try {
-    const it = DriveApp.getFoldersByName(CFG.CARDS_FOLDER);
-    CARDS_FOLDER_ = it.hasNext() ? it.next() : null;
-  } catch(_){ CARDS_FOLDER_ = null; }
-  return CARDS_FOLDER_;
-}
-
-function cardBlob_(token){
-  if(!token) return null;
-  const folder = cardsFolder_();
-  if(!folder) return null;
-  try {
-    const files = folder.getFilesByName(CFG.IMG_CARD(token));
-    if(!files.hasNext()) return null;
-    return files.next().getBlob().setName('card.jpg');
-  } catch(_){ return null; }
-}
-
 /* Every image the message shows, embedded. Nothing is left for the guest's
    client to fetch: no proxy to refuse it, no "display images" to click, and
    nothing that breaks when a host changes years from now. */
@@ -669,7 +643,7 @@ function inlineImages_(g, kind){
     // only the invitation carries a card, and only the crest the reminder
     // shows — attaching both to both put 238 KB of unused crest in every
     // invitation
-    const card = cardBlob_(g.token);
+    const card = fetchBlob_(CFG.IMG_CARD(g.lang), 'card.jpg');
     if(card) out.card = card;
   }
   return out;
@@ -697,9 +671,7 @@ function runInvites_(ctx, rowIdxs){
   });
   toast_(made + ' draft(s) created in Gmail' +
          (skipped ? ' · ' + skipped + ' skipped (no email, or on Hold/Cut)' : '') +
-         (missingCards ? ' · ⚠ ' + missingCards + ' without a card — ' +
-            (cardsFolder_() ? 'no card file for those guests in the "' + CFG.CARDS_FOLDER + '" Drive folder'
-                            : 'no Drive folder named "' + CFG.CARDS_FOLDER + '"') : '') +
+         (missingCards ? ' · ⚠ ' + missingCards + ' without a card — the card images are not reachable' : '') +
          '. Open Gmail ▸ Drafts to review and send.');
 }
 
@@ -764,8 +736,8 @@ function sendTestToMe(){
   });
   toast_(imgs.card
     ? 'Test sent to ' + me + '.'
-    : 'Test sent to ' + me + ' — but WITHOUT the invitation card: none is published for '
-      + 'token ' + g.token + '. Render the cards and deploy, then run this again.');
+    : 'Test sent to ' + me + ' — but WITHOUT the invitation card: card-' + g.lang +
+      '.jpg is not reachable on the site yet.');
 }
 
 function resetSelectedStatus(){
@@ -983,11 +955,16 @@ function buildEmail_(g){
 
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
 
-    <tr><td style="padding:0;">
-      <img src="cid:card" width="600" alt="${esc_(greet)} ${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
+    <tr><td class="px" style="padding:34px 52px 0;font-family:${T.fDisplay};font-size:22px;color:${T.ink};">${esc_(greet)}</td></tr>
+
+    <tr><td style="padding:24px 0 0;">
+      <img src="cid:card" width="600" alt="${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
     </td></tr>
 
-    <tr><td class="px" align="center" style="padding:4px 52px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
+    ${note}
+    ${plus}
+
+    <tr><td class="px" align="center" style="padding:26px 52px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
 
     <tr><td align="center" style="padding:18px 40px 0;">
       <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="border:1px solid ${T.lineGold};background:${T.panna2};">
@@ -1150,7 +1127,7 @@ function factRow_(k, v, first){
 /* Both fragments sit inside the letter panel, so they take the letter's inset
    (lx / 36px) — the card's wider 52px would read as a double margin. */
 function noteBlock_(noteHtml){
-  return '<tr><td class="lx" style="padding:22px 36px 0;">' +
+  return '<tr><td class="px" style="padding:20px 52px 0;">' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#EEF1EA" style="background:#EEF1EA;border-left:2px solid ' + T.salvia + ';">' +
     '<tr><td style="padding:15px 18px;font-family:' + T.fBody + ';font-style:italic;font-size:15px;line-height:1.6;color:' + T.ink + ';">' + noteHtml + '</td></tr></table></td></tr>';
 }
@@ -1162,7 +1139,7 @@ function plusLine_(c, g){
 }
 
 function plusBlock_(txt){
-  return '<tr><td align="center" class="lx" style="padding:22px 36px 0;font-family:' + T.fDisplay + ';font-style:italic;font-size:16px;color:' + T.salviaDeep + ';">' + txt + '</td></tr>';
+  return '<tr><td align="center" class="px" style="padding:20px 52px 0;font-family:' + T.fDisplay + ';font-style:italic;font-size:16px;color:' + T.salviaDeep + ';">' + txt + '</td></tr>';
 }
 
 /* ====================== 6. sheet plumbing =============================== */

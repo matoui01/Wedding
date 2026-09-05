@@ -1,7 +1,3 @@
 # fetched on first run by render-card.js
 .fonts/
 node_modules/
-# rendered invitation cards — one per guest, ~300 KB each. These are uploaded
-# to Drive, where the Apps Script reads them; they are never served from the
-# website and have no business in the repository.
-cards-out/
