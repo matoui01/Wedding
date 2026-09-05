@@ -73,14 +73,15 @@ const CFG = {
   // The invitation itself is drawn at send time: see mailBlobs_.
   /* Slides ignores the page size asked for when a presentation is created,
      so the invitation is drawn on copies of a template whose size was set
-     once by hand: 1800 × 750 pt.
+     once by hand: 1800 × 1500 pt.
 
      Why those numbers. Google exports a slide with its long side capped at
-     2500 px, so 1800 pt wide comes back 2400 px — four times the 600 px the
-     invitation is shown at. And the height decides how tight the spacing can
-     be: the invitation is drawn as a whole number of pages, and whatever is
-     left over is shared out between the blocks, so a short page leaves little
-     to share and the rhythm stays as designed. */
+     2500 px: 1800 × 1500 pt comes back 2400 × 2000, under the cap in both
+     directions — four times the 600 px the invitation is shown at. And that
+     height divides the invitation into four pieces rather than eight, which
+     matters because the export refuses after a handful of calls in quick
+     succession. Whatever the pieces do not fill is shared out between the
+     blocks, so the rhythm stays as designed either way. */
   TEMPLATE : 'Wedding HQ · invitation template',
   SCRATCH  : 'Wedding HQ · invitation (scratch)',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
@@ -230,7 +231,7 @@ const COPY = {
     body:'Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.',
     kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027',
     kWhere:'Dove', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze',
-    kDress:'Dress code', vDress:'Cocktail elegante',
+    kDress:'Dress code', vDress:'Formale',
     siteLead:'Il programma, il viaggio e la vostra risposta sono sul nostro sito.',
     pwk:'Password del sito', cta:'Apri il sito e rispondi', byLabel:'Rispondete entro il',
     by:d=>'Vi preghiamo di confermare entro il '+d+'.',
@@ -245,7 +246,7 @@ const COPY = {
     body:'Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.',
     kDay:'Le jour', vDay:'Vendredi 23 juillet 2027',
     kWhere:'Lieu', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
-    kDress:'Tenue', vDress:'Cocktail élégant',
+    kDress:'Tenue', vDress:'Formelle',
     siteLead:'Le programme, le voyage et votre réponse sont sur notre site.',
     pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre', byLabel:'Merci de répondre avant le',
     by:d=>'Merci de confirmer avant le '+d+'.',
@@ -260,7 +261,7 @@ const COPY = {
     body:"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
     kDay:'The day', vDay:'Friday 23 July 2027',
     kWhere:'Where', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
-    kDress:'Dress code', vDress:'Elegant cocktail',
+    kDress:'Dress code', vDress:'Formal',
     siteLead:'The programme, the journey and your reply are on our site.',
     pwk:'Site password', cta:'Open the site and RSVP', byLabel:'Kindly reply by',
     by:d=>'Kindly reply by '+d+'.',
@@ -1303,14 +1304,14 @@ function mailBlobs_(g){
        too heavy to mail, and then JPEG throughout. */
     const out = [];
     for(let i = 0; i < n; i++){
-      if(i) Utilities.sleep(600);                    // paced, so refusals stay rare
+      if(i) Utilities.sleep(1500);                   // paced, so refusals stay rare
       out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page, 'png'));
     }
     const heavy = out.reduce((a, b) => a + b.getBytes().length, 0) > CARD.MAX_MB * 1024 * 1024;
     if(!heavy) return out;
     const jpg = [];
     for(let i = 0; i < n; i++){
-      Utilities.sleep(600);
+      Utilities.sleep(1500);
       jpg.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page, 'jpeg'));
     }
     return jpg;
@@ -1420,8 +1421,8 @@ function exportPage_(id, pageId, i, n, page, fmt){
      across the invitation. Size, on the other hand, says nothing about
      success: a slice that is mostly cream is a very small picture. */
   const get = (fmt) => {
-    let wait = 1200;
-    for(let attempt = 0; attempt < 5; attempt++){
+    let wait = 2000;
+    for(let attempt = 0; attempt < 6; attempt++){
       let res = null;
       try {
         res = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
