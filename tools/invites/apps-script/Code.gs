@@ -629,16 +629,22 @@ function fetchBlob_(file, name){
 /* Every image the message shows, embedded. Nothing is left for the guest's
    client to fetch: no proxy to refuse it, no "display images" to click, and
    nothing that breaks when a host changes years from now. */
-function inlineImages_(g){
+function inlineImages_(g, kind){
   const out = {};
-  const card = g.token ? fetchBlob_(CFG.IMG_CARD(g.token), 'card.jpg') : null;
-  if(card) out.card = card;
   const mark = fetchBlob_(CFG.IMG_MARK, 'wordmark.png');
   if(mark) out.wordmark = mark;
   const close = fetchBlob_(CFG.IMG_CLOSE(g.lang), 'close.png');
   if(close) out.close = close;
-  const crest = fetchBlob_(CFG.IMG_CREST, 'crest.png');   // reminder only
-  if(crest) out.crest = crest;
+  if(kind === 'reminder'){
+    const crest = fetchBlob_(CFG.IMG_CREST, 'crest.png');
+    if(crest) out.crest = crest;
+  } else {
+    // only the invitation carries a card, and only the crest the reminder
+    // shows — attaching both to both put 238 KB of unused crest in every
+    // invitation
+    const card = g.token ? fetchBlob_(CFG.IMG_CARD(g.token), 'card.jpg') : null;
+    if(card) out.card = card;
+  }
   return out;
 }
 
@@ -653,7 +659,7 @@ function runInvites_(ctx, rowIdxs){
     g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
     const m = buildEmail_(g);
     const opts = { htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO };
-    opts.inlineImages = inlineImages_(g);
+    opts.inlineImages = inlineImages_(g, 'invite');
     if(!opts.inlineImages.card) missingCards++;
     GmailApp.createDraft(to, m.subject, m.text, opts);
     // record the date we actually promised this guest, not today's config
@@ -693,7 +699,7 @@ function createReminders(){
     const m = buildReminder_(g);
     GmailApp.createDraft(to, m.subject, m.text, {
       htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO,
-      inlineImages: inlineImages_(g)
+      inlineImages: inlineImages_(g, 'reminder')
     });
     setCell_(ctx, i, 'reminder sent', new Date());
     made++;
@@ -713,18 +719,24 @@ function sendTestToMe(){
   let g;
   if(ctx.data.length){
     g = guestFromRow_(ctx, 0);
-    g.token = String(cell_(ctx, 0, 'token') || '').trim() || 'testtok';
+    // the guest's real token, generating one if the row has none — inventing
+    // a token here asks for a card that was never rendered
+    g.token = ensureToken_(ctx, 0);
   } else {
     g = { lang:'it', category:'', greeting:'Cari Marco e Giulia,', names:'', plusOne:true,
           note:'Non vediamo l’ora di festeggiare con voi.', token:'testtok' };
   }
   g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
   const m = buildEmail_(g);
+  const imgs = inlineImages_(g, 'invite');
   GmailApp.sendEmail(me, '[TEST] ' + m.subject, m.text, {
     htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO,
-    inlineImages: inlineImages_(g)
+    inlineImages: imgs
   });
-  toast_('Test sent to ' + me + '.');
+  toast_(imgs.card
+    ? 'Test sent to ' + me + '.'
+    : 'Test sent to ' + me + ' — but WITHOUT the invitation card: none is published for '
+      + 'token ' + g.token + '. Render the cards and deploy, then run this again.');
 }
 
 function resetSelectedStatus(){
