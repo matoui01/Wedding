@@ -53,7 +53,12 @@ const CFG = {
   IMG_BASE : 'https://ilariaemaxime.com/assets/img/',
   IMG_CREST: 'email-crest.png',
   IMG_SPRIG: 'email-sprig.png',
-  IMG_HERO : 'estate-cut.png',
+  // The names, set in Pinyon Script and rendered to a PNG: Gmail strips <link>
+  // web fonts, so as live text they fall back to Georgia and the design goes
+  // with them. Built by tools/invites/assets/build-email-assets.py.
+  IMG_MARK : 'email-wordmark.png',
+  // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
+  IMG_HERO : 'email-estate.jpg',
 
   // Fallback deadline only — real per-category dates live on the Deadlines tab.
   RSVP_BY  : { it:'30 aprile 2027', fr:'30 avril 2027', en:'30 April 2027' },
@@ -154,7 +159,10 @@ function sitePassword_(){
 
 /* --------- palette / type (kept in sync with the site tokens) ------------ */
 const T = {
-  panna:'#FAF6EC', panna2:'#F2EBD9', salvia:'#93A586', salviaDeep:'#6E7B5B',
+  // three grounds, read as one object: the envelope (panna2) holds a mat
+  // (panna) which holds the letter (carta). Paper is the lightest thing in
+  // the frame, the way it is on a desk.
+  carta:'#FDFBF5', panna:'#FAF6EC', panna2:'#F2EBD9', salvia:'#93A586', salviaDeep:'#6E7B5B',
   terracotta:'#C47A54', oro:'#B08D4F', ink:'#3D352A', muted:'#897C68',
   line:'#E4DCC9', lineGold:'#DCC9A4',
   fDisplay:"'Cormorant Garamond', Georgia, 'Times New Roman', serif",
@@ -863,76 +871,89 @@ function buildEmail_(g){
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Pinyon+Script&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:24px!important;padding-right:24px!important}.nm{font-size:60px!important}}</style>
+<style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:20px!important;padding-right:20px!important}.lx{padding-left:22px!important;padding-right:22px!important}.nm{width:300px!important}}</style>
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
-<tr><td align="center" style="padding:28px 12px;">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};border-radius:3px;">
 
-    <tr><td align="center" style="padding:40px 0 0;">
-      <img src="${I}${CFG.IMG_CREST}" width="120" height="138" alt="Ilaria & Maxime" style="display:block;border:0;width:120px;height:auto;">
+<!-- the envelope -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
+<tr><td align="center" style="padding:32px 12px;">
+
+  <!-- the mat -->
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
+
+    <tr><td align="center" style="padding:42px 0 0;">
+      <img src="${I}${CFG.IMG_CREST}" width="104" height="120" alt="" style="display:block;border:0;width:104px;height:auto;">
     </td></tr>
 
-    <tr><td align="center" class="px" style="padding:22px 40px 0;font-family:${T.fUi};font-size:11px;letter-spacing:5px;color:${T.salviaDeep};text-transform:uppercase;">${c.over}</td></tr>
+    <tr><td align="center" class="px" style="padding:20px 40px 0;font-family:${T.fUi};font-size:10px;letter-spacing:4px;color:${T.salviaDeep};text-transform:uppercase;">${c.over}</td></tr>
 
-    <tr><td align="center" class="nm" style="padding:6px 16px 0;font-family:${T.fScript};font-size:76px;line-height:0.9;color:${T.ink};">Ilaria <span style="color:${T.terracotta};">&amp;</span> Maxime</td></tr>
+    <tr><td align="center" class="px" style="padding:16px 40px 0;">
+      <img src="${I}${CFG.IMG_MARK}" width="420" class="nm" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:420px;max-width:100%;height:auto;margin:0 auto;">
+    </td></tr>
 
-    <tr><td align="center" style="padding:4px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:23px;color:${T.muted};">${c.tag}</td></tr>
+    <tr><td align="center" style="padding:10px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:20px;color:${T.muted};">${c.tag}</td></tr>
 
-    <tr><td align="center" style="padding:14px 16px 0;font-family:${T.fUi};font-size:13px;letter-spacing:4px;color:${T.ink};text-transform:uppercase;">${c.date}</td></tr>
+    <tr><td align="center" style="padding:12px 16px 0;font-family:${T.fUi};font-size:11px;letter-spacing:4px;color:${T.ink};text-transform:uppercase;">${c.date}</td></tr>
 
-    <tr><td style="padding:26px 0 0;">
+    <tr><td style="padding:28px 0 0;">
       <img src="${I}${CFG.IMG_HERO}" width="600" alt="Villa Corsini a Mezzomonte" style="display:block;border:0;width:100%;height:auto;">
     </td></tr>
 
-    <tr><td class="px" style="padding:30px 52px 0;font-family:${T.fDisplay};font-size:24px;color:${T.ink};">${esc_(greet)}</td></tr>
+    <!-- the letter -->
+    <tr><td class="px" style="padding:30px 34px 34px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.carta}" style="background:${T.carta};border:1px solid ${T.lineGold};">
 
-    <tr><td class="px" style="padding:14px 52px 0;font-family:${T.fBody};font-size:17px;line-height:1.62;color:${T.ink};">${c.body}</td></tr>
+        <tr><td class="lx" style="padding:34px 36px 0;font-family:${T.fDisplay};font-size:21px;color:${T.ink};">${esc_(greet)}</td></tr>
 
-    ${note}
+        <tr><td class="lx" style="padding:12px 36px 0;font-family:${T.fBody};font-size:15.5px;line-height:1.72;color:${T.ink};">${c.body}</td></tr>
 
-    <tr><td class="px" style="padding:30px 52px 0;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        ${factRow_(c.kDay,   c.vDay,   true)}
-        ${factRow_(c.kWhere, c.vWhere, false)}
-        ${factRow_(c.kDress, c.vDress, false)}
-      </table>
-    </td></tr>
+        ${note}
 
-    ${plus}
-
-    <tr><td align="center" style="padding:30px 0 6px;">
-      <img src="${I}${CFG.IMG_SPRIG}" width="24" height="24" alt="" style="display:block;border:0;width:24px;height:auto;">
-    </td></tr>
-
-    <tr><td class="px" align="center" style="padding:14px 52px 0;font-family:${T.fBody};font-size:17px;line-height:1.55;color:${T.ink};">${c.siteLead}</td></tr>
-
-    <tr><td align="center" style="padding:18px 52px 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="border:1px solid ${T.lineGold};border-radius:3px;background:${T.panna2};">
-        <tr><td align="center" style="padding:11px 26px;">
-          <div style="font-family:${T.fUi};font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
-          <div style="font-family:${T.fUi};font-weight:500;font-size:20px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
+        <tr><td class="lx" style="padding:26px 36px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            ${factRow_(c.kDay,   c.vDay,   true)}
+            ${factRow_(c.kWhere, c.vWhere, false)}
+            ${factRow_(c.kDress, c.vDress, false)}
+          </table>
         </td></tr>
+
+        ${plus}
+
+        <tr><td align="center" style="padding:26px 0 4px;">
+          <img src="${I}${CFG.IMG_SPRIG}" width="22" height="22" alt="" style="display:block;border:0;width:22px;height:auto;">
+        </td></tr>
+
+        <tr><td class="lx" align="center" style="padding:12px 36px 0;font-family:${T.fBody};font-size:15.5px;line-height:1.65;color:${T.ink};">${c.siteLead}</td></tr>
+
+        <tr><td align="center" style="padding:18px 36px 0;">
+          <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="border:1px solid ${T.lineGold};background:${T.panna};">
+            <tr><td align="center" style="padding:10px 26px;">
+              <div style="font-family:${T.fUi};font-size:9px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
+              <div style="font-family:${T.fUi};font-weight:500;font-size:18px;letter-spacing:4px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td align="center" style="padding:20px 0 0;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" bgcolor="${T.salvia}">
+            <a href="${link}" style="display:inline-block;font-family:${T.fUi};font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#FBF8EF;padding:14px 34px;">${c.cta}</a>
+          </td></tr></table>
+        </td></tr>
+
+        <tr><td align="center" style="padding:12px 36px 0;font-family:${T.fUi};font-size:11px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
+
+        <tr><td align="center" style="padding:30px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:19px;color:${T.ink};">${c.close}</td></tr>
+        <tr><td align="center" style="padding:6px 36px 34px;">
+          <img src="${I}${CFG.IMG_MARK}" width="200" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:200px;max-width:100%;height:auto;margin:0 auto;">
+        </td></tr>
+
       </table>
     </td></tr>
 
-    <tr><td align="center" style="padding:22px 0 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" bgcolor="${T.salvia}" style="border-radius:2px;">
-        <a href="${link}" style="display:inline-block;font-family:${T.fUi};font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#FBF8EF;padding:15px 36px;">${c.cta}</a>
-      </td></tr></table>
-    </td></tr>
-
-    <tr><td align="center" style="padding:14px 40px 0;font-family:${T.fUi};font-size:12px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
-
-    <tr><td align="center" style="padding:34px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:22px;color:${T.ink};">${c.close}</td></tr>
-    <tr><td align="center" style="padding:2px 16px 0;font-family:${T.fScript};font-size:34px;color:${T.ink};">Ilaria &amp; Maxime</td></tr>
-
-    <tr><td style="padding:34px 40px 0;"><div style="border-top:1px solid ${T.line};"></div></td></tr>
-    <tr><td align="center" style="padding:18px 40px 6px;font-family:${T.fUi};font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${T.muted};">${c.fl}</td></tr>
-    <tr><td align="center" style="padding:0 40px 42px;font-family:${T.fBody};font-size:13px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
+    <tr><td align="center" class="px" style="padding:0 40px 6px;font-family:${T.fUi};font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${T.muted};">${c.fl}</td></tr>
+    <tr><td align="center" class="px" style="padding:0 40px 40px;font-family:${T.fBody};font-size:13px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
 
   </table>
 </td></tr></table>
@@ -970,53 +991,66 @@ function buildReminder_(g){
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Pinyon+Script&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:24px!important;padding-right:24px!important}}</style>
+<style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:20px!important;padding-right:20px!important}.lx{padding-left:22px!important;padding-right:22px!important}}</style>
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${c.rTag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
+
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
-<tr><td align="center" style="padding:28px 12px;">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};border-radius:3px;">
+<tr><td align="center" style="padding:32px 12px;">
 
-    <tr><td align="center" style="padding:38px 0 0;">
-      <img src="${I}${CFG.IMG_CREST}" width="86" height="99" alt="Ilaria & Maxime" style="display:block;border:0;width:86px;height:auto;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
+
+    <tr><td align="center" style="padding:40px 0 0;">
+      <img src="${I}${CFG.IMG_CREST}" width="82" height="94" alt="" style="display:block;border:0;width:82px;height:auto;">
     </td></tr>
 
-    <tr><td align="center" style="padding:18px 40px 0;font-family:${T.fDisplay};font-style:italic;font-size:22px;color:${T.muted};">${c.rTag}</td></tr>
-
-    <tr><td class="px" style="padding:26px 52px 0;font-family:${T.fDisplay};font-size:23px;color:${T.ink};">${esc_(greet)}</td></tr>
-
-    <tr><td class="px" style="padding:14px 52px 0;font-family:${T.fBody};font-size:17px;line-height:1.62;color:${T.ink};">${c.rBody}</td></tr>
-
-    <tr><td class="px" style="padding:26px 52px 0;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        ${factRow_(c.kDay,   c.vDay,   true)}
-        ${factRow_(c.kWhere, c.vWhere, false)}
-      </table>
+    <tr><td align="center" class="px" style="padding:16px 40px 0;">
+      <img src="${I}${CFG.IMG_MARK}" width="300" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:300px;max-width:100%;height:auto;margin:0 auto;">
     </td></tr>
 
-    <tr><td align="center" style="padding:26px 52px 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="border:1px solid ${T.lineGold};border-radius:3px;background:${T.panna2};">
-        <tr><td align="center" style="padding:11px 26px;">
-          <div style="font-family:${T.fUi};font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
-          <div style="font-family:${T.fUi};font-weight:500;font-size:20px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
+    <tr><td align="center" style="padding:10px 40px 0;font-family:${T.fDisplay};font-style:italic;font-size:19px;color:${T.muted};">${c.rTag}</td></tr>
+
+    <tr><td class="px" style="padding:26px 34px 34px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.carta}" style="background:${T.carta};border:1px solid ${T.lineGold};">
+
+        <tr><td class="lx" style="padding:32px 36px 0;font-family:${T.fDisplay};font-size:21px;color:${T.ink};">${esc_(greet)}</td></tr>
+
+        <tr><td class="lx" style="padding:12px 36px 0;font-family:${T.fBody};font-size:15.5px;line-height:1.72;color:${T.ink};">${c.rBody}</td></tr>
+
+        <tr><td class="lx" style="padding:24px 36px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            ${factRow_(c.kDay,   c.vDay,   true)}
+            ${factRow_(c.kWhere, c.vWhere, false)}
+          </table>
         </td></tr>
+
+        <tr><td align="center" style="padding:24px 36px 0;">
+          <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="border:1px solid ${T.lineGold};background:${T.panna};">
+            <tr><td align="center" style="padding:10px 26px;">
+              <div style="font-family:${T.fUi};font-size:9px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
+              <div style="font-family:${T.fUi};font-weight:500;font-size:18px;letter-spacing:4px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td align="center" style="padding:20px 0 0;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" bgcolor="${T.salvia}">
+            <a href="${link}" style="display:inline-block;font-family:${T.fUi};font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#FBF8EF;padding:14px 34px;">${c.cta}</a>
+          </td></tr></table>
+        </td></tr>
+
+        <tr><td align="center" style="padding:12px 36px 0;font-family:${T.fUi};font-size:11px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
+
+        <tr><td align="center" style="padding:28px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:19px;color:${T.ink};">${c.close}</td></tr>
+        <tr><td align="center" style="padding:6px 36px 32px;">
+          <img src="${I}${CFG.IMG_MARK}" width="190" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:190px;max-width:100%;height:auto;margin:0 auto;">
+        </td></tr>
+
       </table>
     </td></tr>
 
-    <tr><td align="center" style="padding:22px 0 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" bgcolor="${T.salvia}" style="border-radius:2px;">
-        <a href="${link}" style="display:inline-block;font-family:${T.fUi};font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#FBF8EF;padding:15px 36px;">${c.cta}</a>
-      </td></tr></table>
-    </td></tr>
-
-    <tr><td align="center" style="padding:14px 40px 0;font-family:${T.fUi};font-size:12px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
-
-    <tr><td align="center" style="padding:30px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:21px;color:${T.ink};">${c.close}</td></tr>
-    <tr><td align="center" style="padding:2px 16px 0;font-family:${T.fScript};font-size:32px;color:${T.ink};">Ilaria &amp; Maxime</td></tr>
-
-    <tr><td style="padding:30px 40px 0;"><div style="border-top:1px solid ${T.line};"></div></td></tr>
-    <tr><td align="center" style="padding:16px 40px 38px;font-family:${T.fUi};font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${T.muted};">${c.fl}</td></tr>
+    <tr><td align="center" class="px" style="padding:0 40px 40px;font-family:${T.fUi};font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${T.muted};">${c.fl}</td></tr>
 
   </table>
 </td></tr></table>
