@@ -41,7 +41,7 @@
    website and the probe run the last *deployed* version, which is a separate
    thing — so when a fix appears to have had no effect, this is the first
    number to look at. */
-const VERSION = '2026-09-05-a';
+const VERSION = '2026-09-05-b';
 
 const CFG = {
   SITE_URL    : 'https://ilariaemaxime.com/',
@@ -1027,7 +1027,7 @@ const CARD = {
   SITE:  { font: 'EB Garamond', face: 'ebg', size: 16, lh: 1.62, natural: 1.27, gap: 26, center: true },
   SPRIG: { gap: 22, w: 20, h: 20 },
   THUMB: 'LARGE',                                    // the fallback export
-  MAX_MB: 1.2                                        // above this a slice is sent as JPEG
+  MAX_MB: 4                                          // above this the whole picture goes as JPEG
 };
 
 /* Where everything goes, in pt, for this guest's words. Line counts are
@@ -1296,12 +1296,23 @@ function mailBlobs_(g){
     for(let i = 0; i < n; i++) drawSlice_(slides[i], L, blobs, i * slice, slice);
     deck.saveAndClose();
 
+    /* One format for every slice. Cuts fall wherever the page ends, so a
+       shape can straddle two of them, and a PNG half meeting a JPEG half
+       shows as a faint band across it. PNG throughout unless the drawing is
+       too heavy to mail, and then JPEG throughout. */
     const out = [];
     for(let i = 0; i < n; i++){
-      if(i) Utilities.sleep(600);                    // paced, so the refusals stay rare
-      out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page));
+      if(i) Utilities.sleep(600);                    // paced, so refusals stay rare
+      out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page, 'png'));
     }
-    return out;
+    const heavy = out.reduce((a, b) => a + b.getBytes().length, 0) > CARD.MAX_MB * 1024 * 1024;
+    if(!heavy) return out;
+    const jpg = [];
+    for(let i = 0; i < n; i++){
+      Utilities.sleep(600);
+      jpg.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page, 'jpeg'));
+    }
+    return jpg;
   } finally { deleteOwnFile_(id); }
 }
 
@@ -1400,7 +1411,7 @@ function stackHtml_(n, link){
    here would go through Apps Script's own JPEG writer, which has no quality
    setting and lays visible blocks over flat cream and fine script. Only a
    picture too heavy to mail is converted, and then by Google's encoder. */
-function exportPage_(id, pageId, i, n, page){
+function exportPage_(id, pageId, i, n, page, fmt){
   /* Google refuses this endpoint after a handful of calls in quick
      succession — HTTP 429 — and one invitation is eight of them. Refusals are
      waited out rather than worked around: falling back to a thumbnail hands
@@ -1430,13 +1441,7 @@ function exportPage_(id, pageId, i, n, page){
     return null;
   };
 
-  /* PNG where it stays small — flat cream and fine script keep every pixel —
-     and Google's own JPEG where it does not, which is the watercolour. */
-  let img = get('png');
-  if(img && img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
-    const jpg = get('jpeg');
-    if(jpg && jpg.getBytes().length < img.getBytes().length) img = jpg;
-  }
+  const img = get(fmt);
   if(!img){
     throw new Error('Google would not export piece ' + i + ' of ' + n + ' after several tries — ' +
                     'usually too many draws in a row. Wait a minute and send again.');
