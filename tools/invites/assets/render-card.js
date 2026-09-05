@@ -82,7 +82,7 @@ body{width:600px;background:#FAF6EC;-webkit-font-smoothing:antialiased}
 .crest{width:104px;display:block;margin:0 auto}
 .over{font-family:Jost;font-size:11px;letter-spacing:5px;color:#6E7B5B;text-transform:uppercase;margin-top:22px}
 .names{font-family:Pinyon;font-size:76px;line-height:1.3;color:#3D352A;margin-top:2px}
-.names em{font-style:normal;color:#C47A54}
+.names em{font-family:Cormorant;font-style:italic;font-size:.55em;color:#C47A54;vertical-align:.14em}
 .tag{font-family:Cormorant;font-style:italic;font-size:23px;color:#897C68;margin-top:2px}
 .date{font-family:Jost;font-size:13px;letter-spacing:4px;color:#3D352A;text-transform:uppercase;margin-top:14px}
 .hero{width:100%;display:block;margin-top:28px}
@@ -106,7 +106,7 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .piece-facts table.facts{margin-top:0}
 .piece-mark{background:#FAF6EC;padding:16px 26px;display:inline-block}
 .piece-mark .m{font-family:Pinyon;font-size:46px;line-height:1.45;color:#3D352A;white-space:nowrap}
-.piece-mark .m em{font-style:normal;color:#C47A54}
+.piece-mark .m em{font-family:Cormorant;font-style:italic;font-size:.55em;color:#C47A54;vertical-align:.14em}
 .piece-close{background:#FAF6EC;padding:10px 22px;display:inline-block}
 .piece-close .c{font-family:Cormorant;font-style:italic;font-size:20px;line-height:1.6;color:#897C68;white-space:nowrap}
 `;
