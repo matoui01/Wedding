@@ -25,7 +25,7 @@ script runs.
 3. Back on the sheet, reload the tab. A **💌 Wedding HQ** menu appears.
    Run **Set up / repair the workbook**. Approve the permission prompt.
    The script builds all four tabs, with dropdowns, colours and formulas.
-4. **Fill in `CFG` at the top of `Code.gs`** — see the table below.
+4. **Set the site password** as a script property — see below.
 5. **Import the guest list**: File ▸ Import ▸ Upload `sheet/guests-seed.csv`
    ▸ *Replace data at selected cell*, with `A1` of **Guests** selected.
 6. **Deploy for RSVPs**: Deploy ▸ New deployment ▸ Web app ·
@@ -33,14 +33,26 @@ script runs.
    `RSVP_ENDPOINT` in `site/js/main.js`, commit, push.
 7. Run **Send a test to me** and check the email in Gmail on a phone.
 
-### CFG — the two that matter
+### The site password
 
-| Key | Set to |
-|-----|--------|
-| `PASSWORD` | the real site password. **Not recoverable** from the site source, which only stores a hash — you have to type it |
-| `RSVP_BY` | a fallback only; the real dates live on the **Deadlines** tab |
+It is **not** in `Code.gs`, and must not be: this repository is public, and the
+site itself only stores a SHA-256 hash so the password cannot be read out of
+it. Writing it into the script in clear would undo that.
 
-`SITE_URL`, `REPLY_TO`, `SENDER_NAME` and the image URLs are already correct.
+Set it once in Apps Script — **Project Settings ▸ Script properties ▸ Add
+script property**:
+
+| Property | Value |
+|---|---|
+| `SITE_PASSWORD` | `REMOVED` |
+
+Everything else in `CFG` is already correct. `RSVP_BY` is only a fallback; the
+real dates live on the **Deadlines** tab.
+
+> `SITE_URL` and `IMG_BASE` point at **`https://ilariaemaxime.com/`**, not the
+> `matoui01.github.io` address — that one 301-redirects to plain `http://`, and
+> Gmail's image proxy will not follow https → http, so every image in the email
+> comes through blank. If the domain ever changes, change it in both keys.
 
 ---
 

@@ -21,7 +21,7 @@ OUT = HERE / "invite-preview.html"
 # Everything the two builders need, in dependency order.
 CONSTS = ["CFG", "T", "COPY", "MONTHS", "DEADLINE_SEED", "TOKEN_ALPHABET"]
 FUNCS = ["buildEmail_", "buildReminder_", "factRow_", "noteBlock_", "plusBlock_",
-         "plusLine_", "esc_", "greetingFromNames_", "inviteLink_", "normLang_"]
+         "plusLine_", "sitePassword_", "esc_", "greetingFromNames_", "inviteLink_", "normLang_"]
 
 
 def extract_block(src, header_re, opener, closer):
@@ -35,6 +35,7 @@ def extract_block(src, header_re, opener, closer):
     in_str, quote, esc = False, "", False
     while j < len(src):
         ch = src[j]
+        nxt = src[j + 1] if j + 1 < len(src) else ""
         if in_str:
             if esc:
                 esc = False
@@ -42,6 +43,15 @@ def extract_block(src, header_re, opener, closer):
                 esc = True
             elif ch == quote:
                 in_str = False
+        # comments are skipped whole: an apostrophe in prose ("Gmail's proxy")
+        # would otherwise read as the start of a string and swallow the rest
+        elif ch == "/" and nxt == "/":
+            j = src.find("\n", j)
+            if j < 0:
+                break
+        elif ch == "/" and nxt == "*":
+            end = src.find("*/", j + 2)
+            j = (end + 1) if end >= 0 else len(src)
         elif ch in "\"'`":
             in_str, quote = True, ch
         elif ch == opener:

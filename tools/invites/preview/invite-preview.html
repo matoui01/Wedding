@@ -248,13 +248,19 @@ textarea.txt{resize:vertical; min-height:62px; line-height:1.5}
 
 <script>
 const CFG = {
-  SITE_URL    : 'https://matoui01.github.io/Wedding/',
-  PASSWORD    : 'XXXXXX',                 // ← the site password from your invite gate
+  // The custom domain, NOT the github.io address: that one 301s to plain http,
+  // and Gmail's image proxy refuses to follow https -> http, so every image in
+  // the email silently fails to load.
+  SITE_URL    : 'https://ilariaemaxime.com/',
   SENDER_NAME : 'Ilaria & Maxime',
   REPLY_TO    : 'maxime.ilaria@gmail.com',
 
+  // Left empty on purpose — see sitePassword_() below. Never commit the real
+  // password: this repository is public.
+  PASSWORD    : '',
+
   // Hosted images, already live on the site.
-  IMG_BASE : 'https://matoui01.github.io/Wedding/assets/img/',
+  IMG_BASE : 'https://ilariaemaxime.com/assets/img/',
   IMG_CREST: 'email-crest.png',
   IMG_SPRIG: 'email-sprig.png',
   IMG_HERO : 'estate-cut.png',
@@ -374,9 +380,9 @@ function buildEmail_(g){
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${T.panna2};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
 <tr><td align="center" style="padding:28px 12px;">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:100%;background:${T.panna};border-radius:3px;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};border-radius:3px;">
 
     <tr><td align="center" style="padding:40px 0 0;">
       <img src="${I}${CFG.IMG_CREST}" width="120" height="138" alt="Ilaria & Maxime" style="display:block;border:0;width:120px;height:auto;">
@@ -420,7 +426,7 @@ function buildEmail_(g){
       <table role="presentation" cellpadding="0" cellspacing="0" style="border:1px solid ${T.lineGold};border-radius:3px;background:${T.panna2};">
         <tr><td align="center" style="padding:11px 26px;">
           <div style="font-family:${T.fUi};font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
-          <div style="font-family:${T.fUi};font-weight:500;font-size:20px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(CFG.PASSWORD)}</div>
+          <div style="font-family:${T.fUi};font-weight:500;font-size:20px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
         </td></tr>
       </table>
     </td></tr>
@@ -454,7 +460,7 @@ ${c.kWhere}: ${c.vWhere}
 ${c.kDress}: ${c.vDress}
 ${g.plusOne ? '\n' + plusText + '\n' : ''}
 ${c.siteLead}
-${c.pwk}: ${CFG.PASSWORD}
+${c.pwk}: ${sitePassword_()}
 ${link}
 ${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}
 
@@ -479,9 +485,9 @@ function buildReminder_(g){
 <style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:24px!important;padding-right:24px!important}}</style>
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${T.panna2};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
 <tr><td align="center" style="padding:28px 12px;">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:100%;background:${T.panna};border-radius:3px;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};border-radius:3px;">
 
     <tr><td align="center" style="padding:38px 0 0;">
       <img src="${I}${CFG.IMG_CREST}" width="86" height="99" alt="Ilaria & Maxime" style="display:block;border:0;width:86px;height:auto;">
@@ -504,7 +510,7 @@ function buildReminder_(g){
       <table role="presentation" cellpadding="0" cellspacing="0" style="border:1px solid ${T.lineGold};border-radius:3px;background:${T.panna2};">
         <tr><td align="center" style="padding:11px 26px;">
           <div style="font-family:${T.fUi};font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
-          <div style="font-family:${T.fUi};font-weight:500;font-size:20px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(CFG.PASSWORD)}</div>
+          <div style="font-family:${T.fUi};font-weight:500;font-size:20px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
         </td></tr>
       </table>
     </td></tr>
@@ -535,7 +541,7 @@ ${c.rBody}
 ${c.kDay}: ${c.vDay}
 ${c.kWhere}: ${c.vWhere}
 
-${c.pwk}: ${CFG.PASSWORD}
+${c.pwk}: ${sitePassword_()}
 ${link}
 ${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}
 
@@ -566,6 +572,13 @@ function plusBlock_(txt){
 
 function plusLine_(c, g){
   return (g.plusName && c.plusNamed) ? c.plusNamed(esc_(g.plusName)) : c.plus;
+}
+
+function sitePassword_(){
+  if(CFG.PASSWORD) return CFG.PASSWORD;          // preview harness / local override
+  try {
+    return PropertiesService.getScriptProperties().getProperty('SITE_PASSWORD') || 'XXXXXX';
+  } catch(_){ return 'XXXXXX'; }
 }
 
 function esc_(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
