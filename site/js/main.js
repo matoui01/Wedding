@@ -76,9 +76,36 @@ function initCountdown(){
  * on; until then (or on a network error) the form shows the email fallback. */
 const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbwbRcRclZhOdY8DbNeaRSPZ0kK0cXAxMF9pIFEKtYDLwjKyx05Rklx461ifxUGk3gQK/exec";
 
+/* ---- Guest token --------------------------------------------------------- *
+ * Each invite email links to .../Wedding/?g=<token>. We stash that token and
+ * post it back with the RSVP, which is how the couple's sheet knows which
+ * guest replied without anyone having to type their name twice. It is kept in
+ * localStorage so it survives a language switch or a return visit, and wiped
+ * from the address bar so a shared screenshot doesn't carry someone's token. */
+function guestToken(){
+  let t = '';
+  try{ t = new URLSearchParams(location.search).get('g') || ''; }catch(_){}
+  t = t.trim().slice(0, 32);
+  if(t){
+    try{ localStorage.setItem('mi_guest', t); }catch(_){}
+    try{
+      const u = new URL(location.href);
+      u.searchParams.delete('g');
+      history.replaceState(null, '', u.pathname + u.search + u.hash);
+    }catch(_){}
+    return t;
+  }
+  try{ return localStorage.getItem('mi_guest') || ''; }catch(_){ return ''; }
+}
+
 function initRsvpForm(){
   const form = document.getElementById('rsvp-form');
   if(!form) return;
+  /* setAttribute, not .value: the form is reset after a successful send, and a
+     reset restores each field to its attribute value — so the token has to
+     live there or a second reply from the same guest would arrive unlinked. */
+  const tokenField = form.querySelector('#rsvp-token');
+  if(tokenField) tokenField.setAttribute('value', guestToken());
   const status = form.querySelector('.rsvp-form__status');
   const btn = form.querySelector('button[type=submit]');
   const L = ()=> document.documentElement.lang || 'it';

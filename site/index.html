@@ -322,6 +322,8 @@
       <p class="rsvp-modal__by" data-i18n="rsvp.by">Vi preghiamo di rispondere entro il [data].</p>
 
       <form class="rsvp-form" id="rsvp-form" novalidate>
+        <!-- the guest's private token, filled from ?g= in their invite link -->
+        <input type="hidden" name="g" id="rsvp-token" value="">
         <div class="rsvp-field">
           <label for="rsvp-name" data-i18n="rsvp.f.name">Nome e cognome</label>
           <input id="rsvp-name" name="name" type="text" required autocomplete="name">
