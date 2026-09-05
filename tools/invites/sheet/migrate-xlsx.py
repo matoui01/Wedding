@@ -66,6 +66,9 @@ LANG_BY_SUB = {
 }
 LANG_BY_SIDE = {'Ilaria': 'it', 'Maxime': 'fr', 'Common': 'en'}
 
+# rows where the source contradicts itself: one seat, but a name in PlusOne
+REVIEW = []
+
 # headings from the pivot tables that share the right-hand columns
 PIVOT_LABELS = {
     'row labels', 'column labels', 'grand total', 'common', 'ilaria', 'maxime',
@@ -87,27 +90,35 @@ def guess_lang(sub, side):
 
 
 def split_plus_one(raw, seats):
-    """-> (yes/no, name). Numbers and role-words carry no name."""
+    """-> (yes/no, name). Numbers and role-words carry no name.
+
+    `#` is the authority on how many seats a row is for. The PlusOne column is
+    sometimes a surname instead of a partner ("Martina Mariotti | Pelle"), so
+    where the two disagree the count wins and the text is kept for review —
+    better a name to check than an invented guest."""
     raw = S(raw)
-    if not raw:
-        return ('yes', '') if seats >= 2 else ('no', '')
-    if raw.lower() in PLACEHOLDERS or re.fullmatch(r'\d+(\.\d+)?', raw):
+    numeric = bool(re.fullmatch(r'\d+(\.\d+)?', raw))
+    if seats <= 1:
+        return ('no', '' if numeric else raw)
+    if not raw or numeric or raw.lower() in PLACEHOLDERS:
         return ('yes', '')
     return ('yes', raw)
 
 
-def household(invitee, plus_name):
+def household(invitee, plus, plus_name):
     """Already-joined names ("Tarek et sa femme") stay as they are."""
     if re.search(r'\s(et|e|and|&)\s', invitee, re.I):
         return invitee
-    return f'{invitee} & {plus_name}' if plus_name else invitee
+    return f'{invitee} & {plus_name}' if (plus == 'yes' and plus_name) else invitee
 
 
 def row(invitee, plus_raw, seats, cat, sub, side, priority, send):
     plus, plus_name = split_plus_one(plus_raw, seats)
+    if plus == 'no' and plus_name:
+        REVIEW.append((invitee, plus_name))
     out = {h: '' for h in GUEST_HEADER}
     out.update({
-        'Household': household(invitee, plus_name), 'Invitee': invitee,
+        'Household': household(invitee, plus, plus_name), 'Invitee': invitee,
         'Plus-one': plus, 'Plus-one name': plus_name,
         'Category': cat, 'Subcategory': sub, 'Side': side,
         'Priority': priority, 'Send?': send,
@@ -170,6 +181,11 @@ def main():
     print(f'  {planned} ready to send · {extra} held for classification')
     if unknown:
         print(f'  skipped unmapped categories: {sorted(unknown)}')
+    if REVIEW:
+        print(f'  {len(REVIEW)} row(s) counted as one seat but carrying a name in '
+              f'PlusOne — kept in Plus-one name, please check:')
+        for inv, nm in REVIEW:
+            print(f'    {inv} + {nm!r}')
 
 
 if __name__ == '__main__':
