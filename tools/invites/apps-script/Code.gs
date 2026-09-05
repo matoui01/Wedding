@@ -1536,7 +1536,13 @@ function doGet(e){
         out.kids     = truthy_(get('Kids?'));
         out.kidsEst  = Number(get('Kids est.')) || 0;
         out.replied  = !!String(get('RSVP') || '').trim();
-        out.replyBy  = deadlineFor_(deadlineMap_(), String(get('Category') || ''), lang);
+        const map = deadlineMap_();
+        out.replyBy  = deadlineFor_(map, String(get('Category') || ''), lang);
+        // the same day as a plain date, so the site can word it in whichever
+        // language the guest is reading, not the one they were written in
+        const raw = rawDeadline_(map, String(get('Category') || ''));
+        out.replyByISO = (raw instanceof Date && !isNaN(raw))
+          ? Utilities.formatDate(raw, book_().getSpreadsheetTimeZone(), 'yyyy-MM-dd') : '';
       }
     }
   } catch(err){

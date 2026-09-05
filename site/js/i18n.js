@@ -198,6 +198,7 @@ function setLang(lang){
   if(md && dict['meta.desc']) md.setAttribute('content', dict['meta.desc']);
 
   localStorage.setItem('lang', lang);
+  if(typeof window.showReplyBy === 'function') window.showReplyBy();
   if(typeof window.swapRsvp === 'function') window.swapRsvp(lang);
   if(typeof window.fillEmails === 'function') window.fillEmails();
 

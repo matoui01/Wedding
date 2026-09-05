@@ -98,6 +98,33 @@ function guestToken(){
   try{ return localStorage.getItem('mi_guest') || ''; }catch(_){ return ''; }
 }
 
+/* ---- The guest's own reply-by date ---------------------------------------- *
+ * Written in the language on screen: the same day reads "30 aprile 2027",
+ * "30 avril 2027" or "30 April 2027". Called again after every language
+ * switch, since the switch rewrites the general sentence back over it. */
+const MONTHS_I18N = {
+  it:['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'],
+  fr:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
+  en:['January','February','March','April','May','June','July','August','September','October','November','December']
+};
+const REPLY_BY_LINE = {
+  it:'Vi preghiamo di rispondere entro il ', fr:'Merci de répondre avant le ', en:'Kindly reply by '
+};
+function showReplyBy(){
+  const el = document.getElementById('rsvp-by');
+  const iso = window.__guestReplyBy;
+  if(!el || (!iso && !window.__guestReplyByText)) return;
+  const L = document.documentElement.lang || 'it';
+  let date = window.__guestReplyByText;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+  if(m){
+    const months = MONTHS_I18N[L] || MONTHS_I18N.it;
+    date = Number(m[3]) + ' ' + months[Number(m[2]) - 1] + ' ' + m[1];
+  }
+  el.textContent = (REPLY_BY_LINE[L] || REPLY_BY_LINE.it) + date + '.';
+}
+window.showReplyBy = showReplyBy;
+
 /* ---- Prefill from the invite link ---------------------------------------- *
  * The token identifies the guest, so the sheet can tell us who is arriving:
  * their name, the language they were written to in, whether their invitation
@@ -124,15 +151,13 @@ async function prefillFromToken(form, token, update){
   if(name && !name.value) name.value = g.invitee || g.household || '';
 
   /* their own deadline, not the general one: each circle was given its own,
-     and the sheet knows which applies to them. Left as written if it can't. */
-  if(g.replyBy){
-    const by = document.getElementById('rsvp-by');
-    if(by){
-      const L = document.documentElement.lang || 'it';
-      const line = { it:'Vi preghiamo di rispondere entro il ', fr:'Merci de répondre avant le ', en:'Kindly reply by ' }[L] || '';
-      by.textContent = line + g.replyBy + '.';
-      by.removeAttribute('data-i18n');          // a language switch must not undo it
-    }
+     and the sheet knows which applies to them. Kept as a date rather than a
+     sentence, so switching language re-words it instead of leaving half of it
+     in the language they were written to. */
+  if(g.replyByISO || g.replyBy){
+    window.__guestReplyBy = g.replyByISO || '';
+    window.__guestReplyByText = g.replyBy || '';
+    showReplyBy();
   }
 
   /* Only guests whose invitation included one see the plus-one option — which
