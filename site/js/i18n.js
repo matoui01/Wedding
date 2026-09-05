@@ -18,12 +18,12 @@ const I18N = {
     "welcome.over":"Benvenuti","welcome.title":"Insieme, in Toscana",
     "welcome.body":"Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.",
 
-    "story.over":"La nostra storia","story.title":"Da [città] a Firenze",
-    "story.body":"<em>[DA PERSONALIZZARE]</em> Come ci siamo incontrati, e come siamo arrivati fin qui… <em>(qualche riga vostra)</em>",
+    "story.over":"La nostra storia","story.title":"Un nuovo capitolo",
+    "story.body":"Dopo un cammino che ci ha portati fin qui, abbiamo la gioia di celebrare il nostro matrimonio circondati dalle persone che contano di più per noi. Questo giorno segna l'inizio di un nuovo capitolo — un capitolo che non vediamo l'ora di vivere e condividere insieme. Siamo felicissimi che siate con noi.",
 
     "day.over":"Il giorno","day.title":"Il programma","day.note":"Gli orari saranno confermati.",
     "day.t1":"Arrivo & benvenuto","day.t2":"Cerimonia","day.t3":"Aperitivo nei giardini","day.t4":"Cena nella galleria affrescata","day.t5":"Si balla","day.t6":"Saluti","day.t6.time":"tardi",
-    "day.dress.label":"Dress code","day.dress.value":"Cocktail elegante — lo smoking non è obbligatorio, ma vestitevi eleganti.","day.dress.women":"Esempi di abiti da sera per le ospiti","day.dress.men":"Esempi di completi eleganti per gli ospiti","day.map.cap":"I giardini e la disposizione dei tavoli.",
+    "day.dress.label":"Dress code","day.dress.value":"Cocktail elegante — lo smoking non è obbligatorio, ma vestitevi eleganti: niente sneakers, scarpe casual o pantaloncini. E il bianco, il beige e tutto ciò che vi somiglia sono riservati alla sposa.","day.dress.women":"Esempi di abiti da sera per le ospiti","day.dress.men":"Esempi di completi eleganti per gli ospiti","day.map.cap":"I giardini e la disposizione dei tavoli.",
 
     "venue.over":"Il luogo","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Una villa medicea del Quattrocento sulle colline a sud di Firenze, acquistata da Lorenzo il Magnifico nel 1480 e affrescata negli anni 1630 per il principe Giovan Carlo de' Medici. Dal 1644 è dei Corsini: giardini all'italiana, cipressi e oliveti affacciati sulle colline del Chianti.",
@@ -32,10 +32,10 @@ const I18N = {
     "venue.map.cta":"Apri in Google Maps","venue.getting":"A circa 25–30 minuti d'auto dal centro di Firenze.",
 
     "travel.over":"Soggiorno & viaggio","travel.title":"Come arrivare e dove dormire",
-    "travel.air.h":"In aereo","travel.air.b":"Firenze (FLR) ~30 min · Pisa (PSA) ~1h20 · Bologna (BLQ) ~1h30.",
-    "travel.train.h":"In treno","travel.train.b":"Firenze Santa Maria Novella (alta velocità da Roma, Milano, ecc.).",
-    "travel.car.h":"Transfer","travel.car.b":"Auto o taxi dal centro, ~25–30 min. [Navetta: da confermare.]",
-    "travel.stay.h":"Dove dormire","travel.stay.b":"<em>[DA AGGIUNGERE: 3–5 hotel — qualcuno in centro a Firenze, qualcuno vicino a Impruneta.]</em>",
+    "travel.air.h":"In aereo","travel.air.b":"Firenze (FLR) ~30 min in auto · Pisa (PSA) ~1h20 · Bologna (BLQ) ~1h30.<br>Roma Fiumicino (FCO) ~3h in auto.<br>Da Bologna e da Roma il treno è una buona alternativa: Firenze S.M.N. è a ~40 min da Bologna e ~2h30 da Fiumicino, poi ~30 min in auto.",
+    "travel.train.h":"In treno","travel.train.b":"Firenze Santa Maria Novella — alta velocità da Roma, Milano, Bologna e Venezia. A circa 25–30 min dalla villa in auto o taxi.",
+    "travel.car.h":"Transfer","travel.car.b":"È prevista una navetta dal centro di Firenze alla villa e ritorno — orari e punto di ritrovo <strong>da confermare (TBC)</strong>. Il taxi resta sempre un'alternativa: ~25–30 min dal centro.",
+    "travel.stay.h":"Dove dormire","travel.stay.b":"Vi forniremo una lista di hotel consigliati — in centro a Firenze e vicino a Impruneta — più vicino alla data.",
 
     "flo.over":"Firenze","flo.title":"Cosa fare a Firenze",
     "flo.body":"Fatene un weekend. Salite sulla cupola del Duomo, perdetevi agli Uffizi, attraversate il Ponte Vecchio al tramonto e cercate il gelato migliore in Oltrarno. Le colline del Chianti e le loro vigne sono a pochi minuti a sud — e ne vale la pena.",
@@ -49,7 +49,7 @@ const I18N = {
     "gift.iban.holder":"Beneficiario","gift.iban.ref":"Causale","gift.iban.bank":"Banca","gift.iban.corr":"BIC corrispondente",
 
     "rsvp.over":"RSVP","rsvp.title":"Fateci sapere","rsvp.by":"Vi preghiamo di rispondere entro il <span class='rsvp-by__date'>30 aprile 2027</span>.","rsvp.cta":"Conferma la presenza",
-    "rsvp.who.h":"Accompagnatori e bambini","rsvp.who.plus":"Il vostro invito indica esattamente le persone per cui abbiamo tenuto un posto. Se menziona un accompagnatore, saremo felicissimi di conoscerlo: scriveteci il suo nome quando rispondete. Se non lo menziona, ci dispiace davvero — i tavoli della villa sono apparecchiati per un numero che non possiamo allargare.","rsvp.who.kids":"Con tutto l'affetto possibile, abbiamo deciso che sarà una festa <strong>per soli adulti</strong>. Vogliamo un gran bene ai vostri bambini: per questa volta speriamo possiate concedervi una serata tutta per voi.",
+    "rsvp.qa.h":"Domande frequenti","rsvp.qa.plus.h":"Accompagnatori","rsvp.qa.plus.b":"Il vostro invito indica esattamente le persone per cui abbiamo tenuto un posto. Se menziona un accompagnatore, saremo felicissimi di conoscerlo: scriveteci il suo nome quando rispondete. Se non lo menziona, ci dispiace davvero — i tavoli della villa sono apparecchiati per un numero che non possiamo allargare.","rsvp.qa.kids.h":"Bambini e neonati","rsvp.qa.kids.b":"Con tutto l'affetto possibile, abbiamo deciso che sarà una festa <strong>per soli adulti</strong>, neonati compresi. Vogliamo un gran bene ai vostri bambini: per questa volta speriamo possiate concedervi una serata tutta per voi.",
     "rsvp.f.name":"Nome e cognome","rsvp.f.email":"Email","rsvp.f.phone":"Telefono","rsvp.f.address":"Indirizzo postale","rsvp.f.attending":"Sarete dei nostri?","rsvp.f.yes":"Sì, con gioia","rsvp.f.no":"Purtroppo no","rsvp.f.party":"Venite da soli o accompagnati?","rsvp.f.alone":"Da solo/a","rsvp.f.plus":"Con un accompagnatore *","rsvp.f.plusnote":"* Solo gli invitati il cui invito indica un accompagnatore possono portarne uno. Ci dispiace tanto — lo spazio è limitato.","rsvp.f.plusname":"Nome dell'accompagnatore","rsvp.f.hello":"Bentornati","rsvp.f.diet":"Allergie o intolleranze","rsvp.f.shuttle":"Avete bisogno della navetta da/per Firenze?","rsvp.f.staying":"Dove alloggerete? (per organizzare la navetta)","rsvp.f.y":"Sì","rsvp.f.n":"No","rsvp.f.message":"Un messaggio per noi","rsvp.f.submit":"Invia la risposta","rsvp.f.close":"Chiudi",
     "rsvp.fallback":"Problemi con il modulo? Scrivete a <a class='mail' data-addr></a>.",
 
@@ -72,12 +72,12 @@ const I18N = {
     "welcome.over":"Bienvenue","welcome.title":"Tous ensemble, en Toscane",
     "welcome.body":"Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.",
 
-    "story.over":"Notre histoire","story.title":"De [ville] à Florence",
-    "story.body":"<em>[À PERSONNALISER]</em> Comment nous nous sommes rencontrés, et le chemin jusqu'ici… <em>(quelques lignes de vous)</em>",
+    "story.over":"Notre histoire","story.title":"Un nouveau chapitre",
+    "story.body":"Après un chemin qui nous a menés jusqu'ici, nous avons la joie de célébrer notre mariage entourés de celles et ceux qui comptent le plus pour nous. Ce jour marque le début d'un nouveau chapitre — un chapitre que nous avons hâte de vivre et de partager ensemble. Nous sommes si heureux de vous compter parmi nous.",
 
     "day.over":"Le jour J","day.title":"Le déroulé","day.note":"Les horaires seront confirmés.",
     "day.t1":"Arrivée & accueil","day.t2":"Cérémonie","day.t3":"Cocktail dans les jardins","day.t4":"Dîner dans la galerie à fresques","day.t5":"Soirée dansante","day.t6":"Fin de soirée","day.t6.time":"tard",
-    "day.dress.label":"Tenue","day.dress.value":"Cocktail élégant — le smoking n'est pas obligatoire, mais sur votre trente-et-un.","day.dress.women":"Exemples de tenues de soirée pour les invitées","day.dress.men":"Exemples de costumes élégants pour les invités","day.map.cap":"Les jardins et le plan de table.",
+    "day.dress.label":"Tenue","day.dress.value":"Cocktail élégant — le smoking n'est pas obligatoire, mais sur votre trente-et-un : ni baskets, ni chaussures décontractées, ni shorts. Et le blanc, le beige et tout ce qui s'en approche sont réservés à la mariée.","day.dress.women":"Exemples de tenues de soirée pour les invitées","day.dress.men":"Exemples de costumes élégants pour les invités","day.map.cap":"Les jardins et le plan de table.",
 
     "venue.over":"Le lieu","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Une villa médicéenne du XVᵉ siècle sur les collines au sud de Florence, achetée par Laurent le Magnifique en 1480 et ornée de fresques dans les années 1630 pour le prince Giovan Carlo de' Medici. Aux Corsini depuis 1644 : jardins à l'italienne, cyprès et oliveraies dominant les collines du Chianti.",
@@ -86,10 +86,10 @@ const I18N = {
     "venue.map.cta":"Ouvrir dans Google Maps","venue.getting":"À environ 25–30 minutes en voiture du centre de Florence.",
 
     "travel.over":"Séjour & voyage","travel.title":"Venir & se loger",
-    "travel.air.h":"En avion","travel.air.b":"Florence (FLR) ~30 min · Pise (PSA) ~1h20 · Bologne (BLQ) ~1h30.",
-    "travel.train.h":"En train","travel.train.b":"Florence Santa Maria Novella (grande vitesse depuis Rome, Milan, etc.).",
-    "travel.car.h":"Transfert","travel.car.b":"Voiture ou taxi depuis le centre, ~25–30 min. [Navette : à confirmer.]",
-    "travel.stay.h":"Où dormir","travel.stay.b":"<em>[À AJOUTER : 3–5 hôtels — quelques-uns dans Florence, quelques-uns près d'Impruneta.]</em>",
+    "travel.air.h":"En avion","travel.air.b":"Florence (FLR) ~30 min en voiture · Pise (PSA) ~1h20 · Bologne (BLQ) ~1h30.<br>Rome Fiumicino (FCO) ~3h en voiture.<br>Depuis Bologne et Rome, le train est une bonne alternative : Florence S.M.N. est à ~40 min de Bologne et ~2h30 de Fiumicino, puis ~30 min en voiture.",
+    "travel.train.h":"En train","travel.train.b":"Florence Santa Maria Novella — grande vitesse depuis Rome, Milan, Bologne et Venise. À environ 25–30 min de la villa en voiture ou en taxi.",
+    "travel.car.h":"Transfert","travel.car.b":"Une navette depuis le centre de Florence jusqu'à la villa et retour est prévue — horaires et point de rendez-vous <strong>à confirmer (TBC)</strong>. Le taxi reste toujours une solution : ~25–30 min depuis le centre.",
+    "travel.stay.h":"Où dormir","travel.stay.b":"Nous vous fournirons une liste d'hôtels suggérés — dans le centre de Florence et près d'Impruneta — à l'approche de la date.",
 
     "flo.over":"Florence","flo.title":"Que faire à Florence",
     "flo.body":"Faites-en un week-end. Montez à la coupole du Duomo, flânez aux Offices, traversez le Ponte Vecchio au coucher du soleil et trouvez la meilleure glace de l'Oltrarno. Les collines du Chianti et leurs vignobles sont à quelques minutes au sud — et ça vaut le détour.",
@@ -103,7 +103,7 @@ const I18N = {
     "gift.iban.holder":"Bénéficiaire","gift.iban.ref":"Référence","gift.iban.bank":"Banque","gift.iban.corr":"BIC correspondant",
 
     "rsvp.over":"RSVP","rsvp.title":"Répondez-nous","rsvp.by":"Merci de répondre avant le <span class='rsvp-by__date'>30 avril 2027</span>.","rsvp.cta":"Confirmer ma présence",
-    "rsvp.who.h":"Accompagnants et enfants","rsvp.who.plus":"Votre invitation nomme exactement les personnes pour qui nous avons gardé une place. Si elle mentionne un·e accompagnant·e, nous serons ravis de faire sa connaissance : indiquez-nous son nom en répondant. Si elle n'en mentionne pas, nous en sommes sincèrement désolés — les tables de la villa sont dressées pour un nombre que nous ne pouvons pas élargir.","rsvp.who.kids":"Avec toute la tendresse du monde, nous avons choisi une fête <strong>réservée aux adultes</strong>. Nous adorons vos enfants : pour cette fois, nous espérons que vous profiterez d'une soirée rien qu'à vous.",
+    "rsvp.qa.h":"Questions fréquentes","rsvp.qa.plus.h":"Accompagnants","rsvp.qa.plus.b":"Votre invitation nomme exactement les personnes pour qui nous avons gardé une place. Si elle mentionne un·e accompagnant·e, nous serons ravis de faire sa connaissance : indiquez-nous son nom en répondant. Si elle n'en mentionne pas, nous en sommes sincèrement désolés — les tables de la villa sont dressées pour un nombre que nous ne pouvons pas élargir.","rsvp.qa.kids.h":"Enfants et bébés","rsvp.qa.kids.b":"Avec toute la tendresse du monde, nous avons choisi une fête <strong>réservée aux adultes</strong>, bébés compris. Nous adorons vos enfants : pour cette fois, nous espérons que vous profiterez d'une soirée rien qu'à vous.",
     "rsvp.f.name":"Nom et prénom","rsvp.f.email":"E-mail","rsvp.f.phone":"Téléphone","rsvp.f.address":"Adresse postale","rsvp.f.attending":"Serez-vous des nôtres ?","rsvp.f.yes":"Oui, avec joie","rsvp.f.no":"Malheureusement non","rsvp.f.party":"Venez-vous seul·e ou accompagné·e ?","rsvp.f.alone":"Seul·e","rsvp.f.plus":"Avec un·e invité·e *","rsvp.f.plusnote":"* Seuls les invités dont l'invitation mentionne un·e accompagnant·e peuvent en amener un·e. Nous en sommes vraiment désolés — la place est limitée.","rsvp.f.plusname":"Nom de votre invité·e","rsvp.f.hello":"Bon retour","rsvp.f.diet":"Allergies ou intolérances","rsvp.f.shuttle":"Avez-vous besoin de la navette depuis/vers Florence ?","rsvp.f.staying":"Où logerez-vous ? (pour organiser la navette)","rsvp.f.y":"Oui","rsvp.f.n":"Non","rsvp.f.message":"Un mot pour nous","rsvp.f.submit":"Envoyer la réponse","rsvp.f.close":"Fermer",
     "rsvp.fallback":"Un souci avec le formulaire ? Écrivez à <a class='mail' data-addr></a>.",
 
@@ -126,12 +126,12 @@ const I18N = {
     "welcome.over":"Welcome","welcome.title":"Together, in Tuscany",
     "welcome.body":"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
 
-    "story.over":"Our story","story.title":"From [city] to Florence",
-    "story.body":"<em>[TO PERSONALISE]</em> How we met, and how we got here… <em>(a few lines in your own words)</em>",
+    "story.over":"Our story","story.title":"A new chapter",
+    "story.body":"After a journey that has brought us to this moment, we are delighted to celebrate our wedding surrounded by the people who matter most to us. This day marks the beginning of a new chapter — one we look forward to sharing and enjoying together. We are so happy to have you with us for it.",
 
     "day.over":"The day","day.title":"The programme","day.note":"Times to be confirmed.",
     "day.t1":"Arrival & welcome","day.t2":"Ceremony","day.t3":"Aperitivo in the gardens","day.t4":"Dinner in the frescoed gallery","day.t5":"Dancing","day.t6":"Farewell","day.t6.time":"late",
-    "day.dress.label":"Dress code","day.dress.value":"Elegant cocktail — black tie not required, but dress to impress.","day.dress.women":"Evening-wear inspiration for guests","day.dress.men":"Elegant suit inspiration for guests","day.map.cap":"The gardens and the seating plan.",
+    "day.dress.label":"Dress code","day.dress.value":"Elegant cocktail — black tie not required, but please dress up: no trainers, casual shoes or shorts. And white, beige and anything close to them are the bride's.","day.dress.women":"Evening-wear inspiration for guests","day.dress.men":"Elegant suit inspiration for guests","day.map.cap":"The gardens and the seating plan.",
 
     "venue.over":"The venue","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"A fifteenth-century Medici villa in the hills south of Florence, bought by Lorenzo the Magnificent in 1480 and frescoed in the 1630s for Prince Giovan Carlo de' Medici. Held by the Corsini family since 1644 — formal box gardens, cypress and olive groves looking over the Chianti hills.",
@@ -140,10 +140,10 @@ const I18N = {
     "venue.map.cta":"Open in Google Maps","venue.getting":"About 25–30 minutes by car from central Florence.",
 
     "travel.over":"Stay & travel","travel.title":"Getting there & where to stay",
-    "travel.air.h":"By air","travel.air.b":"Florence (FLR) ~30 min · Pisa (PSA) ~1h20 · Bologna (BLQ) ~1h30.",
-    "travel.train.h":"By train","travel.train.b":"Florence Santa Maria Novella (high-speed from Rome, Milan, etc.).",
-    "travel.car.h":"Getting to the villa","travel.car.b":"Car or taxi from the centre, ~25–30 min. [Shuttle: to be confirmed.]",
-    "travel.stay.h":"Where to stay","travel.stay.b":"<em>[TO ADD: 3–5 hotels — a few in central Florence, a few near Impruneta.]</em>",
+    "travel.air.h":"By air","travel.air.b":"Florence (FLR) ~30 min by car · Pisa (PSA) ~1h20 · Bologna (BLQ) ~1h30.<br>Rome Fiumicino (FCO) ~3h by car.<br>From Bologna and Rome the train is a good alternative: Florence S.M.N. is ~40 min from Bologna and ~2h30 from Fiumicino, then ~30 min by car.",
+    "travel.train.h":"By train","travel.train.b":"Florence Santa Maria Novella — high-speed from Rome, Milan, Bologna and Venice. About 25–30 min from the villa by car or taxi.",
+    "travel.car.h":"Getting to the villa","travel.car.b":"A shuttle from central Florence to the villa and back is planned — times and meeting point <strong>to be confirmed (TBC)</strong>. A taxi is always an option: ~25–30 min from the centre.",
+    "travel.stay.h":"Where to stay","travel.stay.b":"We will be providing a list of suggested hotels — in central Florence and near Impruneta — closer to the date.",
 
     "flo.over":"Florence","flo.title":"Things to do in Florence",
     "flo.body":"Make a weekend of it. Climb the Duomo, wander the Uffizi, cross the Ponte Vecchio at golden hour and hunt down the best gelato in the Oltrarno. The Chianti hills and their vineyards are a short drive south — and worth it.",
@@ -157,7 +157,7 @@ const I18N = {
     "gift.iban.holder":"Beneficiary","gift.iban.ref":"Reference","gift.iban.bank":"Bank","gift.iban.corr":"Correspondent BIC",
 
     "rsvp.over":"RSVP","rsvp.title":"Let us know","rsvp.by":"Kindly reply by <span class='rsvp-by__date'>30 April 2027</span>.","rsvp.cta":"Reply to our invitation",
-    "rsvp.who.h":"Plus-ones &amp; children","rsvp.who.plus":"Your invitation names exactly the people we have kept a seat for. If it mentions a plus-one, we would love to meet them — just give us their name when you reply. If it does not, we are genuinely sorry: the villa's tables are laid for a number we cannot stretch.","rsvp.who.kids":"And with all the love in the world, we have decided this will be an <strong>adults-only</strong> celebration. We adore your children — just this once, we hope you will enjoy an evening entirely to yourselves.",
+    "rsvp.qa.h":"Q&amp;A","rsvp.qa.plus.h":"Plus-one","rsvp.qa.plus.b":"Your invitation names exactly the people we have kept a seat for. If it mentions a plus-one, we would love to meet them — just give us their name when you reply. If it does not, we are genuinely sorry: the villa's tables are laid for a number we cannot stretch.","rsvp.qa.kids.h":"Children and babies","rsvp.qa.kids.b":"And with all the love in the world, we have decided this will be an <strong>adults-only</strong> celebration, babies included. We adore your children — just this once, we hope you will enjoy an evening entirely to yourselves.",
     "rsvp.f.name":"Full name","rsvp.f.email":"Email","rsvp.f.phone":"Phone","rsvp.f.address":"Postal address","rsvp.f.attending":"Will you join us?","rsvp.f.yes":"Yes, with joy","rsvp.f.no":"Sadly, no","rsvp.f.party":"Are you coming alone or with someone?","rsvp.f.alone":"On my own","rsvp.f.plus":"With a plus-one *","rsvp.f.plusnote":"* Only guests whose invitation mentions a plus-one can bring someone. We're truly sorry — space is limited.","rsvp.f.plusname":"Your plus-one's name","rsvp.f.hello":"Welcome back","rsvp.f.diet":"Allergies or dietary needs","rsvp.f.shuttle":"Do you need the shuttle to/from Florence?","rsvp.f.staying":"Where will you be staying? (to plan the shuttle)","rsvp.f.y":"Yes","rsvp.f.n":"No","rsvp.f.message":"A message for us","rsvp.f.submit":"Send reply","rsvp.f.close":"Close",
     "rsvp.fallback":"Trouble with the form? Email us at <a class='mail' data-addr></a>.",
 

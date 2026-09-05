@@ -235,21 +235,25 @@ h1,h2,h3{ font-weight:500; margin:0; }
    reads as a deadline and not as another link. */
 .rsvp-by__date{ color:var(--terracotta-d); font-weight:600; white-space:nowrap; }
 
-/* Who the invitation is for — plus-ones and children. Set apart from the
-   deadline line above it, and quiet: it is an apology, not an announcement. */
-.rsvp-who{
+/* The Q&A that sits above the form. Set apart from the deadline line, and
+   quiet: these are apologies, not announcements. */
+.rsvp-qa{
   margin-top:2.2rem; text-align:left;
   padding:clamp(1.2rem,3vw,1.7rem) clamp(1.2rem,3vw,1.8rem);
   background:color-mix(in srgb, var(--salvia-light) 16%, var(--panna));
   border:1px solid var(--line); border-radius:var(--radius);
 }
-.rsvp-who__h{
+.rsvp-qa__h{
   font-family:var(--f-ui); text-transform:uppercase; letter-spacing:.14em;
-  font-size:.72rem; color:var(--salvia-deep); margin:0 0 .85rem;
+  font-size:.72rem; color:var(--salvia-deep); margin:0 0 1.1rem;
 }
-.rsvp-who__p{ font-size:1rem; color:var(--muted); line-height:1.65; margin:0; }
-.rsvp-who__p + .rsvp-who__p{ margin-top:.85rem; }
-.rsvp-who__p strong{ color:var(--salvia-deep); font-weight:600; }
+.rsvp-qa__q{
+  font-family:var(--f-display); font-size:1.2rem; color:var(--ink);
+  margin:1.5rem 0 .35rem;
+}
+.rsvp-qa__q:first-of-type{ margin-top:0; }
+.rsvp-qa__p{ font-size:1rem; color:var(--muted); line-height:1.65; margin:0; }
+.rsvp-qa__p strong{ color:var(--salvia-deep); font-weight:600; }
 
 /* RSVP form */
 .rsvp-form{ text-align:left; display:grid; gap:1.1rem; margin:clamp(1.8rem,4vw,2.6rem) auto 0; }
