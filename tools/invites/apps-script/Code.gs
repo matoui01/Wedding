@@ -1013,7 +1013,10 @@ function mailLayout_(lang, words){
     opt = opt || {};
     const w = opt.w || colW;
     const x = opt.x === undefined ? (W - w) / 2 : opt.x;
-    const h = wrapLines_(str, spec.face || 'ebg', spec.size, w) * spec.size * (spec.lh || 1.4);
+    // never tighter than the face's own leading: that is Slides' floor, so
+    // asking for less would measure a block shorter than it will be drawn
+    const lh = Math.max(spec.natural || 1.2, spec.lh || 1.4);
+    const h = wrapLines_(str, spec.face || 'ebg', spec.size, w) * spec.size * lh;
     L.text.push({ spec, str, y, h, x, w, center: opt.center !== undefined ? opt.center : spec.center,
                   color: opt.color });
     y += h;
@@ -1234,9 +1237,13 @@ function mailBlob_(g){
       tr.getTextStyle().setFontFamily(t.spec.font).setFontSize(t.size || t.spec.size)
         .setForegroundColor(t.color || T.ink)
         .setItalic(!!t.spec.italic).setBold(false);
-      tr.getParagraphStyle()
-        .setLineSpacing(Math.round((t.spec.lh || 1.4) / (t.spec.natural || 1.2) * 100))
-        .setSpaceAbove(0).setSpaceBelow(0)
+      const ps = tr.getParagraphStyle();
+      // Slides takes line spacing as a percentage of the face's own leading
+      // and refuses anything under 100 — which the password line, set tighter
+      // than the face is drawn, asked for. Never worth failing a send over.
+      const spacing = Math.round((t.spec.lh || 1.4) / (t.spec.natural || 1.2) * 100);
+      try { ps.setLineSpacing(Math.max(100, Math.min(400, spacing || 100))); } catch(_){}
+      ps.setSpaceAbove(0).setSpaceBelow(0)
         .setParagraphAlignment(t.center ? SlidesApp.ParagraphAlignment.CENTER
                                         : SlidesApp.ParagraphAlignment.START);
     });
