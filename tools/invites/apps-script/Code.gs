@@ -255,8 +255,6 @@ const COPY = {
 const JOIN     = { it:' e ',   fr:' et ',   en:' and ' };
 const PLURAL   = { it:'Cari ', fr:'Chers ', en:'Dear ' };
 const FALLBACK = { it:'Cari tutti,', fr:'Chers tous,', en:'Dear all,' };
-// an invitee cell that already names two people ("Paul et Véro")
-const PAIRED   = /\s(?:et|e|and|&|con|\+)\s/i;
 
 // French and Italian gender the singular ("Chère", "Caro"), and nothing on the
 // row records a guest's gender. The ending of the first name decides, except
@@ -289,47 +287,62 @@ function normLang_(v){ v = String(v || '').trim().toLowerCase().slice(0, 2); ret
 function normText_(s){ return String(s == null ? '' : s).normalize('NFC').replace(/\s+/g, ' ').trim(); }
 function truthy_(v){ v = String(v || '').trim().toLowerCase(); return v === 'yes' || v === 'y' || v === 'true' || v === '1' || v === 'si' || v === 'sì' || v === 'oui' || v === 'x'; }
 
-// The invitee as addressed: a trailing initial is how the sheet tells two
-// Thomases apart ("Thomas J"), not how anyone is greeted.
-function addressed_(invitee){ return normText_(invitee).replace(/\s+[A-Za-z]\.?$/, ''); }
-
-// true when the greeting is singular in a gendered language — the only case
-// where greetingFor_ has to guess, and the rows worth a second look
-function greetingGuessed_(invitee, plusName, lang){
-  invitee = addressed_(invitee);
-  return normLang_(lang) !== 'en' && !!invitee && !normText_(plusName) && !PAIRED.test(invitee);
+// The people a letter is addressed to, as the Household cell names them —
+// "Paul et Véro", "Thibault & Clara", "Zia Antonella" — because that cell is
+// written the way the couple actually call them, where Invitee may carry a
+// surname to tell two Thomases apart. A trailing initial ("Thomas J") is how
+// the sheet tells them apart too, not how anyone is greeted. With no
+// Household, the invitee and, if invited, the plus-one.
+const SPLIT_NAMES = /\s*(?:&|\+|\bet\b|\be\b|\band\b)\s*/i;
+// a Household still waiting for a real name — flagged, never printed quietly
+const PLACEHOLDER = /\b(sa femme|son mari|son conjoint|sa conjointe|sa compagne|son compagnon|his wife|her husband|partner|moglie|marito|compagn[oa])\b/i;
+function invitedPlus_(g){ return g.plusOne ? normText_(g.plusName) : ''; }
+function addressees_(g){
+  const hh = normText_(g.household);
+  let names = hh ? hh.split(SPLIT_NAMES).map(normText_).filter(Boolean) : [];
+  if(!names.length){
+    names = [normText_(g.names)].filter(Boolean);
+    const p = invitedPlus_(g);
+    if(p) names.push(p);
+  }
+  return names.map(n => n.replace(/\s+[A-Za-z]\.?$/, ''));
 }
 
-// "Cari Sara e Riccardo," / "Chère Clara," — from the names on the row.
-// plusName is only ever the name of an *invited* plus-one (see greetingOf_).
-function greetingFor_(invitee, plusName, lang){
+// "Cari Sara e Riccardo," / "Chère Clara," — from the names on the row
+function greetingFor_(names, lang){
   lang = normLang_(lang);
-  invitee = addressed_(invitee); plusName = normText_(plusName);
-  if(!invitee && !plusName) return FALLBACK[lang];
-  const names = invitee && plusName ? invitee + JOIN[lang] + plusName : (invitee || plusName);
-  if(!greetingGuessed_(invitee, plusName, lang)) return PLURAL[lang] + names + ',';
-  const first = invitee.split(' ')[0].toLowerCase();
+  if(!names.length) return FALLBACK[lang];
+  const joined = names.length > 1
+    ? names.slice(0, -1).join(', ') + JOIN[lang] + names[names.length - 1]
+    : names[0];
+  if(lang === 'en') return 'Dear ' + joined + ',';
+  if(names.length > 1) return PLURAL[lang] + joined + ',';
+  // one person, in French or Italian: the article has a gender and nothing
+  // on the row records one, so the first name decides, hint lists first
+  const first = names[0].split(' ')[0].toLowerCase();
   let fem;
   if(FEMININE[lang].indexOf(first) >= 0) fem = true;
   else if(MASCULINE[lang].indexOf(first) >= 0) fem = false;
   else fem = lang === 'fr' ? /[ae]$/.test(first) : /a$/.test(first);
-  const lead = lang === 'fr' ? (fem ? 'Chère ' : 'Cher ') : (fem ? 'Cara ' : 'Caro ');
-  return lead + names + ',';
+  return (lang === 'fr' ? (fem ? 'Chère ' : 'Cher ') : (fem ? 'Cara ' : 'Caro ')) + joined + ',';
 }
 
-// the name of the plus-one if — and only if — the row invites one. A name in
-// that column next to Plus-one = no is a note to yourselves, not a guest.
-function invitedPlus_(g){ return g.plusOne ? normText_(g.plusName) : ''; }
+// what the row asks for, or what its names give
+function greetingOf_(g){ return normText_(g.greeting) || greetingFor_(addressees_(g), g.lang); }
 
-// what the row asks for, or the best guess from its names
-function greetingOf_(g){ return normText_(g.greeting) || greetingFor_(g.names, invitedPlus_(g), g.lang); }
+// true when the greeting was guessed in a gendered language, or names a
+// placeholder — the rows worth a look before sending
+function greetingDoubtful_(g){
+  if(normText_(g.greeting)) return PLACEHOLDER.test(g.greeting) ? 'placeholder' : '';
+  const names = addressees_(g);
+  if(names.some(n => PLACEHOLDER.test(n))) return 'placeholder';
+  return (normLang_(g.lang) !== 'en' && names.length === 1) ? 'guessed' : '';
+}
 
-// The open-plus-one sentence — or nothing. A named plus-one is already in
-// the greeting ("Cari Sara e Riccardo,") and saying "and Riccardo too" under
-// it reads as if he had not been; a couple already named in the invitee cell
-// ("Paul et Véro") is not being offered a third.
+// The open-plus-one sentence — or nothing: a couple already named in the
+// greeting ("Chers Paul et Véro,") is not being offered a third.
 function plusLine_(g){
-  if(!g.plusOne || invitedPlus_(g) || PAIRED.test(addressed_(g.names))) return '';
+  if(!g.plusOne || addressees_(g).length > 1) return '';
   return PLUS_COPY[normLang_(g.lang)];
 }
 
@@ -393,7 +406,8 @@ function onOpen(){
   SpreadsheetApp.getUi().createMenu('💌 Wedding HQ')
     .addItem('Set up / repair the workbook',   'setupWorkbook')
     .addSeparator()
-    .addItem('Prepare guests — invite links & greetings', 'prepareGuests')
+    .addItem('Prepare guests — invite links',   'prepareGuests')
+    .addItem('Review greetings — as they will be drawn', 'reviewGreetings')
     .addItem('Send this invitation now',       'sendSelectedRowNow')
     .addItem('Preview this row’s letter — save a PNG to Drive', 'previewSelectedCard')
     .addSeparator()
@@ -675,26 +689,44 @@ const TOKEN_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
    never regenerated — the link in an email already sent has to keep working —
    and greetings are only filled where the cell is empty, so anything you
    typed yourself stays. */
+/* Every row that names someone gets an invite link. Links are never
+   regenerated — the link in an email already sent has to keep working. */
 function prepareGuests(){
   const ctx = readGuests_();
-  let links = 0, greetings = 0, guessed = 0;
+  let links = 0;
   for(let i = 0; i < ctx.data.length; i++){
-    const names = normText_(cell_(ctx, i, 'invitee'));
+    const names = normText_(cell_(ctx, i, 'household')) || normText_(cell_(ctx, i, 'invitee'));
     if(!names && !String(cell_(ctx, i, 'email') || '').trim()) continue;
     if(!String(cell_(ctx, i, 'token') || '').trim()){ ensureToken_(ctx, i); links++; }
-    if(names && !normText_(cell_(ctx, i, 'greeting'))){
-      const plusName = truthy_(cell_(ctx, i, 'plus-one')) ? cell_(ctx, i, 'plus-one name') : '';
-      const lang = cell_(ctx, i, 'language');
-      setCell_(ctx, i, 'greeting', greetingFor_(names, plusName, lang));
-      greetings++;
-      if(greetingGuessed_(names, plusName, lang)) guessed++;
-    }
   }
-  toast_((links ? links + ' invite link(s) made' : 'Every guest already has an invite link') +
-         (greetings ? ' · ' + greetings + ' greeting(s) filled in' : '') +
-         (guessed ? '. ' + guessed + ' of them are one person addressed in French or Italian, ' +
-                    'so Chère/Cher or Cara/Caro was guessed from the first name — glance down ' +
-                    'the Greeting column and correct any that are wrong' : '') + '.');
+  toast_(links ? links + ' invite link(s) made.' : 'Every guest already has an invite link.');
+}
+
+/* Every greeting as it would be drawn right now, in one dialog — the rows
+   where the gender was guessed or a placeholder stands in for a name are
+   marked, so they can be fixed in Household (or overridden in Greeting)
+   before anything goes out. */
+function reviewGreetings(){
+  const ctx = readGuests_();
+  const lines = [];
+  let doubtful = 0;
+  for(let i = 0; i < ctx.data.length; i++){
+    const g = guestFromRow_(ctx, i);
+    if(!g.household && !g.names) continue;
+    const why = greetingDoubtful_(g);
+    if(why) doubtful++;
+    lines.push('<tr' + (why ? ' class="d"' : '') + '><td>' + (i + 2) + '</td><td>' + esc_(g.household || g.names) +
+               '</td><td>' + esc_(greetingOf_(g)) + '</td><td>' + esc_(plusLine_(g)) + '</td><td>' +
+               (why === 'placeholder' ? '⚠ placeholder name' : why === 'guessed' ? 'gender guessed' : '') + '</td></tr>');
+  }
+  const html = '<style>body{font:13px/1.4 system-ui,sans-serif;color:#3D352A}table{border-collapse:collapse;width:100%}' +
+    'td,th{padding:4px 8px;border-bottom:1px solid #E4DCC9;text-align:left;vertical-align:top}th{color:#897C68;font-weight:600}' +
+    'tr.d td{background:#FDF3E7}</style>' +
+    '<p>' + lines.length + ' letters · ' + doubtful + ' worth a look (shaded). Edit <b>Household</b> to change the names, ' +
+    'or type the exact line in <b>Greeting</b> to override.</p>' +
+    '<table><tr><th>Row</th><th>Household</th><th>Greeting</th><th>Plus-one line</th><th></th></tr>' + lines.join('') + '</table>';
+  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(860).setHeight(600),
+    'Greetings — as they will be drawn');
 }
 
 function ensureToken_(ctx, i){
@@ -1126,6 +1158,7 @@ function guestFromRow_(ctx, i){
     category: String(cell_(ctx, i, 'category') || '').trim(),
     priority: String(cell_(ctx, i, 'priority') || '').trim(),
     greeting: String(cell_(ctx, i, 'greeting') || '').trim(),
+    household:String(cell_(ctx, i, 'household') || '').trim(),
     names:    String(cell_(ctx, i, 'invitee') || '').trim(),
     plusOne:  truthy_(cell_(ctx, i, 'plus-one')),
     plusName: String(cell_(ctx, i, 'plus-one name') || '').trim(),
