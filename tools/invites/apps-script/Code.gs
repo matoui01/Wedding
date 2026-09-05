@@ -995,7 +995,8 @@ const CARD = {
   PLUS:  { font: 'Cormorant Garamond', face: 'cormorant-italic', size: 18, lh: 1.4, natural: 1.21, gap: 26, italic: true, center: true },
   SITE:  { font: 'EB Garamond', face: 'ebg', size: 16, lh: 1.62, natural: 1.27, gap: 26, center: true },
   SPRIG: { gap: 22, w: 20, h: 20 },
-  THUMB: 'LARGE'                                     // the fallback export
+  THUMB: 'LARGE',                                    // the fallback export
+  MAX_MB: 12                                         // above this the picture is compressed
 };
 
 /* Where everything goes, in pt, for this guest's words. Line counts are
@@ -1102,6 +1103,22 @@ function fitToPage_(L, pageH){
   L.shapes.forEach(sp => { sp.y += shift(sp.y); });
   L.panel.y += shift(panelTop);
   return L;
+}
+
+/* What was actually produced, in the terms that decide how it looks: the
+   page it was drawn on, and the pixels that came back. A picture 600 px wide
+   in a 600 px column is soft however sharp its sources were. */
+let LAST_DRAW = '';
+function drawInfo_(blob, page){
+  const b = blob.getBytes();
+  let px = '';
+  // a PNG says its size in the IHDR chunk, right after the 8-byte signature
+  if(b.length > 24 && (b[0] & 0xff) === 0x89 && (b[1] & 0xff) === 0x50){
+    const n = (i) => ((b[i] & 0xff) << 24 | (b[i+1] & 0xff) << 16 | (b[i+2] & 0xff) << 8 | (b[i+3] & 0xff)) >>> 0;
+    px = n(16) + ' × ' + n(20) + ' px';
+  }
+  return (px ? px + ', ' : '') + Math.round(b.length / 1024) + ' KB, from a ' +
+         Math.round(page.w) + ' × ' + Math.round(page.h) + ' pt page';
 }
 
 function emuToPt_(dim){
@@ -1227,16 +1244,28 @@ function mailBlob_(g){
 
     // Drive exports the page at its own size — 1 pt becomes 1⅓ px — while a
     // thumbnail caps the long side at 1600 px, which on a page three times
-    // taller than it is wide left the invitation 505 px across and Gmail
-    // stretching it back up to 600.
-    let png = null;
-    try {
-      const exp = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
-        '/export/png?id=' + id + '&pageid=' + slideId,
+    // taller than it is wide left the invitation 505 px across.
+    //
+    // The PNG is sent as it comes. Re-encoding it here would go through
+    // Apps Script's own JPEG writer, which has no quality setting and lays
+    // visible blocks over flat cream and fine script — the thing that looked
+    // like a resolution problem and was not. Only a picture too heavy to mail
+    // is converted, and then by Google's own encoder rather than that one.
+    const fetchExport = (fmt) => {
+      const res = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
+        '/export/' + fmt + '?id=' + id + '&pageid=' + slideId,
         { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
-      if(exp.getResponseCode() === 200 && exp.getBlob().getBytes().length > 20000) png = exp.getBlob();
-    } catch(_){}
-    if(!png){
+      return (res.getResponseCode() === 200 && res.getBlob().getBytes().length > 20000) ? res.getBlob() : null;
+    };
+
+    let img = null;
+    try { img = fetchExport('png'); } catch(_){}
+    if(img && img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
+      let jpg = null;
+      try { jpg = fetchExport('jpeg'); } catch(_){}
+      img = jpg || img.getAs('image/jpeg');
+    }
+    if(!img){
       const thumb = Slides.Presentations.Pages.getThumbnail(id, slideId, {
         'thumbnailProperties.mimeType': 'PNG', 'thumbnailProperties.thumbnailSize': CARD.THUMB
       });
@@ -1244,11 +1273,10 @@ function mailBlob_(g){
       if(res.getResponseCode() !== 200){
         throw new Error('could not download the drawn invitation (HTTP ' + res.getResponseCode() + ')');
       }
-      png = res.getBlob();
+      img = res.getBlob();
     }
-    // JPEG: a watercolour on ivory, three thousand pixels tall, is a megabyte
-    // as PNG and a fraction of that with no visible difference
-    return png.getAs('image/jpeg').setName('invitation.jpg');
+    LAST_DRAW = drawInfo_(img, page);
+    return img.setName('invitation.' + (img.getContentType() === 'image/png' ? 'png' : 'jpg'));
   } finally { deleteOwnFile_(id); }
 }
 
@@ -1447,7 +1475,7 @@ function previewSelectedCard(){
     htmlBody: '<img src="cid:letter" width="600" style="display:block;border:0;width:600px;max-width:100%;height:auto;">',
     inlineImages: { letter: png }
   });
-  toast_('Preview of ' + who + '’s invitation sent to ' + me + '.');
+  toast_('Preview of ' + who + '’s invitation sent to ' + me + ' — ' + LAST_DRAW + '.');
 }
 
 
