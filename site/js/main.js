@@ -101,7 +101,12 @@ function guestToken(){
 /* ---- The guest's own reply-by date ---------------------------------------- *
  * Written in the language on screen: the same day reads "30 aprile 2027",
  * "30 avril 2027" or "30 April 2027". Called again after every language
- * switch, since the switch rewrites the general sentence back over it. */
+ * switch, since the switch rewrites the general sentence back over it.
+ *
+ * Two places say this line — the RSVP section and the form in the modal —
+ * and the dictionary rewrites both. So both are written back over here: a
+ * guest who read their own date on the page and then opened the form to
+ * find the general one would not know which date they were being held to. */
 const MONTHS_I18N = {
   it:['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'],
   fr:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
@@ -111,9 +116,9 @@ const REPLY_BY_LINE = {
   it:'Vi preghiamo di rispondere entro il ', fr:'Merci de répondre avant le ', en:'Kindly reply by '
 };
 function showReplyBy(){
-  const el = document.getElementById('rsvp-by');
+  const els = document.querySelectorAll('[data-i18n="rsvp.by"]');
   const iso = window.__guestReplyBy;
-  if(!el || (!iso && !window.__guestReplyByText)) return;
+  if(!els.length || (!iso && !window.__guestReplyByText)) return;
   const L = document.documentElement.lang || 'it';
   let date = window.__guestReplyByText;
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
@@ -124,12 +129,15 @@ function showReplyBy(){
   /* Built as nodes rather than markup: the date can come from the couple's
      own sheet, and the span is what paints it — see .rsvp-by__date. Without
      this the guest's own deadline would land as plain text while the general
-     one, which comes from the dictionary, is marked up. */
-  el.textContent = REPLY_BY_LINE[L] || REPLY_BY_LINE.it;
-  const span = document.createElement('span');
-  span.className = 'rsvp-by__date';
-  span.textContent = date;
-  el.append(span, '.');
+     one, which comes from the dictionary, is marked up. A span belongs to one
+     parent, so each line gets its own. */
+  els.forEach(el => {
+    el.textContent = REPLY_BY_LINE[L] || REPLY_BY_LINE.it;
+    const span = document.createElement('span');
+    span.className = 'rsvp-by__date';
+    span.textContent = date;
+    el.append(span, '.');
+  });
 }
 window.showReplyBy = showReplyBy;
 
