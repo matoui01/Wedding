@@ -44,7 +44,9 @@ script property**:
 
 | Property | Value |
 |---|---|
-| `SITE_PASSWORD` | `REMOVED` |
+| `SITE_PASSWORD` | the site password |
+
+The value is deliberately not written down here. This repository is public.
 
 Everything else in `CFG` is already correct. `RSVP_BY` is only a fallback; the
 real dates live on the **Deadlines** tab.

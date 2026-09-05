@@ -15,8 +15,35 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const OUT = path.resolve(__dirname, '../../../site/assets/img/cards');
-const LEAD = { it: 'Cari ', fr: 'Chers ', en: 'Dear ' };
+/* Not under site/: these are never served from the website. They are uploaded
+   to the couple's Drive folder, where the Apps Script reads them directly. */
+const OUT = path.resolve(__dirname, 'cards-out');
+/* A greeting has to agree with who is being greeted. Addressing a couple in
+   the singular, or one person in the plural, is the sort of thing a guest
+   notices immediately on a wedding invitation. */
+const JOIN   = { it: ' e ',    fr: ' et ',   en: ' and ' };
+const PLURAL = { it: 'Cari ',  fr: 'Chers ', en: 'Dear ' };
+const SINGLE = { fr: 'Cher ',  en: 'Dear ' };
+
+/* Names already written as a pair — "Rajia et Afif", "Tarek et sa femme" —
+   are plural even though they sit in one field. */
+const PAIRED = /\s(?:et|e|and|&|con)\s/i;
+
+function greetingFor(invitee, plusName, lang){
+  const names = plusName ? invitee + JOIN[lang] + plusName : invitee;
+  const many = !!plusName || PAIRED.test(invitee);
+  if(many) return PLURAL[lang] + names + ',';
+  if(lang === 'en') return 'Dear ' + names + ',';
+  // French and Italian both gender the singular article, and nothing in the
+  // sheet records a guest's gender. The ending is a decent but fallible clue,
+  // so every guess is listed at the end of the run for a human to check —
+  // filling that guest's Greeting cell always wins over this.
+  GUESSED.push(names);
+  if(lang === 'fr') return (/[ae]$/i.test(invitee) ? 'Chère ' : 'Cher ') + names + ',';
+  return (/a$/i.test(invitee) ? 'Cara ' : 'Caro ') + names + ',';
+}
+
+const GUESSED = [];
 
 function parseCsv(text){
   const rows = [];
@@ -50,7 +77,8 @@ for(const row of guests){
   const names = (row['Invitee'] || '').trim();
   const g = {
     lang,
-    greeting: (row['Greeting'] || '').trim() || (LEAD[lang] || 'Dear ') + names + ',',
+    greeting: (row['Greeting'] || '').trim() ||
+              greetingFor(names, (row['Plus-one name'] || '').trim(), lang),
     plusOne: /^(yes|y|true|1|si|sì|oui|x)$/i.test((row['Plus-one'] || '').trim()),
     plusName: (row['Plus-one name'] || '').trim(),
     note: (row['Personal note'] || '').trim(),
@@ -60,5 +88,11 @@ for(const row of guests){
                { stdio: 'inherit' });
   made++;
 }
-console.log(`\n${made} card(s) rendered into site/assets/img/cards/` +
-            (skipped ? ` · ${skipped} skipped (no token yet)` : ''));
+console.log(`\n${made} card(s) rendered into tools/invites/assets/cards-out/` +
+            (skipped ? ` · ${skipped} skipped (no token yet)` : '') +
+            `\nUpload them into the Drive folder named in CFG.CARDS_FOLDER.`);
+if(GUESSED.length){
+  console.log(`\n${GUESSED.length} greeting(s) guessed a gender from the name — check these,`);
+  console.log('and correct any that are wrong in the guest\'s Greeting cell:');
+  console.log('  ' + GUESSED.join('\n  '));
+}

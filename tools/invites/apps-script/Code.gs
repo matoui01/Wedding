@@ -61,10 +61,13 @@ const CFG = {
   // will not load Cormorant, and these are where the design lives.
   IMG_TAG  : function(l){ return 'email-tag-' + l + '.png'; },
   IMG_CLOSE: function(l){ return 'email-close-' + l + '.png'; },
-  // The invitation itself, rendered per guest from the real fonts by
-  // tools/invites/assets/render-cards.js. Render and deploy the cards before
-  // creating drafts, or the guest sees alt text where the invitation should be.
-  IMG_CARD : function(token){ return 'cards/card-' + token + '.jpg'; },
+  // The invitation cards live in a Drive folder, not on the website: they are
+  // ~315 KB each and there are one per guest, which is a lot of weight to put
+  // in a git repository and republish on every change. The script runs as the
+  // couple's own account, so it can read them straight out of Drive — nothing
+  // is publicly hosted, and no guest's card is reachable by anyone else.
+  CARDS_FOLDER : 'Wedding cards',
+  IMG_CARD : function(token){ return 'card-' + token + '.jpg'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -154,7 +157,7 @@ const MONTHS = {
    that. Set it once in Apps Script:
 
      Project Settings ▸ Script properties ▸ Add script property
-       SITE_PASSWORD = REMOVED
+       SITE_PASSWORD = <the site password>
 
    Nothing else needs changing, and the email preview harness overrides it
    from its own field. */
@@ -626,6 +629,30 @@ function fetchBlob_(file, name){
   } catch(_){ return null; }
 }
 
+/* The guest's card, read from the Drive folder named in CFG.CARDS_FOLDER.
+   The folder handle is looked up once per run rather than per guest — 87
+   folder searches to send one wave is 86 more than the job needs. */
+let CARDS_FOLDER_ = undefined;
+function cardsFolder_(){
+  if(CARDS_FOLDER_ !== undefined) return CARDS_FOLDER_;
+  try {
+    const it = DriveApp.getFoldersByName(CFG.CARDS_FOLDER);
+    CARDS_FOLDER_ = it.hasNext() ? it.next() : null;
+  } catch(_){ CARDS_FOLDER_ = null; }
+  return CARDS_FOLDER_;
+}
+
+function cardBlob_(token){
+  if(!token) return null;
+  const folder = cardsFolder_();
+  if(!folder) return null;
+  try {
+    const files = folder.getFilesByName(CFG.IMG_CARD(token));
+    if(!files.hasNext()) return null;
+    return files.next().getBlob().setName('card.jpg');
+  } catch(_){ return null; }
+}
+
 /* Every image the message shows, embedded. Nothing is left for the guest's
    client to fetch: no proxy to refuse it, no "display images" to click, and
    nothing that breaks when a host changes years from now. */
@@ -642,7 +669,7 @@ function inlineImages_(g, kind){
     // only the invitation carries a card, and only the crest the reminder
     // shows — attaching both to both put 238 KB of unused crest in every
     // invitation
-    const card = g.token ? fetchBlob_(CFG.IMG_CARD(g.token), 'card.jpg') : null;
+    const card = cardBlob_(g.token);
     if(card) out.card = card;
   }
   return out;
@@ -670,7 +697,9 @@ function runInvites_(ctx, rowIdxs){
   });
   toast_(made + ' draft(s) created in Gmail' +
          (skipped ? ' · ' + skipped + ' skipped (no email, or on Hold/Cut)' : '') +
-         (missingCards ? ' · ⚠ ' + missingCards + ' without a card — run render-cards.js and deploy first' : '') +
+         (missingCards ? ' · ⚠ ' + missingCards + ' without a card — ' +
+            (cardsFolder_() ? 'no card file for those guests in the "' + CFG.CARDS_FOLDER + '" Drive folder'
+                            : 'no Drive folder named "' + CFG.CARDS_FOLDER + '"') : '') +
          '. Open Gmail ▸ Drafts to review and send.');
 }
 
