@@ -322,6 +322,8 @@
       <p class="rsvp-modal__by" data-i18n="rsvp.by">Vi preghiamo di rispondere entro il [data].</p>
 
       <form class="rsvp-form" id="rsvp-form" novalidate>
+        <!-- the guest's private token, filled from ?g= in their invite link -->
+        <input type="hidden" name="g" id="rsvp-token" value="">
         <div class="rsvp-field">
           <label for="rsvp-name" data-i18n="rsvp.f.name">Nome e cognome</label>
           <input id="rsvp-name" name="name" type="text" required autocomplete="name">
@@ -359,6 +361,21 @@
           <div class="rsvp-field" data-plusname hidden>
             <label for="rsvp-plusname" data-i18n="rsvp.f.plusname">Nome dell'accompagnatore</label>
             <input id="rsvp-plusname" name="plusname" type="text">
+          </div>
+          <fieldset class="rsvp-field rsvp-field--choice" data-kidsask hidden>
+            <legend data-i18n="rsvp.f.kids">Verrete con dei bambini?</legend>
+            <div class="rsvp-radios">
+              <label class="rsvp-radio"><input type="radio" name="haskids" value="yes" data-haskids><span data-i18n="rsvp.f.y">Sì</span></label>
+              <label class="rsvp-radio"><input type="radio" name="haskids" value="no" data-haskids><span data-i18n="rsvp.f.n">No</span></label>
+            </div>
+          </fieldset>
+          <div class="rsvp-field" data-kidsn hidden>
+            <label for="rsvp-kids" data-i18n="rsvp.f.kidsn">Quanti bambini?</label>
+            <input id="rsvp-kids" name="kids" type="number" min="1" max="10" step="1" inputmode="numeric">
+          </div>
+          <div class="rsvp-field" data-kidsnames hidden>
+            <label for="rsvp-kidsnames" data-i18n="rsvp.f.kidsnames">Nomi ed età dei bambini</label>
+            <input id="rsvp-kidsnames" name="kidsnames" type="text">
           </div>
           <div class="rsvp-field">
             <label for="rsvp-diet" data-i18n="rsvp.f.diet">Allergie o intolleranze</label>

@@ -1,4 +1,15 @@
 /* ============================================================================
+   SUPERSEDED — do not run this alongside apps-script/Code.gs.
+
+   Both scripts create a tab called 'Dashboard', from different schemas, and
+   whichever runs last wins. Code.gs now covers everything here and more: it
+   builds the Guests, Deadlines, RSVP and Dashboard tabs itself, joins replies
+   to guests by their private link token rather than by matching email
+   addresses, and adds categories, priorities, send waves and per-category
+   deadlines.
+
+   Kept only for reference. Delete it once you are happy with Code.gs.
+   ----------------------------------------------------------------------------
    Guest-list dashboard  (Ilaria & Maxime)
    ----------------------------------------------------------------------------
    Builds a single management view on top of the two lists you already have:

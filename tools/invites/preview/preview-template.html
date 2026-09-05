@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- ARTIFACT:BEGIN -->
+<title>Invitation Proof Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap">
+<style>
+/* ---------------------------------------------------------------------------
+   Proof-sheet chrome. Deliberately cooler and greyer than the invitation's own
+   warm ivory, so the email reads as a sheet of paper laid on a light table
+   rather than dissolving into the page around it. The email is the subject
+   here; everything else should recede.
+   Palette borrows one value from the wedding tokens — salvia-deep #6E7B5B —
+   and nothing else, so the accent belongs without the chrome cosplaying.
+--------------------------------------------------------------------------- */
+:root{
+  --ground:#E4E2DC; --panel:#F8F7F4; --panel-2:#EFEDE7;
+  --ink:#2E2B26; --muted:#797469; --accent:#6E7B5B; --accent-ink:#FFFFFF;
+  --line:#CFCBC2; --line-soft:#DEDBD3;
+  --shadow:0 1px 2px rgba(46,43,38,.08), 0 12px 32px rgba(46,43,38,.12);
+  --f-ui:'Jost', system-ui, -apple-system, sans-serif;
+  --f-display:'Cormorant Garamond', Georgia, serif;
+  --f-mono:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#191817; --panel:#232220; --panel-2:#2B2A27;
+    --ink:#E9E5DD; --muted:#9A9488; --accent:#A8B79A; --accent-ink:#1B1F16;
+    --line:#36332D; --line-soft:#2E2C27;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#191817; --panel:#232220; --panel-2:#2B2A27;
+  --ink:#E9E5DD; --muted:#9A9488; --accent:#A8B79A; --accent-ink:#1B1F16;
+  --line:#36332D; --line-soft:#2E2C27;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.55);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--f-ui); font-weight:300; font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0; font-weight:400; text-wrap:balance}
+button,input,select,textarea{font:inherit; color:inherit}
+
+.wrap{display:grid; grid-template-columns:290px minmax(0,1fr); gap:0; min-height:100vh}
+
+/* ---------------------------- control rail ------------------------------ */
+.rail{
+  background:var(--panel); border-right:1px solid var(--line);
+  padding:26px 24px 40px; position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.brand{display:flex; flex-direction:column; gap:2px; margin-bottom:6px}
+.brand h1{font-family:var(--f-display); font-size:26px; letter-spacing:.01em}
+.brand p{margin:0; color:var(--muted); font-size:12px; line-height:1.45}
+.rail hr{border:0; border-top:1px solid var(--line-soft); margin:22px 0}
+
+.field{display:flex; flex-direction:column; gap:7px; margin-bottom:18px}
+/* :not(.switch) — a toggle is also a direct child label, and it reads as a
+   sentence, not as a field heading */
+.field > label:not(.switch), .legend{
+  font-size:10px; font-weight:500; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted);
+}
+.hint{font-size:11.5px; color:var(--muted); line-height:1.45; margin:0}
+
+/* segmented control — the page's repeated object; one set of edges throughout */
+.seg{display:flex; border:1px solid var(--line); border-radius:3px; overflow:hidden; background:var(--panel-2)}
+.seg input{position:absolute; opacity:0; pointer-events:none}
+.seg label{
+  flex:1; text-align:center; padding:7px 4px; cursor:pointer; font-size:12.5px;
+  letter-spacing:.04em; color:var(--muted); transition:background .12s, color .12s;
+  border-right:1px solid var(--line);
+}
+.seg label:last-of-type{border-right:0}
+.seg input:checked + label{background:var(--accent); color:var(--accent-ink); font-weight:400}
+.seg input:focus-visible + label{outline:2px solid var(--accent); outline-offset:-2px}
+
+.txt, select.txt{
+  width:100%; padding:8px 10px; background:var(--panel-2); color:var(--ink);
+  border:1px solid var(--line); border-radius:3px; font-size:13px;
+}
+.txt:focus-visible, select.txt:focus-visible{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent)}
+textarea.txt{resize:vertical; min-height:62px; line-height:1.5}
+
+.switch{display:flex; align-items:center; gap:10px; cursor:pointer; padding:3px 0}
+.switch input{position:absolute; opacity:0; pointer-events:none}
+.switch .track{
+  flex:none; width:34px; height:19px; border-radius:19px; background:var(--line);
+  border:1px solid var(--line); position:relative; transition:background .15s;
+}
+.switch .track::after{
+  content:""; position:absolute; top:1.5px; left:2px; width:14px; height:14px;
+  border-radius:50%; background:var(--panel); transition:transform .15s;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);
+}
+.switch input:checked + .track{background:var(--accent); border-color:var(--accent)}
+.switch input:checked + .track::after{transform:translateX(15px)}
+.switch input:focus-visible + .track{outline:2px solid var(--accent); outline-offset:2px}
+.switch span:last-child{font-size:13px}
+
+/* ------------------------------- stage ---------------------------------- */
+.stage{padding:26px 32px 64px; display:flex; flex-direction:column; gap:18px; align-items:center; min-width:0}
+.bar{
+  width:100%; max-width:760px; display:flex; flex-wrap:wrap; align-items:baseline;
+  gap:6px 14px; padding-bottom:14px; border-bottom:1px solid var(--line-soft);
+}
+.bar .eyebrow{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+.bar .subject{font-size:15px; flex:1 1 320px; min-width:0}
+.bar .to{color:var(--muted); font-size:12px}
+.copy{
+  padding:5px 12px; background:transparent; border:1px solid var(--line); border-radius:3px;
+  cursor:pointer; font-size:11.5px; letter-spacing:.06em; color:var(--muted);
+}
+.copy:hover{border-color:var(--accent); color:var(--accent)}
+.copy:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.paper{
+  background:#FAF6EC; border-radius:3px; box-shadow:var(--shadow);
+  width:100%; max-width:640px; transition:max-width .2s ease; overflow:hidden;
+}
+.paper.is-phone{max-width:392px}
+.paper iframe{display:block; width:100%; border:0; background:#FAF6EC}
+
+.plain{width:100%; max-width:760px}
+.plain summary{
+  cursor:pointer; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); padding:8px 0;
+}
+.plain summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.plain pre{
+  margin:6px 0 0; padding:16px 18px; background:var(--panel); border:1px solid var(--line);
+  border-radius:3px; font-family:var(--f-mono); font-size:12px; line-height:1.6;
+  white-space:pre-wrap; word-break:break-word; overflow-x:auto; color:var(--ink);
+}
+.plain p{margin:0 0 8px; font-size:11.5px; color:var(--muted)}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr}
+  .rail{position:static; height:auto; border-right:0; border-bottom:1px solid var(--line)}
+  .stage{padding:22px 18px 48px}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+
+<div class="wrap">
+  <aside class="rail">
+    <div class="brand">
+      <h1>Invitation proof</h1>
+      <p>Rendered from the real template in <code>Code.gs</code> — this is what Gmail sends.</p>
+    </div>
+    <hr>
+
+    <div class="field">
+      <span class="legend">Language</span>
+      <div class="seg" role="radiogroup" aria-label="Language">
+        <input type="radio" name="lang" id="l-it" value="it" checked><label for="l-it">Italiano</label>
+        <input type="radio" name="lang" id="l-fr" value="fr"><label for="l-fr">Français</label>
+        <input type="radio" name="lang" id="l-en" value="en"><label for="l-en">English</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="legend">Which email</span>
+      <div class="seg" role="radiogroup" aria-label="Which email">
+        <input type="radio" name="kind" id="k-inv" value="invite" checked><label for="k-inv">Invitation</label>
+        <input type="radio" name="kind" id="k-rem" value="reminder"><label for="k-rem">Reminder</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="cat">Category — sets the deadline</label>
+      <select class="txt" id="cat"></select>
+      <p class="hint" id="cat-note"></p>
+    </div>
+
+    <hr>
+
+    <div class="field">
+      <span class="legend">This guest</span>
+      <label class="switch">
+        <input type="checkbox" id="plus" checked><span class="track"></span>
+        <span>Invited with a plus-one</span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="hasnote" checked><span class="track"></span>
+        <span>Has a personal note</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label for="greet">Greeting</label>
+      <input class="txt" id="greet" type="text" value="Cari Marco e Giulia,">
+    </div>
+
+    <div class="field">
+      <label for="note">Personal note</label>
+      <textarea class="txt" id="note">Non vediamo l'ora di rivedervi a Firenze!</textarea>
+    </div>
+
+    <hr>
+
+    <div class="field">
+      <label for="pw">Site password (as printed in the email)</label>
+      <input class="txt" id="pw" type="text" value="MEZZOMONTE">
+    </div>
+
+    <div class="field">
+      <span class="legend">Preview at</span>
+      <div class="seg" role="radiogroup" aria-label="Preview width">
+        <input type="radio" name="w" id="w-d" value="desktop" checked><label for="w-d">Desktop</label>
+        <input type="radio" name="w" id="w-p" value="phone"><label for="w-p">Phone</label>
+      </div>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <div class="bar">
+      <div style="flex:1 1 320px; min-width:0">
+        <div class="eyebrow">Subject</div>
+        <div class="subject" id="subject"></div>
+      </div>
+      <div class="to">
+        <div class="eyebrow">Link</div>
+        <span id="link"></span>
+      </div>
+      <button class="copy" id="copy" type="button">Copy HTML</button>
+    </div>
+
+    <div class="paper" id="paper">
+      <iframe id="frame" title="Invitation email preview" scrolling="no"></iframe>
+    </div>
+
+    <details class="plain">
+      <summary>Plain-text version</summary>
+      <p>What reaches anyone whose mail client blocks images or strips HTML. The password and every key detail must survive here — check that they do.</p>
+      <pre id="plain"></pre>
+    </details>
+  </main>
+</div>
+
+<script>
+/*__ENGINE__*/
+
+/* ------------------------------------------------------------------------ *
+ * Harness. Everything above this line was lifted verbatim from Code.gs by
+ * build-preview.py — edit the email there, then re-run the generator.
+ * ------------------------------------------------------------------------ */
+const $ = (id) => document.getElementById(id);
+const radio = (name) => document.querySelector('input[name="' + name + '"]:checked').value;
+
+/* the same category → date table the Deadlines tab is seeded with */
+const CATS = DEADLINE_SEED.map(r => ({
+  name: r[0], date: new Date(r[1][0], r[1][1], r[1][2]), note: r[2]
+}));
+$('cat').innerHTML = CATS.map((c, i) =>
+  '<option value="' + i + '">' + c.name + '</option>').join('');
+
+function deadlineText(cat, lang){
+  const m = MONTHS[lang] || MONTHS.it;
+  return cat.date.getDate() + ' ' + m[cat.date.getMonth()] + ' ' + cat.date.getFullYear();
+}
+
+const SAMPLE_TOKEN = 'k7m2qx';
+
+function render(){
+  const lang = radio('lang');
+  const cat  = CATS[Number($('cat').value)] || CATS[0];
+  CFG.PASSWORD = $('pw').value || 'XXXXXX';
+
+  const g = {
+    lang: lang,
+    greeting: $('greet').value.trim(),
+    names: '',
+    plusOne: $('plus').checked,
+    note: $('hasnote').checked ? $('note').value.trim() : '',
+    token: SAMPLE_TOKEN,
+    replyBy: deadlineText(cat, lang)
+  };
+
+  const m = (radio('kind') === 'reminder') ? buildReminder_(g) : buildEmail_(g);
+  $('subject').textContent = m.subject;
+  $('plain').textContent = m.text;
+  $('link').textContent = inviteLink_(SAMPLE_TOKEN);
+  $('cat-note').textContent = cat.note
+    ? cat.note + ' Replies by ' + deadlineText(cat, lang) + '.'
+    : 'Replies by ' + deadlineText(cat, lang) + '.';
+  $('paper').classList.toggle('is-phone', radio('w') === 'phone');
+
+  const f = $('frame');
+  f.srcdoc = m.html;
+  window.__html = m.html;
+}
+
+/* srcdoc is same-origin, so the frame can be sized to its own content */
+$('frame').addEventListener('load', () => {
+  const d = $('frame').contentDocument;
+  if(d && d.body) $('frame').style.height = (d.body.scrollHeight + 8) + 'px';
+});
+
+document.querySelectorAll('input, select, textarea').forEach(el => {
+  el.addEventListener('input', render);
+  el.addEventListener('change', render);
+});
+
+$('copy').addEventListener('click', async (e) => {
+  const b = e.currentTarget;
+  try{
+    await navigator.clipboard.writeText(window.__html || '');
+    b.textContent = 'Copied';
+  }catch(_){ b.textContent = 'Press ⌘C'; }
+  setTimeout(() => { b.textContent = 'Copy HTML'; }, 1500);
+});
+
+render();
+</script>
+<!-- ARTIFACT:END -->
+</body>
+</html>
