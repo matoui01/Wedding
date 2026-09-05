@@ -37,6 +37,12 @@
    ========================================================================== */
 
 /* ----------------------------- CONFIG ------------------------------------ */
+/* Which build of this file is running. The menu runs the file as saved; the
+   website and the probe run the last *deployed* version, which is a separate
+   thing — so when a fix appears to have had no effect, this is the first
+   number to look at. */
+const VERSION = '2026-09-05-c';
+
 const CFG = {
   SITE_URL    : 'https://ilariaemaxime.com/',
   SENDER_NAME : 'Ilaria & Maxime',
@@ -225,7 +231,7 @@ const COPY = {
     kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027',
     kWhere:'Dove', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze',
     kDress:'Dress code', vDress:'Cocktail elegante',
-    siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.',
+    siteLead:'Il programma, il viaggio e la vostra risposta sono sul nostro sito.',
     pwk:'Password del sito', cta:'Apri il sito e rispondi', byLabel:'Rispondete entro il',
     by:d=>'Vi preghiamo di confermare entro il '+d+'.',
     close:'A presto,',
@@ -240,7 +246,7 @@ const COPY = {
     kDay:'Le jour', vDay:'Vendredi 23 juillet 2027',
     kWhere:'Lieu', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Tenue', vDress:'Cocktail élégant',
-    siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.',
+    siteLead:'Le programme, le voyage et votre réponse sont sur notre site.',
     pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre', byLabel:'Merci de répondre avant le',
     by:d=>'Merci de confirmer avant le '+d+'.',
     close:'À très bientôt,',
@@ -255,7 +261,7 @@ const COPY = {
     kDay:'The day', vDay:'Friday 23 July 2027',
     kWhere:'Where', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Dress code', vDress:'Elegant cocktail',
-    siteLead:'The programme, travel, gifts and your RSVP all live on our site.',
+    siteLead:'The programme, the journey and your reply are on our site.',
     pwk:'Site password', cta:'Open the site and RSVP', byLabel:'Kindly reply by',
     by:d=>'Kindly reply by '+d+'.',
     close:'See you soon,',
@@ -1022,7 +1028,7 @@ const CARD = {
   SITE:  { font: 'EB Garamond', face: 'ebg', size: 16, lh: 1.62, natural: 1.27, gap: 26, center: true },
   SPRIG: { gap: 22, w: 20, h: 20 },
   THUMB: 'LARGE',                                    // the fallback export
-  MAX_MB: 1.2                                        // above this a slice is sent as JPEG
+  MAX_MB: 4                                          // above this the whole picture goes as JPEG
 };
 
 /* Where everything goes, in pt, for this guest's words. Line counts are
@@ -1291,12 +1297,23 @@ function mailBlobs_(g){
     for(let i = 0; i < n; i++) drawSlice_(slides[i], L, blobs, i * slice, slice);
     deck.saveAndClose();
 
+    /* One format for every slice. Cuts fall wherever the page ends, so a
+       shape can straddle two of them, and a PNG half meeting a JPEG half
+       shows as a faint band across it. PNG throughout unless the drawing is
+       too heavy to mail, and then JPEG throughout. */
     const out = [];
     for(let i = 0; i < n; i++){
-      if(i) Utilities.sleep(600);                    // paced, so the refusals stay rare
-      out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page));
+      if(i) Utilities.sleep(600);                    // paced, so refusals stay rare
+      out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page, 'png'));
     }
-    return out;
+    const heavy = out.reduce((a, b) => a + b.getBytes().length, 0) > CARD.MAX_MB * 1024 * 1024;
+    if(!heavy) return out;
+    const jpg = [];
+    for(let i = 0; i < n; i++){
+      Utilities.sleep(600);
+      jpg.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page, 'jpeg'));
+    }
+    return jpg;
   } finally { deleteOwnFile_(id); }
 }
 
@@ -1395,7 +1412,7 @@ function stackHtml_(n, link){
    here would go through Apps Script's own JPEG writer, which has no quality
    setting and lays visible blocks over flat cream and fine script. Only a
    picture too heavy to mail is converted, and then by Google's encoder. */
-function exportPage_(id, pageId, i, n, page){
+function exportPage_(id, pageId, i, n, page, fmt){
   /* Google refuses this endpoint after a handful of calls in quick
      succession — HTTP 429 — and one invitation is eight of them. Refusals are
      waited out rather than worked around: falling back to a thumbnail hands
@@ -1425,13 +1442,7 @@ function exportPage_(id, pageId, i, n, page){
     return null;
   };
 
-  /* PNG where it stays small — flat cream and fine script keep every pixel —
-     and Google's own JPEG where it does not, which is the watercolour. */
-  let img = get('png');
-  if(img && img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
-    const jpg = get('jpeg');
-    if(jpg && jpg.getBytes().length < img.getBytes().length) img = jpg;
-  }
+  const img = get(fmt);
   if(!img){
     throw new Error('Google would not export piece ' + i + ' of ' + n + ' after several tries — ' +
                     'usually too many draws in a row. Wait a minute and send again.');
@@ -1798,6 +1809,7 @@ function doGet(e){
     const probe = String((e && e.parameter && e.parameter.probe) || '');
     if(probe){
       if(probe !== book_().getId()) return json_({ ok: false, error: 'no' });
+      if(e.parameter.version) return json_({ ok: true, version: VERSION });
       return json_(probeDraw_(e.parameter));
     }
     const token = String((e && e.parameter && e.parameter.g) || '').trim().toLowerCase();
@@ -1871,7 +1883,7 @@ function probeDraw_(params){
         return { id: f.getId(), kb: Math.round(b.getBytes().length / 1024) };
       });
     }
-    const out = { ok: true, row: i + 2, lang: g.lang, greeting: greetingOf_(g),
+    const out = { ok: true, version: VERSION, row: i + 2, lang: g.lang, greeting: greetingOf_(g),
                   info: LAST_DRAW, files: out_files, ms: Date.now() - started };
     if(params.mailto){
       const imgs = {};

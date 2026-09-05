@@ -24,13 +24,19 @@ const { ensureFonts, PAGE_CSS, headHtml, factsHtml, markHtml, closeHtml, fixedHt
 const p = await b.newPage({ viewport: { width: 600, height: 800 }, deviceScaleFactor: 4 });
   for(const lang of ['it', 'fr', 'en']){
     await p.setContent(`<!doctype html><meta charset="utf-8"><style>${PAGE_CSS()}body{background:transparent}</style>
-      <div class="piece-head" id="head">${headHtml(lang)}</div>
-      <div class="piece-facts" id="facts">${factsHtml(lang)}</div>
-      <div class="piece-mark" id="mark">${markHtml()}</div>
-      <div id="close">${fixedHtml.close(lang)}</div>
-      <div id="pwk">${fixedHtml.pwk(lang)}</div>
-      <div id="by">${fixedHtml.by(lang)}</div>
-      <div id="cta">${fixedHtml.cta(lang)}</div>`, { waitUntil: 'load' });
+      <!-- spaced apart: an element's screenshot otherwise catches a pixel of
+           its neighbour's edge, which then reads as a hairline drawn across
+           the invitation -->
+      <style>#page > div{ margin: 40px 0 }</style>
+      <div id="page">
+        <div class="piece-head" id="head">${headHtml(lang)}</div>
+        <div class="piece-facts" id="facts">${factsHtml(lang)}</div>
+        <div class="piece-mark" id="mark">${markHtml()}</div>
+        <div id="close">${fixedHtml.close(lang)}</div>
+        <div id="pwk">${fixedHtml.pwk(lang)}</div>
+        <div id="by">${fixedHtml.by(lang)}</div>
+        <div id="cta">${fixedHtml.cta(lang)}</div>
+      </div>`, { waitUntil: 'load' });
     await p.evaluate(() => document.fonts.ready);
     await p.waitForTimeout(200);
     for(const id of ['head', 'facts', 'close', 'pwk', 'by', 'cta'].concat(lang === 'it' ? ['mark'] : [])){

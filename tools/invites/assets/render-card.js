@@ -50,19 +50,19 @@ const COPY = {
         body:'Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.',
         kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027', kWhere:'Dove',
         vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze', kDress:'Dress code', vDress:'Cocktail elegante',
-        siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.', close:'A presto,',
+        siteLead:'Il programma, il viaggio e la vostra risposta sono sul nostro sito.', close:'A presto,',
         pwk:'Password del sito', cta:'Apri il sito e rispondi', byLabel:'Rispondete entro il' },
   fr: { over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:'Nous nous marions', date:'Vendredi 23 juillet 2027',
         body:'Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.',
         kDay:'Le jour', vDay:'Vendredi 23 juillet 2027', kWhere:'Lieu',
         vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Tenue', vDress:'Cocktail élégant',
-        siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.', close:'À très bientôt,',
+        siteLead:'Le programme, le voyage et votre réponse sont sur notre site.', close:'À très bientôt,',
         pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre', byLabel:'Merci de répondre avant le' },
   en: { over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:"We're getting married", date:'Friday · 23 July 2027',
         body:"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
         kDay:'The day', vDay:'Friday 23 July 2027', kWhere:'Where',
         vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Dress code', vDress:'Elegant cocktail',
-        siteLead:'The programme, travel, gifts and your reply are all on our site.', close:'See you very soon,',
+        siteLead:'The programme, the journey and your reply are on our site.', close:'See you very soon,',
         pwk:'Site password', cta:'Open the site and RSVP', byLabel:'Kindly reply by' },
 };
 
@@ -113,7 +113,7 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
    and the design is mostly both. None carries a guest's name — and the
    password, which no public file may hold, is drawn the same way into the
    couple's own Drive instead. */
-.piece-fixed{width:600px;display:flex;align-items:center;justify-content:center;padding:6px 0}
+.piece-fixed{width:600px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 0}
 .piece-ui{font-family:Jost;font-size:11px;letter-spacing:3.4px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
 .piece-ui.on-green{color:#FBF8EF;font-size:12.5px;letter-spacing:3.6px}
 .piece-ui.pw{font-family:Jost;font-size:21px;letter-spacing:5px;color:#3D352A}
@@ -121,7 +121,6 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .piece-mark{background:#FAF6EC;padding:16px 26px;display:inline-block}
 .piece-mark .m{font-family:Pinyon;font-size:46px;line-height:1.45;color:#3D352A;white-space:nowrap}
 .piece-mark .m em{font-family:Cormorant;font-style:italic;font-size:.55em;color:#C47A54;vertical-align:.14em}
-.piece-close{background:#FAF6EC;padding:10px 22px;display:inline-block}
 .piece-close .c{font-family:Cormorant;font-style:italic;font-size:20px;line-height:1.6;color:#897C68;white-space:nowrap}
 `;
 };
