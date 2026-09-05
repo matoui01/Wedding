@@ -129,6 +129,15 @@
       <p class="eyebrow" data-i18n="rsvp.over">RSVP</p>
       <h2 class="title" data-i18n="rsvp.title">Fateci sapere</h2>
       <p class="measure mx-auto" id="rsvp-by" data-i18n="rsvp.by">Vi preghiamo di rispondere entro il 30 aprile 2027.</p>
+
+      <!-- Said here, plainly, so nobody has to work it out from the form: the
+           form asks nothing about children because there is nothing to ask. -->
+      <div class="rsvp-who measure mx-auto">
+        <h3 class="rsvp-who__h" data-i18n="rsvp.who.h">Accompagnatori e bambini</h3>
+        <p class="rsvp-who__p" data-i18n="rsvp.who.plus">Il vostro invito indica esattamente le persone per cui abbiamo tenuto un posto.</p>
+        <p class="rsvp-who__p" data-i18n="rsvp.who.kids">Con tutto l'affetto possibile, abbiamo deciso che sarà una festa per soli adulti.</p>
+      </div>
+
       <p style="margin-top:1.8rem"><button class="btn" type="button" id="rsvp-open" data-i18n="rsvp.cta">Conferma la presenza</button></p>
       <p class="rsvp__fallback" data-i18n="rsvp.fallback">Problemi con il modulo? Scrivere a [email].</p>
     </div>
@@ -363,21 +372,6 @@
           <div class="rsvp-field" data-plusname hidden>
             <label for="rsvp-plusname" data-i18n="rsvp.f.plusname">Nome dell'accompagnatore</label>
             <input id="rsvp-plusname" name="plusname" type="text">
-          </div>
-          <fieldset class="rsvp-field rsvp-field--choice" data-kidsask hidden>
-            <legend data-i18n="rsvp.f.kids">Verrete con dei bambini?</legend>
-            <div class="rsvp-radios">
-              <label class="rsvp-radio"><input type="radio" name="haskids" value="yes" data-haskids><span data-i18n="rsvp.f.y">Sì</span></label>
-              <label class="rsvp-radio"><input type="radio" name="haskids" value="no" data-haskids><span data-i18n="rsvp.f.n">No</span></label>
-            </div>
-          </fieldset>
-          <div class="rsvp-field" data-kidsn hidden>
-            <label for="rsvp-kids" data-i18n="rsvp.f.kidsn">Quanti bambini?</label>
-            <input id="rsvp-kids" name="kids" type="number" min="1" max="10" step="1" inputmode="numeric">
-          </div>
-          <div class="rsvp-field" data-kidsnames hidden>
-            <label for="rsvp-kidsnames" data-i18n="rsvp.f.kidsnames">Nomi ed età dei bambini</label>
-            <input id="rsvp-kidsnames" name="kidsnames" type="text">
           </div>
           <div class="rsvp-field">
             <label for="rsvp-diet" data-i18n="rsvp.f.diet">Allergie o intolleranze</label>

@@ -113,10 +113,10 @@ const SHEETS = { GUESTS:'Guests', RSVP:'RSVP', DEADLINES:'Deadlines', DASH:'Dash
 /* Guests tab — columns A…AD. You fill A–P; the script writes Q–AD.
    One row = one invitation = one email.
 
-   Children run on two tracks, because you need a planning number long before
-   parents commit to one: "Kids est." is your own guess and feeds Seats, while
-   "Children" is what the parents actually answered on the RSVP. Watching the
-   two converge is how you know whether the estimate was any good. */
+   Children are not invited, so nothing about them counts towards Seats.
+   "Kids?" and "Kids est." stay as your own note of which households have
+   children: the ones most likely to decline, and the ones worth a word about
+   a sitter. "Children" only fills if a reply reports one anyway. */
 const GUEST_HEADER = [
   'Household', 'Invitee', 'Plus-one', 'Plus-one name', 'Kids?', 'Kids est.',
   'Category', 'Subcategory', 'Side', 'Priority', 'Send?', 'Wave',
@@ -567,16 +567,17 @@ function buildGuests_(ss){
 
   R('Reply by').setNumberFormat('d mmm yyyy');
 
-  // Seats you are planning for: the invitee, a plus-one if they have one, and
-  // your own estimate of their children. One formula that grows with the
-  // list — unless someone has typed real numbers into the column, which win.
+  // Seats you are planning for: the invitee, and a plus-one if they have one.
+  // Children are not invited, so "Kids est." no longer adds to the count. One
+  // formula that grows with the list — unless someone has typed real numbers
+  // into the column, which win.
   const seats = sh.getRange(2, colIndex_('Seats'), Math.max(sh.getLastRow() - 1, 1), 1);
   const typed = seats.getValues().some((r, k) => r[0] !== '' && !seats.getFormulas()[k][0]);
   if(!typed){
     seats.clearContent();
     sh.getRange(colLetter_('Seats') + '2').setFormula(f_(
       '=ARRAYFORMULA(IF(' + gA1_('Invitee') + '=""§""§' +
-      '1+IF(LOWER(' + gA1_('Plus-one') + ')="yes"§1§0)+N(' + gA1_('Kids est.') + ')))'));
+      '1+IF(LOWER(' + gA1_('Plus-one') + ')="yes"§1§0)))'));
   }
 
   const rule = () => SpreadsheetApp.newConditionalFormatRule();
@@ -594,10 +595,10 @@ function buildGuests_(ss){
     // a guest with no email can never be invited — make that impossible to miss
     rule().whenFormulaSatisfied(f_('=AND($' + colLetter_('Invitee') + '2<>""§$' + colLetter_('Email') + '2="")'))
       .setBackground('#F6E6DE').setRanges([R('Email')]).build(),
-    // your estimate versus what the parents actually said
-    rule().whenFormulaSatisfied(f_('=AND($' + colLetter_('RSVP') + '2<>""§$' +
-        colLetter_('Children') + '2<>$' + colLetter_('Kids est.') + '2)'))
-      .setBackground('#F4EEDD').setRanges([R('Children')]).build()
+    // children are not invited — a reply that still brings some is worth seeing
+    rule().whenNumberGreaterThan(0)
+      .setBackground('#F6E6DE').setFontColor(T.terracotta)
+      .setRanges([R('Children')]).build()
   ]);
 
   if(!sh.getFilter()){
@@ -653,8 +654,8 @@ function buildDashboard_(ss){
     ['Replied',            '=COUNTIF(' + gCol_('RSVP') + '§"<>")'],
     ['Coming (households)','=COUNTIF(' + gCol_('RSVP') + '§"Yes")'],
     ['Not coming',         '=COUNTIF(' + gCol_('RSVP') + '§"No")'],
-    ['Children — you guessed', '=SUM(' + gCol_('Kids est.') + ')'],
-    ['Children — confirmed',   '=SUM(' + gCol_('Children') + ')'],
+    ['Households with children','=COUNTIF(' + gCol_('Kids?') + '§"yes")'],
+    ['— of those, not coming',  '=COUNTIFS(' + gCol_('Kids?') + '§"yes"§' + gCol_('RSVP') + '§"No")'],
     ['Shuttle seats',      '=SUMIF(' + gCol_('Shuttle') + '§"Yes"§' + gCol_('Coming') + ')']
   ].map(r => [r[0], (typeof r[1] === 'string' && r[1].charAt(0) === '=') ? f_(r[1]) : r[1]]);
   sh.getRange(1, 1, stats.length, 2).setValues(stats);
@@ -1510,7 +1511,6 @@ function guestFromRow_(ctx, i){
     names:    String(cell_(ctx, i, 'invitee') || '').trim(),
     plusOne:  truthy_(cell_(ctx, i, 'plus-one')),
     plusName: String(cell_(ctx, i, 'plus-one name') || '').trim(),
-    kids:     truthy_(cell_(ctx, i, 'kids?')),
     note:     String(cell_(ctx, i, 'personal note') || '').trim()
   };
 }
@@ -1742,6 +1742,10 @@ function doPost(e){
 
     const attending = String(p.attending || '').toLowerCase() === 'yes';
     const adults = !attending ? 0 : (String(p.party || '').toLowerCase() === 'plus' ? 2 : 1);
+    // The form stopped asking: children are not invited. A reply can still
+    // carry a number if someone answers from a page cached before the change,
+    // and that is worth recording rather than dropping — Children on their
+    // row goes red, and the count is a real person to ring.
     const kids = !attending ? 0 : Math.max(0, Math.min(20, parseInt(p.kids, 10) || 0));
     const now = new Date();
 
@@ -1777,8 +1781,8 @@ function doPost(e){
 }
 
 /* The form asks who is arriving, so the page can greet them by name and put
-   the right questions in front of them — the plus-one line only to someone who
-   has one, the children question only to a household with children.
+   the right questions in front of them — the plus-one line only to someone
+   who has one.
 
    This deliberately returns no email, phone or address: a guessed token gets a
    first name and the shape of the invitation, nothing worth harvesting. */
@@ -1816,8 +1820,6 @@ function doGet(e){
         out.seats    = Number(get('Seats')) || 0;
         out.lang     = lang;
         out.plusName = String(get('Plus-one name') || '');
-        out.kids     = truthy_(get('Kids?'));
-        out.kidsEst  = Number(get('Kids est.')) || 0;
         out.replied  = !!String(get('RSVP') || '').trim();
         const map = deadlineMap_();
         out.replyBy  = deadlineFor_(map, String(get('Category') || ''), lang);

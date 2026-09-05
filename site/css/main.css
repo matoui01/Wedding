@@ -230,6 +230,21 @@ h1,h2,h3{ font-weight:500; margin:0; }
 .rsvp__embed iframe{ width:100%; border:0; background:transparent; border-radius:var(--radius); }
 .rsvp__fallback{ margin-top:1.2rem; color:var(--muted); font-size:1rem; }
 
+/* Who the invitation is for — plus-ones and children. Set apart from the
+   deadline line above it, and quiet: it is an apology, not an announcement. */
+.rsvp-who{
+  margin-top:2.2rem; text-align:left;
+  padding:clamp(1.2rem,3vw,1.7rem) clamp(1.2rem,3vw,1.8rem);
+  background:color-mix(in srgb, var(--salvia-light) 16%, var(--panna));
+  border:1px solid var(--line); border-radius:var(--radius);
+}
+.rsvp-who__h{
+  font-family:var(--f-ui); text-transform:uppercase; letter-spacing:.14em;
+  font-size:.72rem; color:var(--salvia-deep); margin:0 0 .85rem;
+}
+.rsvp-who__p{ font-size:1rem; color:var(--muted); line-height:1.65; margin:0; }
+.rsvp-who__p + .rsvp-who__p{ margin-top:.85rem; }
+
 /* RSVP form */
 .rsvp-form{ text-align:left; display:grid; gap:1.1rem; margin:clamp(1.8rem,4vw,2.6rem) auto 0; }
 .rsvp-field{ display:flex; flex-direction:column; gap:.4rem; border:0; padding:0; margin:0; }

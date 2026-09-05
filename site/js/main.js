@@ -127,9 +127,9 @@ window.showReplyBy = showReplyBy;
 
 /* ---- Prefill from the invite link ---------------------------------------- *
  * The token identifies the guest, so the sheet can tell us who is arriving:
- * their name, the language they were written to in, whether their invitation
- * actually included a plus-one, and whether they have children. That lets the
- * form ask the right questions instead of every question.
+ * their name, the language they were written to in, and whether their
+ * invitation actually included a plus-one. That lets the form ask the right
+ * questions instead of every question.
  *
  * Strictly an enhancement — the endpoint returns no email, phone or address,
  * and any failure here leaves the form exactly as it behaves without a link. */
@@ -186,14 +186,6 @@ async function prefillFromToken(form, token, update){
     if(plusNote) plusNote.hidden = true;      // it explains who may bring one; they know
   }
 
-  /* what we guessed about their children, offered back for confirmation */
-  if(g.kids){
-    const yes = form.querySelector('input[name="haskids"][value="yes"]');
-    if(yes && !form.querySelector('input[name="haskids"]:checked')) yes.checked = true;
-    const n = form.querySelector('#rsvp-kids');
-    if(n && !n.value && g.kidsEst > 0) n.value = g.kidsEst;
-  }
-
   update();
 }
 
@@ -219,9 +211,6 @@ function initRsvpForm(){
   const coming   = form.querySelector('[data-coming]');
   const plusBox  = form.querySelector('[data-plusname]');
   const stayBox  = form.querySelector('[data-staying]');
-  const kidsAsk  = form.querySelector('[data-kidsask]');
-  const kidsN    = form.querySelector('[data-kidsn]');
-  const kidsNames= form.querySelector('[data-kidsnames]');
   const val = (sel)=>{ const el = form.querySelector(sel + ':checked'); return el ? el.value : ''; };
   const req = (el, on)=>{ if(el){ on ? el.setAttribute('required','') : el.removeAttribute('required'); } };
   function update(){
@@ -236,16 +225,6 @@ function initRsvpForm(){
     plusBox.hidden = !plus;
     req(plusBox.querySelector('input'), plus);
     stayBox.hidden = !(yes && val('[data-shuttle]') === 'yes');
-
-    /* Everyone attending is asked about children — the couple need a real
-       count for the caterer, and a household we didn't flag may still have
-       one. The sheet's own guess only preselects the answer. */
-    kidsAsk.hidden = !yes;
-    req(form.querySelector('input[name="haskids"]'), yes);
-    const withKids = yes && val('[data-haskids]') === 'yes';
-    kidsN.hidden = !withKids;
-    kidsNames.hidden = !withKids;
-    req(kidsN.querySelector('input'), withKids);
   }
   form.addEventListener('change', update);
   update();

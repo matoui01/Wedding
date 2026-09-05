@@ -61,7 +61,7 @@ exactly as they would get it, in your own inbox with a `[TEST]` subject.
 |---|---|
 | `Household` / `Invitee` | `Household` is your label for the row; `Invitee` is who the greeting addresses. A trailing initial ("Thomas J") is dropped from the greeting |
 | `Plus-one` + `Plus-one name` | `yes` with a name: the card greets both and says "we'd be delighted to welcome X". `yes` without a name: an open plus-one — unless `Invitee` already names the couple, in which case nothing more is said. `no`: any name in the column is ignored |
-| `Kids?` / `Kids est.` | your own guess, for planning — parents confirm the real number when they reply |
+| `Kids?` / `Kids est.` | your own note of which households have children. Children are **not invited**, so neither column touches `Seats` — they are there to tell you who is likeliest to decline, and who to offer a sitter to. The site asks nothing about children |
 | `Category` / `Subcategory` / `Side` | the broad band, the circle inside it, and whose guest they are |
 | `Priority` | 1 · 2 · 3 |
 | `Send?` | **Send** · **Hold** · **Cut** — how the list gets down to the target |
