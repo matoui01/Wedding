@@ -1316,29 +1316,6 @@ function createReminders(){
 }
 
 
-/* The selected row's invitation — or the first row's — to your own inbox,
-   exactly as that guest would receive it, subject prefixed [TEST]. */
-function sendTestToMe(){
-  const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
-  const ctx = readGuests_();
-  if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
-  const rows = selectedDataRows_(ctx);
-  if(!rows.length){ toast_('Click any cell on the guest row you want to test first.'); return; }
-  const i = rows[0];
-  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
-  const g = guestFromRow_(ctx, i);
-  g.token = ensureToken_(ctx, i);
-  g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
-  toast_('Drawing ' + who + '’s invitation…');
-  let imgs;
-  try { imgs = inlineImages_(g, 'invite'); }
-  catch(err){ toast_('No test sent — ' + err.message); return; }
-  const m = buildEmail_(g);
-  GmailApp.sendEmail(me, '[TEST] ' + m.subject, m.text, {
-    htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
-  });
-  toast_('Test of ' + who + '’s invitation sent to ' + me + '.');
-}
 
 
 /* The selected row's invitation — or the first row's — to your own inbox,
