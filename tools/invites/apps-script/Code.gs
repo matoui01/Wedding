@@ -1083,10 +1083,12 @@ function factRow_(k, v, first){
     '<td align="right" style="' + top + 'padding:12px 0;font-family:' + T.fBody + ';font-size:16px;color:' + T.ink + ';vertical-align:middle;">' + v + '</td>' +
   '</tr>';
 }
+/* Both fragments sit inside the letter panel, so they take the letter's inset
+   (lx / 36px) — the card's wider 52px would read as a double margin. */
 function noteBlock_(noteHtml){
-  return '<tr><td class="px" style="padding:24px 52px 0;">' +
-    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#EEF1EA;border-left:3px solid ' + T.salvia + ';border-radius:2px;">' +
-    '<tr><td style="padding:16px 20px;font-family:' + T.fBody + ';font-style:italic;font-size:16px;line-height:1.55;color:' + T.ink + ';">' + noteHtml + '</td></tr></table></td></tr>';
+  return '<tr><td class="lx" style="padding:22px 36px 0;">' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#EEF1EA" style="background:#EEF1EA;border-left:2px solid ' + T.salvia + ';">' +
+    '<tr><td style="padding:15px 18px;font-family:' + T.fBody + ';font-style:italic;font-size:15px;line-height:1.6;color:' + T.ink + ';">' + noteHtml + '</td></tr></table></td></tr>';
 }
 /* "…and we'd love to see Sophie too" reads better than "bring a plus-one" —
    but only when we actually know the name. Placeholders like "femme" or
@@ -1096,7 +1098,7 @@ function plusLine_(c, g){
 }
 
 function plusBlock_(txt){
-  return '<tr><td align="center" class="px" style="padding:24px 52px 0;font-family:' + T.fDisplay + ';font-style:italic;font-size:18px;color:' + T.salviaDeep + ';">' + txt + '</td></tr>';
+  return '<tr><td align="center" class="lx" style="padding:22px 36px 0;font-family:' + T.fDisplay + ';font-style:italic;font-size:16px;color:' + T.salviaDeep + ';">' + txt + '</td></tr>';
 }
 
 /* ====================== 6. sheet plumbing =============================== */
