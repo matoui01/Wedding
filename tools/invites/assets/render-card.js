@@ -80,7 +80,7 @@ ${face('EBG','EBGaramondItalic.ttf','italic')}
 ${face('Jost','Jost.ttf')}
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:600px;background:#FAF6EC;-webkit-font-smoothing:antialiased}
-.head{text-align:center;padding:42px 40px 0}
+.head{text-align:center;padding:34px 40px 0}
 .crest{width:104px;display:block;margin:0 auto}
 .over{font-family:Jost;font-size:11px;letter-spacing:5px;color:#6E7B5B;text-transform:uppercase;margin-top:22px}
 .names{font-family:Pinyon;font-size:76px;line-height:1;color:#3D352A;margin-top:6px}
@@ -88,14 +88,14 @@ body{width:600px;background:#FAF6EC;-webkit-font-smoothing:antialiased}
 .tag{font-family:Cormorant;font-style:italic;font-size:23px;color:#897C68;margin-top:2px}
 .date{font-family:Jost;font-size:13px;letter-spacing:4px;color:#3D352A;text-transform:uppercase;margin-top:14px}
 .hero{width:100%;display:block;margin-top:28px}
-.letter{margin:30px 34px 34px;background:#FDFBF5;border:1px solid #DCC9A4;padding:34px 40px 34px}
+.letter{margin:30px 34px 36px;background:#FDFBF5;border:1px solid #DCC9A4;padding:34px 40px 30px}
 .body{font-family:EBG;font-size:17px;line-height:1.66;color:#3D352A}
-table.facts{width:100%;border-collapse:collapse;margin-top:28px}
+table.facts{width:100%;border-collapse:collapse;margin-top:26px}
 table.facts td{padding:13px 0;vertical-align:middle}
 table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .k{font-family:Jost;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
 .v{font-family:EBG;font-size:16px;color:#3D352A;text-align:right}
-.sprig{width:22px;display:block;margin:26px auto 0}
+.sprig{width:20px;display:block;margin:22px auto 0;opacity:.85}
 </style>
 <div class="head">
   <img class="crest" src="${dataUri(path.join(IMG,'email-crest.png'),'image/png')}">

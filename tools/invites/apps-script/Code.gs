@@ -941,11 +941,14 @@ function buildEmail_(g){
      the card can, in every client, which is how stationery services solve
      this. Everything a guest has to *act* on stays live text below it: the
      password to read, the link to press, the date to remember. */
+  /* Three movements, not a card with leftovers stapled underneath:
+     a personal opening in the couple's own voice, the formal invitation
+     itself, and one compact strip telling the guest how to reply. */
   const html =
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
-<style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:22px!important;padding-right:22px!important}}</style>
+<style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:26px!important;padding-right:26px!important}}</style>
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
@@ -955,20 +958,17 @@ function buildEmail_(g){
 
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
 
-    <tr><td class="px" style="padding:34px 52px 0;font-family:${T.fDisplay};font-size:22px;color:${T.ink};">${esc_(greet)}</td></tr>
-
-    <tr><td style="padding:24px 0 0;">
+    <tr><td class="px" style="padding:44px 56px 0;font-family:${T.fDisplay};font-size:23px;line-height:1.3;color:${T.ink};">${esc_(greet)}</td></tr>
+${note}${plus}
+    <tr><td style="padding:20px 0 0;">
       <img src="cid:card" width="600" alt="${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
     </td></tr>
 
-    ${note}
-    ${plus}
+    <tr><td class="px" align="center" style="padding:6px 56px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
 
-    <tr><td class="px" align="center" style="padding:26px 52px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
-
-    <tr><td align="center" style="padding:18px 40px 0;">
+    <tr><td align="center" style="padding:20px 40px 0;">
       <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="border:1px solid ${T.lineGold};background:${T.panna2};">
-        <tr><td align="center" style="padding:11px 28px;">
+        <tr><td align="center" style="padding:11px 30px;">
           <div style="font-family:${T.fUi};font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
           <div style="font-family:${T.fUi};font-weight:500;font-size:19px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
         </td></tr>
@@ -983,16 +983,14 @@ function buildEmail_(g){
 
     <tr><td align="center" style="padding:13px 40px 0;font-family:${T.fUi};font-size:11px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
 
-    <tr><td align="center" style="padding:30px 16px 0;">
+    <tr><td align="center" style="padding:34px 16px 0;">
       <img src="cid:close" height="20" alt="${c.close}" style="display:block;border:0;height:20px;width:auto;margin:0 auto;">
     </td></tr>
-    <tr><td align="center" style="padding:6px 40px 0;">
-      <img src="cid:wordmark" width="200" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:200px;max-width:100%;height:auto;margin:0 auto;">
+    <tr><td align="center" style="padding:8px 40px 0;">
+      <img src="cid:wordmark" width="180" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:180px;max-width:100%;height:auto;margin:0 auto;">
     </td></tr>
 
-    <tr><td style="padding:30px 40px 0;"><div style="border-top:1px solid ${T.line};"></div></td></tr>
-    <tr><td align="center" class="px" style="padding:16px 40px 4px;font-family:${T.fUi};font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${T.muted};">${c.fl}</td></tr>
-    <tr><td align="center" class="px" style="padding:0 40px 38px;font-family:${T.fBody};font-size:13px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
+    <tr><td align="center" class="px" style="padding:38px 56px 40px;font-family:${T.fBody};font-size:12.5px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
 
   </table>
 </td></tr></table>
@@ -1127,9 +1125,8 @@ function factRow_(k, v, first){
 /* Both fragments sit inside the letter panel, so they take the letter's inset
    (lx / 36px) — the card's wider 52px would read as a double margin. */
 function noteBlock_(noteHtml){
-  return '<tr><td class="px" style="padding:20px 52px 0;">' +
-    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#EEF1EA" style="background:#EEF1EA;border-left:2px solid ' + T.salvia + ';">' +
-    '<tr><td style="padding:15px 18px;font-family:' + T.fBody + ';font-style:italic;font-size:15px;line-height:1.6;color:' + T.ink + ';">' + noteHtml + '</td></tr></table></td></tr>';
+  return '<tr><td class="px" style="padding:16px 56px 0;font-family:' + T.fBody +
+    ';font-style:italic;font-size:16px;line-height:1.66;color:' + T.ink + ';">' + noteHtml + '</td></tr>';
 }
 /* "…and we'd love to see Sophie too" reads better than "bring a plus-one" —
    but only when we actually know the name. Placeholders like "femme" or
@@ -1139,7 +1136,8 @@ function plusLine_(c, g){
 }
 
 function plusBlock_(txt){
-  return '<tr><td align="center" class="px" style="padding:20px 52px 0;font-family:' + T.fDisplay + ';font-style:italic;font-size:16px;color:' + T.salviaDeep + ';">' + txt + '</td></tr>';
+  return '<tr><td class="px" style="padding:12px 56px 0;font-family:' + T.fBody +
+    ';font-style:italic;font-size:16px;line-height:1.66;color:' + T.ink + ';">' + txt + '</td></tr>';
 }
 
 /* ====================== 6. sheet plumbing =============================== */
