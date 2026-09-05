@@ -59,22 +59,16 @@ All copy lives in `js/i18n.js`.
 
 ## Still to do (placeholders marked `[ … ]` in the copy)
 
-1. **Programme times** — confirm the timeline (currently placeholders).
-2. **Shuttle** — the site says a shuttle from central Florence is planned and
-   marks the rest **TBC** (`travel.car.b`); departure times and the meeting
-   point still have to be settled and the word TBC taken back out.
-3. **Hotels** — the 3–5 suggestions `travel.stay.b` now promises (Florence
-   centre + near Impruneta).
-4. **Guest list** — fill the `Email` column on the Guests tab (see
+1. **Our Story** text (IT/FR/EN) + the "from [city]" city.
+2. **Programme times** — confirm the timeline (currently placeholders).
+3. **Exact venue address** — street + postcode for Impruneta (FI).
+4. **Shuttle/transfer** — is transport provided? (updates `travel.car.b`).
+5. **Hotels** — 3–5 options (Florence centre + near Impruneta).
+6. **RSVP deadline** date (`rsvp.by`).
+7. **Contact email** (footer + RSVP fallback).
+8. **Guest list** — fill the `Email` column on the Guests tab (see
    `tools/invites/README.md`); nothing can be sent until it has addresses.
-5. **The invitation letter says nothing about children.** The site does, in
-   its Q&A; the drawn letter does not, so a guest who never opens the site
-   learns it only at the RSVP form. Adding a line means touching the card
-   layout in `tools/invites/assets/render-card.js`.
-
-Items 1–9 of the old list that are now done: Our Story (replaced by the
-couple's own opening paragraph, and the `[city]` in its title with it), the
-venue address, the RSVP deadline, the contact email and the custom domain.
+9. Optional: custom domain.
 
 > The paintings are served as transparent `-cut.png` files (`assets/img/<name>-cut.png`):
 > the ivory paper background is flood-filled to transparency so each watercolour blends
