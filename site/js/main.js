@@ -232,7 +232,8 @@ function initRsvpForm(){
   function update(){
     const yes = val('[data-attending]') === 'yes';
     coming.hidden = !yes;
-    req(form.querySelector('#rsvp-phone'), yes);
+    /* Phone is asked for but never demanded: a guest who would rather not
+       leave a number should not be stopped from replying over it. */
     req(form.querySelector('#rsvp-address'), yes);
     const partyAsk = form.querySelector('[data-partyask]');
     req(form.querySelector('input[name="party"]'), yes && partyAsk && !partyAsk.hidden);
