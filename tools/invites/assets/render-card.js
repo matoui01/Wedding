@@ -116,7 +116,7 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .piece-fixed{width:600px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 0}
 .piece-ui{font-family:Jost;font-size:11px;letter-spacing:3.4px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
 .piece-ui.on-green{color:#FBF8EF;font-size:12.5px;letter-spacing:3.6px}
-.piece-ui.pw{font-family:Jost;font-size:21px;letter-spacing:5px;color:#3D352A}
+.piece-ui.pw{font-family:Jost;font-size:21px;letter-spacing:4px;color:#3D352A;text-transform:none}
 .piece-close .c2{font-family:Cormorant;font-style:italic;font-size:22px;color:#897C68;white-space:nowrap}
 .piece-mark{background:#FAF6EC;padding:16px 26px;display:inline-block}
 .piece-mark .m{font-family:Pinyon;font-size:46px;line-height:1.45;color:#3D352A;white-space:nowrap}
