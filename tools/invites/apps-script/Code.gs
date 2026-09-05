@@ -1050,9 +1050,18 @@ function cardBlob_(g){
       throw new Error('could not download the drawn letter (HTTP ' + res.getResponseCode() + ')');
     }
     return res.getBlob().setName('card.png').setContentType('image/png');
-  } finally {
-    try { DriveApp.getFileById(id).setTrashed(true); } catch(_){}
-  }
+  } finally { trashOwnFile_(id); }
+}
+
+/* Bin a file this script made. drive.file is enough for that; DriveApp is
+   not, it asks for every file in the Drive. */
+function trashOwnFile_(id){
+  try {
+    UrlFetchApp.fetch('https://www.googleapis.com/drive/v3/files/' + id, {
+      method: 'patch', contentType: 'application/json',
+      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+      payload: JSON.stringify({ trashed: true }), muteHttpExceptions: true });
+  } catch(_){}
 }
 
 /* Everything the message embeds. The invitation draws its letter here and
@@ -1174,8 +1183,8 @@ function sendTestToMe(){
   });
   toast_('Test of ' + who + '’s invitation sent to ' + me + '.');
 }
-/* The selected row's letter exactly as Send would draw it, saved as a PNG in
-   your Drive instead of mailed — to look at the design, or at a long note. */
+/* The selected row's letter exactly as Send would draw it, sent to you on its
+   own — the picture, and nothing else, to look at the design or a long note. */
 function previewSelectedCard(){
   const ctx = readGuests_();
   if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
@@ -1188,9 +1197,13 @@ function previewSelectedCard(){
   let png;
   try { png = cardBlob_(g); }
   catch(err){ toast_('Could not draw it — ' + err.message); return; }
-  const file = DriveApp.createFile(png.setName('Wedding HQ · letter preview · ' + who + '.png'));
-  SpreadsheetApp.getUi().alert('Letter preview saved to your Drive',
-    file.getName() + '\n\n' + file.getUrl(), SpreadsheetApp.getUi().ButtonSet.OK);
+  const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
+  GmailApp.sendEmail(me, '[PREVIEW] ' + who + '’s letter', 'The letter as it would be drawn right now.', {
+    name: CFG.SENDER_NAME,
+    htmlBody: '<img src="cid:letter" width="600" style="display:block;border:0;width:600px;max-width:100%;height:auto;">',
+    inlineImages: { letter: png }
+  });
+  toast_('Preview of ' + who + '’s letter sent to ' + me + '.');
 }
 
 function resetSelectedStatus(){
