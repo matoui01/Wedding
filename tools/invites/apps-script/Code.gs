@@ -355,8 +355,9 @@ function plusLine_(g){
 /**
  * The greeting a letter opens with, from the names in Household and the
  * language — "Cari Sara e Riccardo," "Chère Clara," "Dear Rachid and Sara,".
- * The Greeting column is filled with it by "Prepare guests"; type over it on
- * any row that needs its own words, and that is what the letter will say.
+ * The Greeting column holds =GREETING($A2;$N2;$B2;$C2;$D2) on every row; type
+ * over it on any row that needs its own words, and that is what the letter
+ * will say.
  *
  * @param {string} household The Household cell, e.g. "Paul et Véro".
  * @param {string} language  it · fr · en
@@ -430,7 +431,7 @@ function onOpen(){
   SpreadsheetApp.getUi().createMenu('💌 Wedding HQ')
     .addItem('Set up / repair the workbook',   'setupWorkbook')
     .addSeparator()
-    .addItem('Prepare guests — invite links & greetings', 'prepareGuests')
+    .addItem('Make invite links for new rows',  'prepareGuests')
     .addItem('Review greetings — as they will be drawn', 'reviewGreetings')
     .addItem('Send this invitation now',       'sendSelectedRowNow')
     .addItem('Preview this row’s letter — save a PNG to Drive', 'previewSelectedCard')
@@ -715,29 +716,18 @@ const TOKEN_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
    typed yourself stays. */
 /* Every row that names someone gets an invite link. Links are never
    regenerated — the link in an email already sent has to keep working. */
-/* Every row that names someone gets an invite link, and a Greeting if the
-   cell is empty: the =GREETING() formula, which follows Household and
-   Language until you type over it. Links are never regenerated — the link in
-   an email already sent has to keep working — and a Greeting already there,
-   formula or your own words, is left alone. */
+/* Invite links for rows that lack one — optional, since a row is given its
+   link the moment it is sent anyway. Links are never regenerated: the link in
+   an email already sent has to keep working. */
 function prepareGuests(){
   const ctx = readGuests_();
-  const gCol = colIndex_('Greeting');
-  const tpl = '=GREETING($' + colLetter_('Household') + '{r}§$' + colLetter_('Language') + '{r}§$' +
-              colLetter_('Invitee') + '{r}§$' + colLetter_('Plus-one') + '{r}§$' + colLetter_('Plus-one name') + '{r})';
-  let links = 0, greetings = 0;
+  let links = 0;
   for(let i = 0; i < ctx.data.length; i++){
     const names = normText_(cell_(ctx, i, 'household')) || normText_(cell_(ctx, i, 'invitee'));
     if(!names && !String(cell_(ctx, i, 'email') || '').trim()) continue;
     if(!String(cell_(ctx, i, 'token') || '').trim()){ ensureToken_(ctx, i); links++; }
-    const cell = ctx.sh.getRange(i + 2, gCol);
-    if(names && !String(cell.getValue() || '').trim() && !cell.getFormula()){
-      cell.setFormula(f_(tpl.replace(/\{r\}/g, String(i + 2))));
-      greetings++;
-    }
   }
-  toast_((links ? links + ' invite link(s) made' : 'Every guest already has an invite link') +
-         (greetings ? ' · ' + greetings + ' Greeting cell(s) filled with =GREETING() — type over any that need their own words' : '') + '.');
+  toast_(links ? links + ' invite link(s) made.' : 'Every guest already has an invite link.');
 }
 
 /* Every greeting as it would be drawn right now, in one dialog — the rows
