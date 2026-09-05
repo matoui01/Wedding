@@ -19,7 +19,18 @@ site/
   assets/img/*.jpg      the seven watercolour paintings (extracted from the chart)
   assets/favicon.svg
 .github/workflows/deploy.yml   GitHub Pages deploy on push
+tools/invites/          the guest list, invite emails and RSVP intake
+  README.md             how the Wedding HQ sheet is set up and run
+  apps-script/Code.gs   the engine: builds the workbook, drafts invites,
+                        receives RSVPs and writes them back onto guest rows
+  sheet/                migration from the couple's own spreadsheet
+  preview/              proof sheet for the invite email, generated from Code.gs
 ```
+
+The site is static; everything that needs a server (sending invites, storing
+RSVPs) runs as a Google Apps Script bound to the couple's own Sheet. The page
+posts to it, and each guest's invite link carries a token so their reply lands
+on their own row.
 
 ## Local preview
 
@@ -49,8 +60,8 @@ All copy lives in `js/i18n.js`.
 5. **Hotels** — 3–5 options (Florence centre + near Impruneta).
 6. **RSVP deadline** date (`rsvp.by`).
 7. **Contact email** (footer + RSVP fallback).
-8. **RSVP forms** — create 3 Tally forms (IT/FR/EN), paste their embed URLs into
-   `TALLY` in `js/main.js`. Until then the RSVP section shows a styled placeholder.
+8. **Guest list** — fill the `Email` column on the Guests tab (see
+   `tools/invites/README.md`); nothing can be sent until it has addresses.
 9. Optional: custom domain.
 
 > The paintings are served as transparent `-cut.png` files (`assets/img/<name>-cut.png`):

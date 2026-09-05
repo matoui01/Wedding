@@ -63,7 +63,9 @@ button,input,select,textarea{font:inherit; color:inherit}
 .rail hr{border:0; border-top:1px solid var(--line-soft); margin:22px 0}
 
 .field{display:flex; flex-direction:column; gap:7px; margin-bottom:18px}
-.field > label, .legend{
+/* :not(.switch) — a toggle is also a direct child label, and it reads as a
+   sentence, not as a field heading */
+.field > label:not(.switch), .legend{
   font-size:10px; font-weight:500; letter-spacing:.14em; text-transform:uppercase;
   color:var(--muted);
 }

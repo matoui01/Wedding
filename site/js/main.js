@@ -98,6 +98,55 @@ function guestToken(){
   try{ return localStorage.getItem('mi_guest') || ''; }catch(_){ return ''; }
 }
 
+/* ---- Prefill from the invite link ---------------------------------------- *
+ * The token identifies the guest, so the sheet can tell us who is arriving:
+ * their name, the language they were written to in, whether their invitation
+ * actually included a plus-one, and whether they have children. That lets the
+ * form ask the right questions instead of every question.
+ *
+ * Strictly an enhancement — the endpoint returns no email, phone or address,
+ * and any failure here leaves the form exactly as it behaves without a link. */
+async function prefillFromToken(form, token, update){
+  if(!RSVP_ENDPOINT) return;
+  let g;
+  try{
+    const res = await fetch(RSVP_ENDPOINT + '?g=' + encodeURIComponent(token), { method:'GET' });
+    g = await res.json();
+  }catch(_){ return; }
+  if(!g || !g.ok) return;
+
+  /* their own language, unless they have already picked one themselves */
+  try{
+    if(!localStorage.getItem('lang') && g.lang) setLang(g.lang);
+  }catch(_){}
+
+  const name = form.querySelector('#rsvp-name');
+  if(name && !name.value) name.value = g.invitee || g.household || '';
+
+  /* Only guests whose invitation included one see the plus-one option — which
+   * means the apologetic note explaining who may bring one can go away. */
+  const plusOpt  = form.querySelector('input[data-party][value="plus"]');
+  const plusNote = form.querySelector('.rsvp-note');
+  if(!g.plusOne){
+    const wrap = plusOpt ? plusOpt.closest('.rsvp-radio') : null;
+    if(wrap) wrap.hidden = true;
+    if(plusNote) plusNote.hidden = true;
+  }else if(g.plusName){
+    const pn = form.querySelector('#rsvp-plusname');
+    if(pn && !pn.value) pn.value = g.plusName;
+  }
+
+  /* what we guessed about their children, offered back for confirmation */
+  if(g.kids){
+    const yes = form.querySelector('input[name="haskids"][value="yes"]');
+    if(yes && !form.querySelector('input[name="haskids"]:checked')) yes.checked = true;
+    const n = form.querySelector('#rsvp-kids');
+    if(n && !n.value && g.kidsEst > 0) n.value = g.kidsEst;
+  }
+
+  update();
+}
+
 function initRsvpForm(){
   const form = document.getElementById('rsvp-form');
   if(!form) return;
@@ -105,7 +154,8 @@ function initRsvpForm(){
      reset restores each field to its attribute value — so the token has to
      live there or a second reply from the same guest would arrive unlinked. */
   const tokenField = form.querySelector('#rsvp-token');
-  if(tokenField) tokenField.setAttribute('value', guestToken());
+  const token = guestToken();
+  if(tokenField) tokenField.setAttribute('value', token);
   const status = form.querySelector('.rsvp-form__status');
   const btn = form.querySelector('button[type=submit]');
   const L = ()=> document.documentElement.lang || 'it';
@@ -119,6 +169,9 @@ function initRsvpForm(){
   const coming   = form.querySelector('[data-coming]');
   const plusBox  = form.querySelector('[data-plusname]');
   const stayBox  = form.querySelector('[data-staying]');
+  const kidsAsk  = form.querySelector('[data-kidsask]');
+  const kidsN    = form.querySelector('[data-kidsn]');
+  const kidsNames= form.querySelector('[data-kidsnames]');
   const val = (sel)=>{ const el = form.querySelector(sel + ':checked'); return el ? el.value : ''; };
   const req = (el, on)=>{ if(el){ on ? el.setAttribute('required','') : el.removeAttribute('required'); } };
   function update(){
@@ -132,9 +185,21 @@ function initRsvpForm(){
     plusBox.hidden = !plus;
     req(plusBox.querySelector('input'), plus);
     stayBox.hidden = !(yes && val('[data-shuttle]') === 'yes');
+
+    /* Everyone attending is asked about children — the couple need a real
+       count for the caterer, and a household we didn't flag may still have
+       one. The sheet's own guess only preselects the answer. */
+    kidsAsk.hidden = !yes;
+    req(form.querySelector('input[name="haskids"]'), yes);
+    const withKids = yes && val('[data-haskids]') === 'yes';
+    kidsN.hidden = !withKids;
+    kidsNames.hidden = !withKids;
+    req(kidsN.querySelector('input'), withKids);
   }
   form.addEventListener('change', update);
   update();
+
+  if(token) prefillFromToken(form, token, update);
 
   const showErr = ()=>{
     const addr = 'maxime.ilaria' + String.fromCharCode(64) + 'gmail.com';

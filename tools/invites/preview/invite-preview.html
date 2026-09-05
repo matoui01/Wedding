@@ -63,7 +63,9 @@ button,input,select,textarea{font:inherit; color:inherit}
 .rail hr{border:0; border-top:1px solid var(--line-soft); margin:22px 0}
 
 .field{display:flex; flex-direction:column; gap:7px; margin-bottom:18px}
-.field > label, .legend{
+/* :not(.switch) — a toggle is also a direct child label, and it reads as a
+   sentence, not as a field heading */
+.field > label:not(.switch), .legend{
   font-size:10px; font-weight:500; letter-spacing:.14em; text-transform:uppercase;
   color:var(--muted);
 }
@@ -290,6 +292,7 @@ const COPY = {
     kWhere:'Dove', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze',
     kDress:'Dress code', vDress:'Cocktail elegante',
     plus:'Saremo felici di accogliere anche il vostro accompagnatore.',
+    plusNamed:d=>'Saremo felici di accogliere anche '+d+'.',
     siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.',
     pwk:'Password del sito', cta:'Apri il sito e rispondi',
     by:d=>'Vi preghiamo di confermare entro il '+d+'.',
@@ -307,6 +310,7 @@ const COPY = {
     kWhere:'Lieu', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Tenue', vDress:'Cocktail élégant',
     plus:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
+    plusNamed:d=>'Nous serons ravis d’accueillir également '+d+'.',
     siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.',
     pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre',
     by:d=>'Merci de confirmer avant le '+d+'.',
@@ -324,6 +328,7 @@ const COPY = {
     kWhere:'Where', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Dress code', vDress:'Elegant cocktail',
     plus:"You're warmly invited to bring a plus-one.",
+    plusNamed:d=>"We'd be delighted to welcome "+d+' as well.',
     siteLead:'The programme, travel, gifts and your RSVP all live on our site.',
     pwk:'Site password', cta:'Open the site and RSVP',
     by:d=>'Kindly reply by '+d+'.',
@@ -342,11 +347,11 @@ const MONTHS = {
 };
 
 const DEADLINE_SEED = [
-  ['Family',        [2027, 0, 31], 'Closest family — we need these numbers first, for the villa.'],
-  ['Wedding party', [2027, 0, 31], 'Anyone standing up with us.'],
-  ['Friends',       [2027, 2, 31], ''],
-  ['Work',          [2027, 3, 30], ''],
-  ['(default)',     [2027, 3, 30], 'Used for any guest whose Category is blank or unlisted.']
+  ['Close Family',   [2027, 0, 31], 'Closest family — we need these numbers first, for the villa.'],
+  ['Family',         [2027, 1, 28], 'Atoui and Baudoin sides.'],
+  ['Family Friends', [2027, 2, 15], ''],
+  ['Friends',        [2027, 2, 31], ''],
+  ['(default)',      [2027, 3, 30], 'Used for any guest whose Category is blank or unlisted.']
 ];
 
 const TOKEN_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
@@ -355,7 +360,7 @@ function buildEmail_(g){
   const c = COPY[g.lang] || COPY.it;
   const greet = g.greeting || (g.names ? greetingFromNames_(g.names, g.lang) : c.fallbackGreet);
   const note = (g.note ? noteBlock_(esc_(g.note)) : '');
-  const plus = (g.plusOne ? plusBlock_(c.plus) : '');
+  const plus = (g.plusOne ? plusBlock_(plusLine_(c, g)) : '');
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
@@ -556,6 +561,10 @@ function noteBlock_(noteHtml){
 
 function plusBlock_(txt){
   return '<tr><td align="center" class="px" style="padding:24px 52px 0;font-family:' + T.fDisplay + ';font-style:italic;font-size:18px;color:' + T.salviaDeep + ';">' + txt + '</td></tr>';
+}
+
+function plusLine_(c, g){
+  return (g.plusName && c.plusNamed) ? c.plusNamed(esc_(g.plusName)) : c.plus;
 }
 
 function esc_(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
