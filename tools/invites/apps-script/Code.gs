@@ -115,8 +115,8 @@ const SHEETS = { GUESTS:'Guests', RSVP:'RSVP', DEADLINES:'Deadlines', DASH:'Dash
 
    Children are not invited, so nothing about them counts towards Seats.
    "Kids?" and "Kids est." stay as your own note of which households have
-   children: the ones most likely to decline, and the ones worth a word about
-   a sitter. "Children" only fills if a reply reports one anyway. */
+   children — the ones most likely to decline, and the ones to expect a
+   question from. "Children" only fills if a reply reports one anyway. */
 const GUEST_HEADER = [
   'Household', 'Invitee', 'Plus-one', 'Plus-one name', 'Kids?', 'Kids est.',
   'Category', 'Subcategory', 'Side', 'Priority', 'Send?', 'Wave',
