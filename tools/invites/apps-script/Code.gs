@@ -1291,7 +1291,10 @@ function mailBlobs_(g){
     deck.saveAndClose();
 
     const out = [];
-    for(let i = 0; i < n; i++) out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page));
+    for(let i = 0; i < n; i++){
+      if(i) Utilities.sleep(600);                    // paced, so the refusals stay rare
+      out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page));
+    }
     return out;
   } finally { deleteOwnFile_(id); }
 }
@@ -1392,39 +1395,45 @@ function stackHtml_(n, link){
    setting and lays visible blocks over flat cream and fine script. Only a
    picture too heavy to mail is converted, and then by Google's encoder. */
 function exportPage_(id, pageId, i, n, page){
-  const fetchExport = (fmt) => {
-    const res = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
-      '/export/' + fmt + '?id=' + id + '&pageid=' + pageId,
-      { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
-    // Size says nothing about success here: a slice that is mostly cream is a
-    // very small PNG, and treating small as failed sent exactly those slices
-    // down the low-resolution fallback — so some came back 1600 px wide among
-    // others at 2400, which is a seam straight across the invitation.
-    if(res.getResponseCode() !== 200) return null;
-    const blob = res.getBlob();
-    const type = String(blob.getContentType() || '');
-    return (type.indexOf('image/') === 0 && blob.getBytes().length > 200) ? blob : null;
+  /* Google refuses this endpoint after a handful of calls in quick
+     succession — HTTP 429 — and one invitation is eight of them. Refusals are
+     waited out rather than worked around: falling back to a thumbnail hands
+     back a slice at 1600 px among others at 2400, which is a seam straight
+     across the invitation. Size, on the other hand, says nothing about
+     success: a slice that is mostly cream is a very small picture. */
+  const get = (fmt) => {
+    let wait = 1200;
+    for(let attempt = 0; attempt < 5; attempt++){
+      let res = null;
+      try {
+        res = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
+          '/export/' + fmt + '?id=' + id + '&pageid=' + pageId,
+          { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+      } catch(_){}
+      if(res && res.getResponseCode() === 200){
+        const blob = res.getBlob();
+        if(String(blob.getContentType() || '').indexOf('image/') === 0 && blob.getBytes().length > 200){
+          return blob;
+        }
+      }
+      const code = res ? res.getResponseCode() : 0;
+      if(code && code !== 429 && code < 500) return null;    // a refusal, not a queue
+      Utilities.sleep(wait);
+      wait = Math.min(wait * 2, 15000);
+    }
+    return null;
   };
-  /* PNG where it is small — flat cream and script stay perfectly clean — and
-     Google's own JPEG where it is not, which is the watercolour and the
-     letter beneath it. Eight megabytes of PNG is not a kindness to someone
-     opening this on a phone. */
-  let img = null;
-  try { img = fetchExport('png'); } catch(_){}
-  if(!img || img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
-    let jpg = null;
-    try { jpg = fetchExport('jpeg'); } catch(_){}
-    if(jpg && (!img || jpg.getBytes().length < img.getBytes().length)) img = jpg;
+
+  /* PNG where it stays small — flat cream and fine script keep every pixel —
+     and Google's own JPEG where it does not, which is the watercolour. */
+  let img = get('png');
+  if(img && img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
+    const jpg = get('jpeg');
+    if(jpg && jpg.getBytes().length < img.getBytes().length) img = jpg;
   }
   if(!img){
-    const thumb = Slides.Presentations.Pages.getThumbnail(id, pageId, {
-      'thumbnailProperties.mimeType': 'PNG', 'thumbnailProperties.thumbnailSize': CARD.THUMB
-    });
-    const res = UrlFetchApp.fetch(thumb.contentUrl, { muteHttpExceptions: true });
-    if(res.getResponseCode() !== 200){
-      throw new Error('could not download piece ' + i + ' of the invitation (HTTP ' + res.getResponseCode() + ')');
-    }
-    img = res.getBlob();
+    throw new Error('Google would not export piece ' + i + ' of ' + n + ' after several tries — ' +
+                    'usually too many draws in a row. Wait a minute and send again.');
   }
   LAST_DRAW = (i === 1 ? '' : LAST_DRAW + ' + ') + drawInfo_(img, page) + (i === n ? ' × ' + n + ' slices' : '');
   return img.setName('invitation-' + i + '.' + (img.getContentType() === 'image/png' ? 'png' : 'jpg'));
