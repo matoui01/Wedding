@@ -462,14 +462,18 @@ function greetingFor_(names, lang){
   return (lang === 'fr' ? (fem ? 'Chère ' : 'Cher ') : (fem ? 'Cara ' : 'Caro ')) + joined + ',';
 }
 
-// what the row asks for, or what its names give
+// What the Greeting cell says — whether the =GREETING() formula put it there
+// or you typed over it — and, only if the cell is empty, what the names give.
 function greetingOf_(g){ return normText_(g.greeting) || greetingFor_(addressees_(g), g.lang); }
 
-// true when the greeting was guessed in a gendered language, or names a
-// placeholder — the rows worth a look before sending
+// 'typed' when the cell holds your own words; otherwise 'guessed' when a
+// gender had to be guessed, 'placeholder' when "sa femme" still stands in for
+// a name — the rows worth a look before sending. '' when nothing to flag.
 function greetingDoubtful_(g){
-  if(normText_(g.greeting)) return PLACEHOLDER.test(g.greeting) ? 'placeholder' : '';
   const names = addressees_(g);
+  const auto = greetingFor_(names, g.lang);
+  const cell = normText_(g.greeting);
+  if(cell && cell !== auto) return PLACEHOLDER.test(cell) ? 'placeholder' : 'typed';
   if(names.some(n => PLACEHOLDER.test(n))) return 'placeholder';
   return (normLang_(g.lang) !== 'en' && names.length === 1) ? 'guessed' : '';
 }

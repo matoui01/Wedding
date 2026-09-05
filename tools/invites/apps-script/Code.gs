@@ -327,14 +327,18 @@ function greetingFor_(names, lang){
   return (lang === 'fr' ? (fem ? 'Chère ' : 'Cher ') : (fem ? 'Cara ' : 'Caro ')) + joined + ',';
 }
 
-// what the row asks for, or what its names give
+// What the Greeting cell says — whether the =GREETING() formula put it there
+// or you typed over it — and, only if the cell is empty, what the names give.
 function greetingOf_(g){ return normText_(g.greeting) || greetingFor_(addressees_(g), g.lang); }
 
-// true when the greeting was guessed in a gendered language, or names a
-// placeholder — the rows worth a look before sending
+// 'typed' when the cell holds your own words; otherwise 'guessed' when a
+// gender had to be guessed, 'placeholder' when "sa femme" still stands in for
+// a name — the rows worth a look before sending. '' when nothing to flag.
 function greetingDoubtful_(g){
-  if(normText_(g.greeting)) return PLACEHOLDER.test(g.greeting) ? 'placeholder' : '';
   const names = addressees_(g);
+  const auto = greetingFor_(names, g.lang);
+  const cell = normText_(g.greeting);
+  if(cell && cell !== auto) return PLACEHOLDER.test(cell) ? 'placeholder' : 'typed';
   if(names.some(n => PLACEHOLDER.test(n))) return 'placeholder';
   return (normLang_(g.lang) !== 'en' && names.length === 1) ? 'guessed' : '';
 }
@@ -347,6 +351,26 @@ function plusLine_(g){
 }
 
 /* <<< shared */
+
+/**
+ * The greeting a letter opens with, from the names in Household and the
+ * language — "Cari Sara e Riccardo," "Chère Clara," "Dear Rachid and Sara,".
+ * The Greeting column is filled with it by "Prepare guests"; type over it on
+ * any row that needs its own words, and that is what the letter will say.
+ *
+ * @param {string} household The Household cell, e.g. "Paul et Véro".
+ * @param {string} language  it · fr · en
+ * @param {string} [invitee] Used only when Household is empty.
+ * @param {string} [plusOne] yes/no — used only with invitee.
+ * @param {string} [plusName] The plus-one's name — used only with invitee.
+ * @return {string} The greeting, comma included.
+ * @customfunction
+ */
+function GREETING(household, language, invitee, plusOne, plusName){
+  const g = { household: household, names: invitee, plusOne: truthy_(plusOne),
+              plusName: plusName, lang: language, greeting: '' };
+  return greetingFor_(addressees_(g), g.lang);
+}
 
 /* Column letters are derived, never typed: every formula below asks
    GUEST_HEADER where a column actually is. Inserting a column then costs
@@ -406,7 +430,7 @@ function onOpen(){
   SpreadsheetApp.getUi().createMenu('💌 Wedding HQ')
     .addItem('Set up / repair the workbook',   'setupWorkbook')
     .addSeparator()
-    .addItem('Prepare guests — invite links',   'prepareGuests')
+    .addItem('Prepare guests — invite links & greetings', 'prepareGuests')
     .addItem('Review greetings — as they will be drawn', 'reviewGreetings')
     .addItem('Send this invitation now',       'sendSelectedRowNow')
     .addItem('Preview this row’s letter — save a PNG to Drive', 'previewSelectedCard')
@@ -691,15 +715,29 @@ const TOKEN_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
    typed yourself stays. */
 /* Every row that names someone gets an invite link. Links are never
    regenerated — the link in an email already sent has to keep working. */
+/* Every row that names someone gets an invite link, and a Greeting if the
+   cell is empty: the =GREETING() formula, which follows Household and
+   Language until you type over it. Links are never regenerated — the link in
+   an email already sent has to keep working — and a Greeting already there,
+   formula or your own words, is left alone. */
 function prepareGuests(){
   const ctx = readGuests_();
-  let links = 0;
+  const gCol = colIndex_('Greeting');
+  const tpl = '=GREETING($' + colLetter_('Household') + '{r}§$' + colLetter_('Language') + '{r}§$' +
+              colLetter_('Invitee') + '{r}§$' + colLetter_('Plus-one') + '{r}§$' + colLetter_('Plus-one name') + '{r})';
+  let links = 0, greetings = 0;
   for(let i = 0; i < ctx.data.length; i++){
     const names = normText_(cell_(ctx, i, 'household')) || normText_(cell_(ctx, i, 'invitee'));
     if(!names && !String(cell_(ctx, i, 'email') || '').trim()) continue;
     if(!String(cell_(ctx, i, 'token') || '').trim()){ ensureToken_(ctx, i); links++; }
+    const cell = ctx.sh.getRange(i + 2, gCol);
+    if(names && !String(cell.getValue() || '').trim() && !cell.getFormula()){
+      cell.setFormula(f_(tpl.replace(/\{r\}/g, String(i + 2))));
+      greetings++;
+    }
   }
-  toast_(links ? links + ' invite link(s) made.' : 'Every guest already has an invite link.');
+  toast_((links ? links + ' invite link(s) made' : 'Every guest already has an invite link') +
+         (greetings ? ' · ' + greetings + ' Greeting cell(s) filled with =GREETING() — type over any that need their own words' : '') + '.');
 }
 
 /* Every greeting as it would be drawn right now, in one dialog — the rows
@@ -715,15 +753,18 @@ function reviewGreetings(){
     if(!g.household && !g.names) continue;
     const why = greetingDoubtful_(g);
     if(why) doubtful++;
-    lines.push('<tr' + (why ? ' class="d"' : '') + '><td>' + (i + 2) + '</td><td>' + esc_(g.household || g.names) +
+    const flag = why === 'placeholder' || why === 'guessed';
+    if(!flag && why) doubtful--;
+    lines.push('<tr' + (flag ? ' class="d"' : '') + '><td>' + (i + 2) + '</td><td>' + esc_(g.household || g.names) +
                '</td><td>' + esc_(greetingOf_(g)) + '</td><td>' + esc_(plusLine_(g)) + '</td><td>' +
-               (why === 'placeholder' ? '⚠ placeholder name' : why === 'guessed' ? 'gender guessed' : '') + '</td></tr>');
+               (why === 'placeholder' ? '⚠ placeholder name' : why === 'guessed' ? 'gender guessed' :
+                why === 'typed' ? 'your own words' : '') + '</td></tr>');
   }
   const html = '<style>body{font:13px/1.4 system-ui,sans-serif;color:#3D352A}table{border-collapse:collapse;width:100%}' +
     'td,th{padding:4px 8px;border-bottom:1px solid #E4DCC9;text-align:left;vertical-align:top}th{color:#897C68;font-weight:600}' +
     'tr.d td{background:#FDF3E7}</style>' +
-    '<p>' + lines.length + ' letters · ' + doubtful + ' worth a look (shaded). Edit <b>Household</b> to change the names, ' +
-    'or type the exact line in <b>Greeting</b> to override.</p>' +
+    '<p>' + lines.length + ' letters · ' + doubtful + ' worth a look (shaded). The letter says exactly what the ' +
+    '<b>Greeting</b> cell says: edit <b>Household</b> to change the names the formula uses, or type your own line over it.</p>' +
     '<table><tr><th>Row</th><th>Household</th><th>Greeting</th><th>Plus-one line</th><th></th></tr>' + lines.join('') + '</table>';
   SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(860).setHeight(600),
     'Greetings — as they will be drawn');
