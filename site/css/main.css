@@ -230,6 +230,11 @@ h1,h2,h3{ font-weight:500; margin:0; }
 .rsvp__embed iframe{ width:100%; border:0; background:transparent; border-radius:var(--radius); }
 .rsvp__fallback{ margin-top:1.2rem; color:var(--muted); font-size:1rem; }
 
+/* The reply-by date — the one thing in that sentence anyone has to remember.
+   Terracotta rather than sage: it is the only warm accent on the page, so it
+   reads as a deadline and not as another link. */
+.rsvp-by__date{ color:var(--terracotta-d); font-weight:600; white-space:nowrap; }
+
 /* Who the invitation is for — plus-ones and children. Set apart from the
    deadline line above it, and quiet: it is an apology, not an announcement. */
 .rsvp-who{
@@ -244,6 +249,7 @@ h1,h2,h3{ font-weight:500; margin:0; }
 }
 .rsvp-who__p{ font-size:1rem; color:var(--muted); line-height:1.65; margin:0; }
 .rsvp-who__p + .rsvp-who__p{ margin-top:.85rem; }
+.rsvp-who__p strong{ color:var(--salvia-deep); font-weight:600; }
 
 /* RSVP form */
 .rsvp-form{ text-align:left; display:grid; gap:1.1rem; margin:clamp(1.8rem,4vw,2.6rem) auto 0; }

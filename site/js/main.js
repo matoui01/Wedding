@@ -121,7 +121,15 @@ function showReplyBy(){
     const months = MONTHS_I18N[L] || MONTHS_I18N.it;
     date = Number(m[3]) + ' ' + months[Number(m[2]) - 1] + ' ' + m[1];
   }
-  el.textContent = (REPLY_BY_LINE[L] || REPLY_BY_LINE.it) + date + '.';
+  /* Built as nodes rather than markup: the date can come from the couple's
+     own sheet, and the span is what paints it — see .rsvp-by__date. Without
+     this the guest's own deadline would land as plain text while the general
+     one, which comes from the dictionary, is marked up. */
+  el.textContent = REPLY_BY_LINE[L] || REPLY_BY_LINE.it;
+  const span = document.createElement('span');
+  span.className = 'rsvp-by__date';
+  span.textContent = date;
+  el.append(span, '.');
 }
 window.showReplyBy = showReplyBy;
 
