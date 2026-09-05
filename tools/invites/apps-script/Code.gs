@@ -73,14 +73,15 @@ const CFG = {
   // The invitation itself is drawn at send time: see mailBlobs_.
   /* Slides ignores the page size asked for when a presentation is created,
      so the invitation is drawn on copies of a template whose size was set
-     once by hand: 1800 × 750 pt.
+     once by hand: 1800 × 1500 pt.
 
      Why those numbers. Google exports a slide with its long side capped at
-     2500 px, so 1800 pt wide comes back 2400 px — four times the 600 px the
-     invitation is shown at. And the height decides how tight the spacing can
-     be: the invitation is drawn as a whole number of pages, and whatever is
-     left over is shared out between the blocks, so a short page leaves little
-     to share and the rhythm stays as designed. */
+     2500 px: 1800 × 1500 pt comes back 2400 × 2000, under the cap in both
+     directions — four times the 600 px the invitation is shown at. And that
+     height divides the invitation into four pieces rather than eight, which
+     matters because the export refuses after a handful of calls in quick
+     succession. Whatever the pieces do not fill is shared out between the
+     blocks, so the rhythm stays as designed either way. */
   TEMPLATE : 'Wedding HQ · invitation template',
   SCRATCH  : 'Wedding HQ · invitation (scratch)',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
@@ -1303,14 +1304,14 @@ function mailBlobs_(g){
        too heavy to mail, and then JPEG throughout. */
     const out = [];
     for(let i = 0; i < n; i++){
-      if(i) Utilities.sleep(600);                    // paced, so refusals stay rare
+      if(i) Utilities.sleep(1500);                   // paced, so refusals stay rare
       out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page, 'png'));
     }
     const heavy = out.reduce((a, b) => a + b.getBytes().length, 0) > CARD.MAX_MB * 1024 * 1024;
     if(!heavy) return out;
     const jpg = [];
     for(let i = 0; i < n; i++){
-      Utilities.sleep(600);
+      Utilities.sleep(1500);
       jpg.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page, 'jpeg'));
     }
     return jpg;
@@ -1420,8 +1421,8 @@ function exportPage_(id, pageId, i, n, page, fmt){
      across the invitation. Size, on the other hand, says nothing about
      success: a slice that is mostly cream is a very small picture. */
   const get = (fmt) => {
-    let wait = 1200;
-    for(let attempt = 0; attempt < 5; attempt++){
+    let wait = 2000;
+    for(let attempt = 0; attempt < 6; attempt++){
       let res = null;
       try {
         res = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
