@@ -19,7 +19,7 @@ CODE = HERE.parent / "apps-script" / "Code.gs"
 OUT = HERE / "invite-preview.html"
 
 # Everything the two builders need, in dependency order.
-CONSTS = ["CFG", "T", "COPY", "MONTHS", "DEADLINE_SEED", "TOKEN_ALPHABET"]
+CONSTS = ["CFG", "T", "FACE_CSS", "COPY", "MONTHS", "DEADLINE_SEED", "TOKEN_ALPHABET"]
 FUNCS = ["buildEmail_", "buildReminder_", "factRow_", "noteBlock_", "plusBlock_",
          "plusLine_", "sitePassword_", "esc_", "greetingFromNames_", "inviteLink_", "normLang_"]
 
@@ -72,6 +72,14 @@ def main():
         if name == "TOKEN_ALPHABET":
             m = re.search(r"const TOKEN_ALPHABET = '[^']*';", src)
             parts.append(m.group(0))
+            continue
+        if name == "FACE_CSS":
+            # a concatenated string rather than a bracketed literal, so it is
+            # read to its terminating semicolon instead of by brace matching
+            m = re.search(r"const FACE_CSS =.*?;\n", src, re.S)
+            if not m:
+                sys.exit("could not find FACE_CSS")
+            parts.append(m.group(0).rstrip())
             continue
         parts.append(extract_block(src, rf"const {name} = ", opener,
                                    "]" if opener == "[" else "}") + ";")
