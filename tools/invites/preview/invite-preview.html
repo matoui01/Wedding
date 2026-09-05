@@ -282,6 +282,13 @@ const CFG = {
   SCRATCH  : 'Wedding HQ · invitation (scratch)',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
   IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
+  // Slides has no Jost and no letter-spacing at all, so every line that
+  // depends on either is drawn in the browser and fetched as a picture. None
+  // of them carries anything about a guest — the password stays live text,
+  // because a public asset must never be the place it is written down.
+  IMG_PWK  : function(l){ return 'email-pwk-' + l + '.png'; },
+  IMG_BY   : function(l){ return 'email-by-' + l + '.png'; },
+  IMG_CTA  : function(l){ return 'email-cta-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
