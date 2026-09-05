@@ -69,8 +69,11 @@ const CFG = {
   // one carries a guest's name and their personal note — and the website's
   // repository is public. The script runs as the couple's own account, so it
   // reads them straight out of Drive; nothing about a guest is ever published.
+  // Each file is named card-<token>-<key>.jpg, where the key is a fingerprint
+  // of the words drawn on it (see cardKey_). A row edited after its card was
+  // made — a greeting corrected, a note added — no longer matches any file,
+  // and the send refuses rather than mailing a card that says something else.
   CARDS_FOLDER : 'Wedding cards',
-  IMG_CARD : function(token){ return 'card-' + token + '.jpg'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -202,13 +205,10 @@ const FACE_CSS =
 const COPY = {
   it:{
     over:'VILLA CORSINI A MEZZOMONTE · FIRENZE', tag:'Ci sposiamo', date:'Venerdì 23 luglio 2027',
-    fallbackGreet:'Cari tutti,',
     body:'Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.',
     kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027',
     kWhere:'Dove', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze',
     kDress:'Dress code', vDress:'Cocktail elegante',
-    plus:'Saremo felici di accogliere anche il vostro accompagnatore.',
-    plusNamed:d=>'Saremo felici di accogliere anche '+d+'.',
     siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.',
     pwk:'Password del sito', cta:'Apri il sito e rispondi',
     by:d=>'Vi preghiamo di confermare entro il '+d+'.',
@@ -220,13 +220,10 @@ const COPY = {
   },
   fr:{
     over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:'Nous nous marions', date:'Vendredi 23 juillet 2027',
-    fallbackGreet:'Chers tous,',
     body:'Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.',
     kDay:'Le jour', vDay:'Vendredi 23 juillet 2027',
     kWhere:'Lieu', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Tenue', vDress:'Cocktail élégant',
-    plus:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
-    plusNamed:d=>'Nous serons ravis d’accueillir également '+d+'.',
     siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.',
     pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre',
     by:d=>'Merci de confirmer avant le '+d+'.',
@@ -238,13 +235,10 @@ const COPY = {
   },
   en:{
     over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:"We're getting married", date:'Friday · 23 July 2027',
-    fallbackGreet:'Dear all,',
     body:"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
     kDay:'The day', vDay:'Friday 23 July 2027',
     kWhere:'Where', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Dress code', vDress:'Elegant cocktail',
-    plus:"You're warmly invited to bring a plus-one.",
-    plusNamed:d=>"We'd be delighted to welcome "+d+' as well.',
     siteLead:'The programme, travel, gifts and your RSVP all live on our site.',
     pwk:'Site password', cta:'Open the site and RSVP',
     by:d=>'Kindly reply by '+d+'.',
@@ -255,6 +249,113 @@ const COPY = {
     rBody:"We haven't yet had your reply for 23 July 2027 at Villa Corsini a Mezzomonte. We'd love to know whether you can join us — it only takes two minutes on the site. And if you've already replied, do forgive the duplicate!"
   }
 };
+
+/* ======================= words shared with the renderer ================== */
+/* >>> shared
+   Everything between these two markers is plain JavaScript with no Apps
+   Script in it. tools/invites/assets/render-cards.js evaluates exactly this
+   text when it draws the cards, so the greeting on a card, the greeting in
+   the email's text version and the file name the send looks for all come
+   from one definition and cannot drift apart. Keep it that way: nothing here
+   may touch CFG, COPY, SpreadsheetApp or any other global. */
+
+// Bump when the card's design or static wording changes: every existing card
+// then stops matching and has to be drawn again.
+const CARD_VERSION = '2026-09-05';
+
+const JOIN     = { it:' e ',   fr:' et ',   en:' and ' };
+const PLURAL   = { it:'Cari ', fr:'Chers ', en:'Dear ' };
+const FALLBACK = { it:'Cari tutti,', fr:'Chers tous,', en:'Dear all,' };
+// an invitee cell that already names two people ("Paul et Véro")
+const PAIRED   = /\s(?:et|e|and|&|con|\+)\s/i;
+
+// French and Italian gender the singular ("Chère", "Caro"), and nothing on the
+// row records a guest's gender. The ending of the first name decides, except
+// for the common names where that rule is wrong.
+const FEMININE = {
+  it: ['irene','beatrice','alice','matilde','rachele','adele','noemi','agnese',
+       'cloe','zoe','nives','ester','ines','carmen','miriam','sarah','giuditta'],
+  fr: ['chantal','maud','margot','anais','anaïs','ingrid','karen','carmen',
+       'meriem','maryam','sarah','ines','inès','agnes','agnès','marion','manon',
+       'dolores','elisabeth','judith','ruth','edith','myriam','miriam','zeynep']
+};
+const MASCULINE = {
+  it: ['andrea','luca','nicola','mattia','elia','tobia','simone','davide',
+       'daniele','gabriele','emanuele','michele','giuseppe','pasquale',
+       'raffaele','samuele','cesare','oreste','felice'],
+  fr: ['maxime','theophile','théophile','jerome','jérôme','etienne','étienne',
+       'pierre','alexandre','guillaume','jean-baptiste','antoine','philippe',
+       'christophe','stephane','stéphane','jeremie','jérémie','come','côme',
+       'hippolyte','timothee','timothée','barnabe','barnabé']
+};
+
+// said only to a guest whose plus-one is open — a named one is greeted instead
+const PLUS_COPY = {
+  it:'Saremo felici di accogliere anche il vostro accompagnatore.',
+  fr:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
+  en:"You're warmly invited to bring a plus-one."
+};
+
+function normLang_(v){ v = String(v || '').trim().toLowerCase().slice(0, 2); return (v === 'fr' || v === 'en' || v === 'it') ? v : 'it'; }
+function normText_(s){ return String(s == null ? '' : s).normalize('NFC').replace(/\s+/g, ' ').trim(); }
+function truthy_(v){ v = String(v || '').trim().toLowerCase(); return v === 'yes' || v === 'y' || v === 'true' || v === '1' || v === 'si' || v === 'sì' || v === 'oui' || v === 'x'; }
+
+// The invitee as addressed: a trailing initial is how the sheet tells two
+// Thomases apart ("Thomas J"), not how anyone is greeted.
+function addressed_(invitee){ return normText_(invitee).replace(/\s+[A-Za-z]\.?$/, ''); }
+
+// true when the greeting is singular in a gendered language — the only case
+// where greetingFor_ has to guess, and the rows worth a second look
+function greetingGuessed_(invitee, plusName, lang){
+  invitee = addressed_(invitee);
+  return normLang_(lang) !== 'en' && !!invitee && !normText_(plusName) && !PAIRED.test(invitee);
+}
+
+// "Cari Sara e Riccardo," / "Chère Clara," — from the names on the row.
+// plusName is only ever the name of an *invited* plus-one (see greetingOf_).
+function greetingFor_(invitee, plusName, lang){
+  lang = normLang_(lang);
+  invitee = addressed_(invitee); plusName = normText_(plusName);
+  if(!invitee && !plusName) return FALLBACK[lang];
+  const names = invitee && plusName ? invitee + JOIN[lang] + plusName : (invitee || plusName);
+  if(!greetingGuessed_(invitee, plusName, lang)) return PLURAL[lang] + names + ',';
+  const first = invitee.split(' ')[0].toLowerCase();
+  let fem;
+  if(FEMININE[lang].indexOf(first) >= 0) fem = true;
+  else if(MASCULINE[lang].indexOf(first) >= 0) fem = false;
+  else fem = lang === 'fr' ? /[ae]$/.test(first) : /a$/.test(first);
+  const lead = lang === 'fr' ? (fem ? 'Chère ' : 'Cher ') : (fem ? 'Cara ' : 'Caro ');
+  return lead + names + ',';
+}
+
+// the name of the plus-one if — and only if — the row invites one. A name in
+// that column next to Plus-one = no is a note to yourselves, not a guest.
+function invitedPlus_(g){ return g.plusOne ? normText_(g.plusName) : ''; }
+
+// what the row asks for, or the best guess from its names
+function greetingOf_(g){ return normText_(g.greeting) || greetingFor_(g.names, invitedPlus_(g), g.lang); }
+
+// The open-plus-one sentence — or nothing. A named plus-one is already in
+// the greeting ("Cari Sara e Riccardo,") and saying "and Riccardo too" under
+// it reads as if he had not been; a couple already named in the invitee cell
+// ("Paul et Véro") is not being offered a third.
+function plusLine_(g){
+  if(!g.plusOne || invitedPlus_(g) || PAIRED.test(addressed_(g.names))) return '';
+  return PLUS_COPY[normLang_(g.lang)];
+}
+
+// FNV-1a over the string's UTF-16 units: eight hex characters that change
+// whenever any word on the card does. A fingerprint, not a secret.
+function hash32_(s){
+  let h = 0x811c9dc5;
+  for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return ('0000000' + h.toString(16)).slice(-8);
+}
+function cardKey_(g){
+  return hash32_([CARD_VERSION, normLang_(g.lang), greetingOf_(g), plusLine_(g), normText_(g.note)].join('\n'));
+}
+function cardName_(token, key){ return 'card-' + token + '-' + key + '.jpg'; }
+/* <<< shared */
 
 /* Column letters are derived, never typed: every formula below asks
    GUEST_HEADER where a column actually is. Inserting a column then costs
@@ -275,7 +376,7 @@ function onOpen(){
   SpreadsheetApp.getUi().createMenu('💌 Wedding HQ')
     .addItem('Set up / repair the workbook',   'setupWorkbook')
     .addSeparator()
-    .addItem('Generate missing invite links',  'generateLinks')
+    .addItem('Prepare guests — invite links & greetings', 'prepareGuests')
     .addItem('Send this invitation now',       'sendSelectedRowNow')
     .addSeparator()
     .addItem('Create drafts — selected rows',  'createDraftsForSelected')
@@ -526,18 +627,30 @@ function buildDashboard_(ss){
    safe to read aloud down the phone. */
 const TOKEN_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 
-function generateLinks(){
+/* Every row that names someone gets an invite link and a greeting. Links are
+   never regenerated — the link in an email already sent has to keep working —
+   and greetings are only filled where the cell is empty, so anything you
+   typed yourself stays. */
+function prepareGuests(){
   const ctx = readGuests_();
-  let made = 0;
+  let links = 0, greetings = 0, guessed = 0;
   for(let i = 0; i < ctx.data.length; i++){
-    if(!String(cell_(ctx, i, 'invitee') || cell_(ctx, i, 'email') || '').trim()) continue;
-    if(String(cell_(ctx, i, 'token') || '').trim()) continue;
-    ensureToken_(ctx, i);
-    made++;
+    const names = normText_(cell_(ctx, i, 'invitee'));
+    if(!names && !String(cell_(ctx, i, 'email') || '').trim()) continue;
+    if(!String(cell_(ctx, i, 'token') || '').trim()){ ensureToken_(ctx, i); links++; }
+    if(names && !normText_(cell_(ctx, i, 'greeting'))){
+      const plusName = truthy_(cell_(ctx, i, 'plus-one')) ? cell_(ctx, i, 'plus-one name') : '';
+      const lang = cell_(ctx, i, 'language');
+      setCell_(ctx, i, 'greeting', greetingFor_(names, plusName, lang));
+      greetings++;
+      if(greetingGuessed_(names, plusName, lang)) guessed++;
+    }
   }
-  toast_(made
-    ? made + ' invite link(s) generated.'
-    : 'Every guest already has an invite link.');
+  toast_((links ? links + ' invite link(s) made' : 'Every guest already has an invite link') +
+         (greetings ? ' · ' + greetings + ' greeting(s) filled in' : '') +
+         (guessed ? '. ' + guessed + ' of them are one person addressed in French or Italian, ' +
+                    'so Chère/Cher or Cara/Caro was guessed from the first name — glance down ' +
+                    'the Greeting column and correct any that are wrong' : '') + '.');
 }
 
 function ensureToken_(ctx, i){
@@ -573,6 +686,10 @@ function inviteLink_(token){
    that guest's invitation leaves — no draft to find, no batch to review. It
    refuses rather than sends something wrong: a guest with no email, a guest
    set to Hold or Cut, or a guest whose card has not been published yet. */
+/* One click, one guest, straight to their inbox — after showing you exactly
+   which words are going. It refuses, and says why, rather than sending
+   anything doubtful: no address, a row on Hold or Cut, or no card in Drive
+   that matches the row as it reads now. */
 function sendSelectedRowNow(){
   const ui = SpreadsheetApp.getUi();
   const ctx = readGuests_();
@@ -584,31 +701,34 @@ function sendSelectedRowNow(){
   const i = rows[0];
   const to = String(cell_(ctx, i, 'email') || '').trim();
   const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'this guest');
-  if(!to){ toast_('No email address for ' + who + '.'); return; }
+  if(!to){ toast_('No email address for ' + who + '. Nothing sent.'); return; }
   const state = String(cell_(ctx, i, 'send?') || '').trim();
   if(state && state.toLowerCase() !== 'send'){
-    toast_(who + ' is set to ' + state + '. Change Send? to Send first.'); return;
+    toast_(who + ' is set to ' + state + '. Change Send? to Send first. Nothing sent.'); return;
   }
 
   const g = guestFromRow_(ctx, i);
   g.token = ensureToken_(ctx, i);
   g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
+  const problem = cardProblem_(g);
+  if(problem){ toast_('Nothing sent to ' + who + ': ' + problem + '.'); return; }
 
-  const imgs = inlineImages_(g, 'invite');
-  if(!imgs.card){
-    toast_(cardsFolder_()
-      ? 'No card named ' + CFG.IMG_CARD(g.token) + ' in the "' + CFG.CARDS_FOLDER +
-        '" Drive folder. Nothing sent.'
-      : 'No Drive folder named "' + CFG.CARDS_FOLDER + '". Nothing sent.');
-    return;
-  }
-
+  const already = String(cell_(ctx, i, 'invite status') || '').trim();
+  const sentOn  = cell_(ctx, i, 'invite sent');
   const answer = ui.alert('Send now?',
-    'Send ' + who + '\'s invitation to ' + to + ' straight away?',
+    (already ? '⚠ This row is already marked “' + already + '”' +
+               (sentOn instanceof Date ? ' on ' + sentOn.toLocaleDateString() : '') + '.\n\n' : '') +
+    'Send the invitation to ' + to + '?\n\n' +
+    '“' + greetingOf_(g) + '”' +
+    (plusLine_(g) ? '\n' + plusLine_(g) : '') +
+    (g.note ? '\n' + g.note : '') +
+    '\n\nLanguage: ' + g.lang.toUpperCase() + ' · reply by ' + g.replyBy + '.',
     ui.ButtonSet.OK_CANCEL);
   if(answer !== ui.Button.OK) return;
 
   const m = buildEmail_(g);
+  const imgs = inlineImages_(g, 'invite');
+  if(!imgs.card){ toast_('The card disappeared from Drive between the check and the send. Nothing sent.'); return; }
   GmailApp.sendEmail(to, m.subject, m.text, {
     htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
   });
@@ -683,31 +803,50 @@ function fetchBlob_(file, name){
   } catch(_){ return null; }
 }
 
-/* The guest's card, read from the Drive folder named in CFG.CARDS_FOLDER.
-   The folder handle is looked up once per run, not once per guest. */
-let CARDS_FOLDER_ = undefined;
-function cardsFolder_(){
-  if(CARDS_FOLDER_ !== undefined) return CARDS_FOLDER_;
+/* The guest's card, read from the Drive folder(s) named CFG.CARDS_FOLDER.
+   Every folder of that name is searched — a second upload must not hide the
+   first — and only a file whose name carries the fingerprint of the row's
+   current words counts (see cardKey_): a card drawn before the greeting was
+   corrected simply no longer exists as far as the send is concerned. */
+let CARDS_FOLDERS_ = null;
+function cardsFolders_(){
+  if(CARDS_FOLDERS_) return CARDS_FOLDERS_;
+  const out = [];
   try {
     const it = DriveApp.getFoldersByName(CFG.CARDS_FOLDER);
-    CARDS_FOLDER_ = it.hasNext() ? it.next() : null;
-  } catch(_){ CARDS_FOLDER_ = null; }
-  return CARDS_FOLDER_;
+    while(it.hasNext()) out.push(it.next());
+  } catch(_){}
+  return (CARDS_FOLDERS_ = out);
+}
+function cardFile_(name){
+  const folders = cardsFolders_();
+  for(let k = 0; k < folders.length; k++){
+    try {
+      const files = folders[k].getFilesByName(name);
+      if(files.hasNext()) return files.next();
+    } catch(_){}
+  }
+  return null;
+}
+function cardBlob_(g){
+  if(!g.token) return null;
+  const f = cardFile_(cardName_(g.token, cardKey_(g)));
+  return f ? f.getBlob().setName('card.jpg') : null;
+}
+/* Why this row cannot go out yet, as one plain sentence — or '' when it can. */
+function cardProblem_(g){
+  if(!cardsFolders_().length) return 'there is no Drive folder named "' + CFG.CARDS_FOLDER + '"';
+  if(!g.token) return 'the row has no invite link yet';
+  if(cardFile_(cardName_(g.token, cardKey_(g)))) return '';
+  let older = false;
+  cardsFolders_().forEach(f => {
+    try { if(f.searchFiles("title contains 'card-" + g.token + "-'").hasNext()) older = true; } catch(_){}
+  });
+  return older
+    ? 'the card in Drive was drawn from an earlier greeting, note or plus-one — it needs re-rendering'
+    : 'there is no card for this guest in "' + CFG.CARDS_FOLDER + '" yet';
 }
 
-function cardBlob_(token){
-  if(!token) return null;
-  const folder = cardsFolder_();
-  if(!folder) return null;
-  try {
-    const files = folder.getFilesByName(CFG.IMG_CARD(token));
-    return files.hasNext() ? files.next().getBlob().setName('card.jpg') : null;
-  } catch(_){ return null; }
-}
-
-/* Every image the message shows, embedded. Nothing is left for the guest's
-   client to fetch: no proxy to refuse it, no "display images" to click, and
-   nothing that breaks when a host changes years from now. */
 function inlineImages_(g, kind){
   const out = {};
   const mark = fetchBlob_(CFG.IMG_MARK, 'wordmark.png');
@@ -721,7 +860,7 @@ function inlineImages_(g, kind){
     // only the invitation carries a card, and only the crest the reminder
     // shows — attaching both to both put 238 KB of unused crest in every
     // invitation
-    const card = cardBlob_(g.token);
+    const card = cardBlob_(g);
     if(card) out.card = card;
   }
   return out;
@@ -736,10 +875,11 @@ function runInvites_(ctx, rowIdxs){
     const g = guestFromRow_(ctx, i);
     g.token = ensureToken_(ctx, i);
     g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
+    // a draft without its card is a blank invitation one click from going out
+    if(cardProblem_(g)){ missingCards++; return; }
     const m = buildEmail_(g);
     const opts = { htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO };
     opts.inlineImages = inlineImages_(g, 'invite');
-    if(!opts.inlineImages.card) missingCards++;
     GmailApp.createDraft(to, m.subject, m.text, opts);
     // record the date we actually promised this guest, not today's config
     setCell_(ctx, i, 'reply by', rawDeadline_(deadlines, g.category));
@@ -749,8 +889,8 @@ function runInvites_(ctx, rowIdxs){
   });
   toast_(made + ' draft(s) created in Gmail' +
          (skipped ? ' · ' + skipped + ' skipped (no email, or on Hold/Cut)' : '') +
-         (missingCards ? ' · ⚠ ' + missingCards + ' without a card in the "' +
-            CFG.CARDS_FOLDER + '" Drive folder' : '') +
+         (missingCards ? ' · ⚠ ' + missingCards + ' skipped: no card in "' + CFG.CARDS_FOLDER +
+            '" matches the row (use “Send this invitation now” on one of them to see why)' : '') +
          '. Open Gmail ▸ Drafts to review and send.');
 }
 
@@ -792,31 +932,26 @@ function createReminders(){
         : 'Nobody to remind — everyone invited has either replied or been nudged already.'));
 }
 
+/* The selected row's invitation — or the first row's — to your own inbox,
+   exactly as that guest would receive it, subject prefixed [TEST]. */
 function sendTestToMe(){
   const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
   const ctx = readGuests_();
-  const deadlines = deadlineMap_();
-  let g;
-  if(ctx.data.length){
-    g = guestFromRow_(ctx, 0);
-    // the guest's real token, generating one if the row has none — inventing
-    // a token here asks for a card that was never rendered
-    g.token = ensureToken_(ctx, 0);
-  } else {
-    g = { lang:'it', category:'', greeting:'Cari Marco e Giulia,', names:'', plusOne:true,
-          note:'Non vediamo l’ora di festeggiare con voi.', token:'testtok' };
-  }
-  g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
+  if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
+  const rows = selectedDataRows_(ctx);
+  const i = rows.length === 1 ? rows[0] : 0;
+  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
+  const g = guestFromRow_(ctx, i);
+  g.token = ensureToken_(ctx, i);
+  g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
+  const problem = cardProblem_(g);
+  if(problem){ toast_('No test sent — ' + who + ': ' + problem + '.'); return; }
   const m = buildEmail_(g);
-  const imgs = inlineImages_(g, 'invite');
   GmailApp.sendEmail(me, '[TEST] ' + m.subject, m.text, {
     htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO,
-    inlineImages: imgs
+    inlineImages: inlineImages_(g, 'invite')
   });
-  toast_(imgs.card
-    ? 'Test sent to ' + me + '.'
-    : 'Test sent to ' + me + ' — but WITHOUT the invitation card: no ' +
-      CFG.IMG_CARD(g.token) + ' in the "' + CFG.CARDS_FOLDER + '" Drive folder.');
+  toast_('Test of ' + who + '’s invitation sent to ' + me + '.');
 }
 
 function resetSelectedStatus(){
@@ -1008,8 +1143,8 @@ function matchGuestRow_(sh, token, email){
 /* ========================= 5. EMAIL BUILDER ============================== */
 function buildEmail_(g){
   const c = COPY[g.lang] || COPY.it;
-  const greet = g.greeting || (g.names ? greetingFromNames_(g.names, g.lang) : c.fallbackGreet);
-  const plusText = plusLine_(c, g);
+  const greet = greetingOf_(g);
+  const plusText = plusLine_(g);
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
@@ -1082,7 +1217,7 @@ ${g.note ? '\n' + g.note + '\n' : ''}
 ${c.kDay}: ${c.vDay}
 ${c.kWhere}: ${c.vWhere}
 ${c.kDress}: ${c.vDress}
-${g.plusOne ? '\n' + plusText + '\n' : ''}
+${plusText ? '\n' + plusText + '\n' : ''}
 ${c.siteLead}
 ${c.pwk}: ${sitePassword_()}
 ${link}
@@ -1098,7 +1233,7 @@ ${CFG.REPLY_TO}`;
 /* A shorter, quieter second email for the people who haven't replied. */
 function buildReminder_(g){
   const c = COPY[g.lang] || COPY.it;
-  const greet = g.greeting || (g.names ? greetingFromNames_(g.names, g.lang) : c.fallbackGreet);
+  const greet = greetingOf_(g);
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
@@ -1316,11 +1451,5 @@ function isHidden_(sh, row){
 }
 
 /* ============================ 7. helpers ================================ */
-function normLang_(v){ v = String(v || '').trim().toLowerCase().slice(0, 2); return (v === 'fr' || v === 'en' || v === 'it') ? v : 'it'; }
-function truthy_(v){ v = String(v || '').trim().toLowerCase(); return v === 'yes' || v === 'y' || v === 'true' || v === '1' || v === 'si' || v === 'sì' || v === 'oui' || v === 'x'; }
-function greetingFromNames_(names, lang){
-  const lead = { it:'Cari ', fr:'Chers ', en:'Dear ' }[lang] || 'Dear ';
-  return lead + names + ',';
-}
 function esc_(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function toast_(msg){ SpreadsheetApp.getActive().toast(msg, '💌 Wedding HQ', 8); }

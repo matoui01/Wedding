@@ -18,10 +18,11 @@ HERE = pathlib.Path(__file__).resolve().parent
 CODE = HERE.parent / "apps-script" / "Code.gs"
 OUT = HERE / "invite-preview.html"
 
-# Everything the two builders need, in dependency order.
+# Everything the two builders need, in dependency order. The "shared" block
+# (greeting, plus-one line, card name) is lifted whole, between its markers.
 CONSTS = ["CFG", "T", "FACE_CSS", "COPY", "MONTHS", "DEADLINE_SEED", "TOKEN_ALPHABET"]
-FUNCS = ["buildEmail_", "buildReminder_", "factRow_", "noteBlock_", "plusBlock_",
-         "plusLine_", "sitePassword_", "esc_", "greetingFromNames_", "inviteLink_", "normLang_"]
+FUNCS = ["buildEmail_", "buildReminder_", "factRow_", "sitePassword_", "esc_", "inviteLink_"]
+SHARED = ("/* >>> shared", "/* <<< shared */")
 
 
 def extract_block(src, header_re, opener, closer):
@@ -83,6 +84,11 @@ def main():
             continue
         parts.append(extract_block(src, rf"const {name} = ", opener,
                                    "]" if opener == "[" else "}") + ";")
+    a, b = src.find(SHARED[0]), src.find(SHARED[1])
+    if a < 0 or b < 0:
+        sys.exit(f"could not find the shared block markers in {CODE}")
+    shared = src[a:b + len(SHARED[1])]
+    parts.append(shared)
     for name in FUNCS:
         parts.append(extract_block(src, rf"function {re.escape(name)}\(", "{", "}"))
 
@@ -90,7 +96,8 @@ def main():
 
     # Every private helper the lifted code calls must have come with it —
     # otherwise the proof sheet dies at load with a bare ReferenceError.
-    defined = set(FUNCS) | {"Math", "String", "Number", "Object", "Date"}
+    defined = set(FUNCS) | set(re.findall(r"^function ([A-Za-z0-9_]+_)\(", shared, re.M)) \
+              | {"Math", "String", "Number", "Object", "Date"}
     called = set(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*_)\s*\(", engine))
     missing = sorted(called - defined)
     if missing:

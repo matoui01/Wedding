@@ -10,7 +10,10 @@
  * live text underneath, where the typeface does not matter and the link must
  * work.
  *
- *   node tools/invites/assets/render-card.js '<json>' out.png
+ *   node tools/invites/assets/render-card.js '{"lang":"it","greeting":"Cari …,","plus":"…","note":"…"}' out.jpg
+ *
+ * The words arrive ready-made: render-cards.js takes them from the shared
+ * block of apps-script/Code.gs, so nothing about wording is decided here.
  */
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -46,21 +49,15 @@ const COPY = {
   it: { over:'VILLA CORSINI A MEZZOMONTE · FIRENZE', tag:'Ci sposiamo', date:'Venerdì 23 luglio 2027',
         body:'Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.',
         kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027', kWhere:'Dove',
-        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze', kDress:'Dress code', vDress:'Cocktail elegante',
-        plus:'Saremo felici di accogliere anche il vostro accompagnatore.',
-        plusNamed:(d)=>`Saremo felici di accogliere anche ${d}.` },
+        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze', kDress:'Dress code', vDress:'Cocktail elegante', },
   fr: { over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:'Nous nous marions', date:'Vendredi 23 juillet 2027',
         body:'Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.',
         kDay:'Le jour', vDay:'Vendredi 23 juillet 2027', kWhere:'Lieu',
-        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Tenue', vDress:'Cocktail élégant',
-        plus:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
-        plusNamed:(d)=>`Nous serons ravis d’accueillir également ${d}.` },
+        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Tenue', vDress:'Cocktail élégant', },
   en: { over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:"We're getting married", date:'Friday · 23 July 2027',
         body:"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
         kDay:'The day', vDay:'Friday 23 July 2027', kWhere:'Where',
-        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Dress code', vDress:'Elegant cocktail',
-        plus:"You're warmly invited to bring a plus-one.",
-        plusNamed:(d)=>`We'd be delighted to welcome ${d} as well.` },
+        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Dress code', vDress:'Elegant cocktail', },
 };
 
 const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -68,7 +65,7 @@ const dataUri = (f, mime) => `data:${mime};base64,` + fs.readFileSync(f).toStrin
 
 function html(g){
   const c = COPY[g.lang] || COPY.it;
-  const plus = g.plusOne ? (g.plusName ? c.plusNamed(esc(g.plusName)) : c.plus) : '';
+  const plus = g.plus ? esc(g.plus) : '';
   const face = (fam, file, style) =>
     `@font-face{font-family:'${fam}';font-style:${style||'normal'};src:url('${dataUri(path.join(FONTS,file),'font/ttf')}');}`;
 
@@ -145,6 +142,5 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
   }
   fs.writeFileSync(out, buf);
   await b.close();
-  const { width, height } = await (async () => ({ width: 1200, height: 0 }))();
   console.log(`${path.basename(out)}  ${Math.round(buf.length / 1024)} KB`);
 })();

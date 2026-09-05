@@ -271,11 +271,19 @@ const CFG = {
   // will not load Cormorant, and these are where the design lives.
   IMG_TAG  : function(l){ return 'email-tag-' + l + '.png'; },
   IMG_CLOSE: function(l){ return 'email-close-' + l + '.png'; },
-  // One card per language, not one per guest. Everything that varies between
-  // guests — their greeting, their note, whether they have a plus-one — is
-  // live text in the email around it, so there are three files here instead of
-  // eighty-seven, nothing to upload, and nothing personal stored anywhere.
-  IMG_CARD : function(lang){ return 'card-' + lang + '.jpg'; },
+  // The whole invitation, per guest, drawn from the real fonts. Nothing about
+  // the invitation is live text: the greeting sits where the design puts it,
+  // after the villa, and no mail client can restyle any of it.
+  //
+  // The cards live in a Drive folder rather than on the website, because each
+  // one carries a guest's name and their personal note — and the website's
+  // repository is public. The script runs as the couple's own account, so it
+  // reads them straight out of Drive; nothing about a guest is ever published.
+  // Each file is named card-<token>-<key>.jpg, where the key is a fingerprint
+  // of the words drawn on it (see cardKey_). A row edited after its card was
+  // made — a greeting corrected, a note added — no longer matches any file,
+  // and the send refuses rather than mailing a card that says something else.
+  CARDS_FOLDER : 'Wedding cards',
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -317,13 +325,10 @@ const FACE_CSS =
 const COPY = {
   it:{
     over:'VILLA CORSINI A MEZZOMONTE · FIRENZE', tag:'Ci sposiamo', date:'Venerdì 23 luglio 2027',
-    fallbackGreet:'Cari tutti,',
     body:'Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.',
     kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027',
     kWhere:'Dove', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze',
     kDress:'Dress code', vDress:'Cocktail elegante',
-    plus:'Saremo felici di accogliere anche il vostro accompagnatore.',
-    plusNamed:d=>'Saremo felici di accogliere anche '+d+'.',
     siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.',
     pwk:'Password del sito', cta:'Apri il sito e rispondi',
     by:d=>'Vi preghiamo di confermare entro il '+d+'.',
@@ -335,13 +340,10 @@ const COPY = {
   },
   fr:{
     over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:'Nous nous marions', date:'Vendredi 23 juillet 2027',
-    fallbackGreet:'Chers tous,',
     body:'Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.',
     kDay:'Le jour', vDay:'Vendredi 23 juillet 2027',
     kWhere:'Lieu', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Tenue', vDress:'Cocktail élégant',
-    plus:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
-    plusNamed:d=>'Nous serons ravis d’accueillir également '+d+'.',
     siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.',
     pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre',
     by:d=>'Merci de confirmer avant le '+d+'.',
@@ -353,13 +355,10 @@ const COPY = {
   },
   en:{
     over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:"We're getting married", date:'Friday · 23 July 2027',
-    fallbackGreet:'Dear all,',
     body:"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
     kDay:'The day', vDay:'Friday 23 July 2027',
     kWhere:'Where', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Dress code', vDress:'Elegant cocktail',
-    plus:"You're warmly invited to bring a plus-one.",
-    plusNamed:d=>"We'd be delighted to welcome "+d+' as well.',
     siteLead:'The programme, travel, gifts and your RSVP all live on our site.',
     pwk:'Site password', cta:'Open the site and RSVP',
     by:d=>'Kindly reply by '+d+'.',
@@ -387,12 +386,116 @@ const DEADLINE_SEED = [
 
 const TOKEN_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 
+/* >>> shared
+   Everything between these two markers is plain JavaScript with no Apps
+   Script in it. tools/invites/assets/render-cards.js evaluates exactly this
+   text when it draws the cards, so the greeting on a card, the greeting in
+   the email's text version and the file name the send looks for all come
+   from one definition and cannot drift apart. Keep it that way: nothing here
+   may touch CFG, COPY, SpreadsheetApp or any other global. */
+
+// Bump when the card's design or static wording changes: every existing card
+// then stops matching and has to be drawn again.
+const CARD_VERSION = '2026-09-05';
+
+const JOIN     = { it:' e ',   fr:' et ',   en:' and ' };
+const PLURAL   = { it:'Cari ', fr:'Chers ', en:'Dear ' };
+const FALLBACK = { it:'Cari tutti,', fr:'Chers tous,', en:'Dear all,' };
+// an invitee cell that already names two people ("Paul et Véro")
+const PAIRED   = /\s(?:et|e|and|&|con|\+)\s/i;
+
+// French and Italian gender the singular ("Chère", "Caro"), and nothing on the
+// row records a guest's gender. The ending of the first name decides, except
+// for the common names where that rule is wrong.
+const FEMININE = {
+  it: ['irene','beatrice','alice','matilde','rachele','adele','noemi','agnese',
+       'cloe','zoe','nives','ester','ines','carmen','miriam','sarah','giuditta'],
+  fr: ['chantal','maud','margot','anais','anaïs','ingrid','karen','carmen',
+       'meriem','maryam','sarah','ines','inès','agnes','agnès','marion','manon',
+       'dolores','elisabeth','judith','ruth','edith','myriam','miriam','zeynep']
+};
+const MASCULINE = {
+  it: ['andrea','luca','nicola','mattia','elia','tobia','simone','davide',
+       'daniele','gabriele','emanuele','michele','giuseppe','pasquale',
+       'raffaele','samuele','cesare','oreste','felice'],
+  fr: ['maxime','theophile','théophile','jerome','jérôme','etienne','étienne',
+       'pierre','alexandre','guillaume','jean-baptiste','antoine','philippe',
+       'christophe','stephane','stéphane','jeremie','jérémie','come','côme',
+       'hippolyte','timothee','timothée','barnabe','barnabé']
+};
+
+// said only to a guest whose plus-one is open — a named one is greeted instead
+const PLUS_COPY = {
+  it:'Saremo felici di accogliere anche il vostro accompagnatore.',
+  fr:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
+  en:"You're warmly invited to bring a plus-one."
+};
+
+function normLang_(v){ v = String(v || '').trim().toLowerCase().slice(0, 2); return (v === 'fr' || v === 'en' || v === 'it') ? v : 'it'; }
+function normText_(s){ return String(s == null ? '' : s).normalize('NFC').replace(/\s+/g, ' ').trim(); }
+function truthy_(v){ v = String(v || '').trim().toLowerCase(); return v === 'yes' || v === 'y' || v === 'true' || v === '1' || v === 'si' || v === 'sì' || v === 'oui' || v === 'x'; }
+
+// The invitee as addressed: a trailing initial is how the sheet tells two
+// Thomases apart ("Thomas J"), not how anyone is greeted.
+function addressed_(invitee){ return normText_(invitee).replace(/\s+[A-Za-z]\.?$/, ''); }
+
+// true when the greeting is singular in a gendered language — the only case
+// where greetingFor_ has to guess, and the rows worth a second look
+function greetingGuessed_(invitee, plusName, lang){
+  invitee = addressed_(invitee);
+  return normLang_(lang) !== 'en' && !!invitee && !normText_(plusName) && !PAIRED.test(invitee);
+}
+
+// "Cari Sara e Riccardo," / "Chère Clara," — from the names on the row.
+// plusName is only ever the name of an *invited* plus-one (see greetingOf_).
+function greetingFor_(invitee, plusName, lang){
+  lang = normLang_(lang);
+  invitee = addressed_(invitee); plusName = normText_(plusName);
+  if(!invitee && !plusName) return FALLBACK[lang];
+  const names = invitee && plusName ? invitee + JOIN[lang] + plusName : (invitee || plusName);
+  if(!greetingGuessed_(invitee, plusName, lang)) return PLURAL[lang] + names + ',';
+  const first = invitee.split(' ')[0].toLowerCase();
+  let fem;
+  if(FEMININE[lang].indexOf(first) >= 0) fem = true;
+  else if(MASCULINE[lang].indexOf(first) >= 0) fem = false;
+  else fem = lang === 'fr' ? /[ae]$/.test(first) : /a$/.test(first);
+  const lead = lang === 'fr' ? (fem ? 'Chère ' : 'Cher ') : (fem ? 'Cara ' : 'Caro ');
+  return lead + names + ',';
+}
+
+// the name of the plus-one if — and only if — the row invites one. A name in
+// that column next to Plus-one = no is a note to yourselves, not a guest.
+function invitedPlus_(g){ return g.plusOne ? normText_(g.plusName) : ''; }
+
+// what the row asks for, or the best guess from its names
+function greetingOf_(g){ return normText_(g.greeting) || greetingFor_(g.names, invitedPlus_(g), g.lang); }
+
+// The open-plus-one sentence — or nothing. A named plus-one is already in
+// the greeting ("Cari Sara e Riccardo,") and saying "and Riccardo too" under
+// it reads as if he had not been; a couple already named in the invitee cell
+// ("Paul et Véro") is not being offered a third.
+function plusLine_(g){
+  if(!g.plusOne || invitedPlus_(g) || PAIRED.test(addressed_(g.names))) return '';
+  return PLUS_COPY[normLang_(g.lang)];
+}
+
+// FNV-1a over the string's UTF-16 units: eight hex characters that change
+// whenever any word on the card does. A fingerprint, not a secret.
+function hash32_(s){
+  let h = 0x811c9dc5;
+  for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return ('0000000' + h.toString(16)).slice(-8);
+}
+function cardKey_(g){
+  return hash32_([CARD_VERSION, normLang_(g.lang), greetingOf_(g), plusLine_(g), normText_(g.note)].join('\n'));
+}
+function cardName_(token, key){ return 'card-' + token + '-' + key + '.jpg'; }
+/* <<< shared */
+
 function buildEmail_(g){
   const c = COPY[g.lang] || COPY.it;
-  const greet = g.greeting || (g.names ? greetingFromNames_(g.names, g.lang) : c.fallbackGreet);
-  const note = (g.note ? noteBlock_(esc_(g.note)) : '');
-  const plusText = plusLine_(c, g);
-  const plus = (g.plusOne ? plusBlock_(plusText) : '');
+  const greet = greetingOf_(g);
+  const plusText = plusLine_(g);
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
@@ -404,6 +507,9 @@ function buildEmail_(g){
   /* Three movements, not a card with leftovers stapled underneath:
      a personal opening in the couple's own voice, the formal invitation
      itself, and one compact strip telling the guest how to reply. */
+  /* The invitation is the card and nothing else. Below it sits only what a
+     guest has to act on — the password to read, the button to press, the date
+     to remember — which is the one part where a typeface does not matter. */
   const html =
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -411,20 +517,18 @@ function buildEmail_(g){
 <style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:26px!important;padding-right:26px!important}}</style>
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc_(greet)} ${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
 <tr><td align="center" style="padding:30px 12px;">
 
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
 
-    <tr><td class="px" style="padding:44px 56px 0;font-family:${T.fDisplay};font-size:23px;line-height:1.3;color:${T.ink};">${esc_(greet)}</td></tr>
-${note}${plus}
-    <tr><td style="padding:20px 0 0;">
-      <img src="cid:card" width="600" alt="${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
+    <tr><td style="padding:0;">
+      <img src="cid:card" width="600" alt="${esc_(greet)} ${c.body}" style="display:block;border:0;width:100%;height:auto;">
     </td></tr>
 
-    <tr><td class="px" align="center" style="padding:6px 56px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
+    <tr><td class="px" align="center" style="padding:4px 56px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
 
     <tr><td align="center" style="padding:20px 40px 0;">
       <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="border:1px solid ${T.lineGold};background:${T.panna2};">
@@ -450,7 +554,7 @@ ${note}${plus}
       <img src="cid:wordmark" width="180" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:180px;max-width:100%;height:auto;margin:0 auto;">
     </td></tr>
 
-    <tr><td align="center" class="px" style="padding:38px 56px 40px;font-family:${T.fBody};font-size:12.5px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
+    <tr><td align="center" class="px" style="padding:36px 56px 40px;font-family:${T.fBody};font-size:12.5px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
 
   </table>
 </td></tr></table>
@@ -464,7 +568,7 @@ ${g.note ? '\n' + g.note + '\n' : ''}
 ${c.kDay}: ${c.vDay}
 ${c.kWhere}: ${c.vWhere}
 ${c.kDress}: ${c.vDress}
-${g.plusOne ? '\n' + plusText + '\n' : ''}
+${plusText ? '\n' + plusText + '\n' : ''}
 ${c.siteLead}
 ${c.pwk}: ${sitePassword_()}
 ${link}
@@ -479,7 +583,7 @@ ${CFG.REPLY_TO}`;
 
 function buildReminder_(g){
   const c = COPY[g.lang] || COPY.it;
-  const greet = g.greeting || (g.names ? greetingFromNames_(g.names, g.lang) : c.fallbackGreet);
+  const greet = greetingOf_(g);
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
@@ -581,20 +685,6 @@ function factRow_(k, v, first){
   '</tr>';
 }
 
-function noteBlock_(noteHtml){
-  return '<tr><td class="px" style="padding:16px 56px 0;font-family:' + T.fBody +
-    ';font-style:italic;font-size:16px;line-height:1.66;color:' + T.ink + ';">' + noteHtml + '</td></tr>';
-}
-
-function plusBlock_(txt){
-  return '<tr><td class="px" style="padding:12px 56px 0;font-family:' + T.fBody +
-    ';font-style:italic;font-size:16px;line-height:1.66;color:' + T.ink + ';">' + txt + '</td></tr>';
-}
-
-function plusLine_(c, g){
-  return (g.plusName && c.plusNamed) ? c.plusNamed(esc_(g.plusName)) : c.plus;
-}
-
 function sitePassword_(){
   if(CFG.PASSWORD) return CFG.PASSWORD;          // preview harness / local override
   try {
@@ -604,17 +694,10 @@ function sitePassword_(){
 
 function esc_(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-function greetingFromNames_(names, lang){
-  const lead = { it:'Cari ', fr:'Chers ', en:'Dear ' }[lang] || 'Dear ';
-  return lead + names + ',';
-}
-
 function inviteLink_(token){
   const base = CFG.SITE_URL + (CFG.SITE_URL.indexOf('?') < 0 ? '?' : '&');
   return base + 'g=' + encodeURIComponent(token);
 }
-
-function normLang_(v){ v = String(v || '').trim().toLowerCase().slice(0, 2); return (v === 'fr' || v === 'en' || v === 'it') ? v : 'it'; }
 
 /* ------------------------------------------------------------------------ *
  * Harness. Everything above this line was lifted verbatim from Code.gs by
