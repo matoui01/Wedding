@@ -12,7 +12,7 @@
  *   node tools/invites/assets/render-pieces.js
  */
 const path = require('path');
-const { ensureFonts, PAGE_CSS, headHtml, factsHtml, IMG, chromium } = require('./render-card.js');
+const { ensureFonts, PAGE_CSS, headHtml, factsHtml, markHtml, closeHtml, IMG, chromium } = require('./render-card.js');
 
 (async () => {
   await ensureFonts();
@@ -22,13 +22,15 @@ const { ensureFonts, PAGE_CSS, headHtml, factsHtml, IMG, chromium } = require('.
   for(const lang of ['it', 'fr', 'en']){
     await p.setContent(`<!doctype html><meta charset="utf-8"><style>${PAGE_CSS()}</style>
       <div class="piece-head" id="head">${headHtml(lang)}</div>
-      <div class="piece-facts" id="facts">${factsHtml(lang)}</div>`, { waitUntil: 'load' });
+      <div class="piece-facts" id="facts">${factsHtml(lang)}</div>
+      <div class="piece-mark" id="mark">${markHtml()}</div>
+      <div class="piece-close" id="close">${closeHtml(lang)}</div>`, { waitUntil: 'load' });
     await p.evaluate(() => document.fonts.ready);
     await p.waitForTimeout(200);
-    for(const id of ['head', 'facts']){
+    for(const id of ['head', 'facts', 'close'].concat(lang === 'it' ? ['mark'] : [])){
       const el = await p.$('#' + id);
       const box = await el.boundingBox();
-      const out = path.join(IMG, `email-${id}-${lang}.png`);
+      const out = path.join(IMG, id === 'mark' ? 'email-wordmark.png' : `email-${id}-${lang}.png`);
       await el.screenshot({ path: out, type: 'png', omitBackground: false });
       console.log(`${path.basename(out)}  ${Math.round(box.width)}×${Math.round(box.height)} css px`);
     }

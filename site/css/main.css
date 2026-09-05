@@ -44,9 +44,12 @@ h1,h2,h3{ font-weight:500; margin:0; }
   font-family:var(--f-script); color:var(--ink);
   display:flex; flex-direction:column; align-items:center;
 }
-.names .n  { font-size:clamp(50px,12vw,110px); line-height:1; }
+.names .n  { font-size:clamp(50px,12vw,110px); line-height:1.16; }
+/* Pinyon's swashes overshoot their line box — at line-height 1 the ampersand
+   was clipped wherever an ancestor hides overflow. The extra leading is taken
+   back out with the margins, so the spacing rule above still holds. */
 .names .amp{ font-size:clamp(27px,5.2vw,48px); color:var(--terracotta);
-             line-height:1; margin:0 0 .7em; }
+             line-height:1.5; margin:-.12em 0 .48em; padding-inline:.12em; }
 
 /* ---- Buttons ------------------------------------------------------------- */
 .btn{

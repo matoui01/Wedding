@@ -123,6 +123,18 @@ async function prefillFromToken(form, token, update){
   const name = form.querySelector('#rsvp-name');
   if(name && !name.value) name.value = g.invitee || g.household || '';
 
+  /* their own deadline, not the general one: each circle was given its own,
+     and the sheet knows which applies to them. Left as written if it can't. */
+  if(g.replyBy){
+    const by = document.getElementById('rsvp-by');
+    if(by){
+      const L = document.documentElement.lang || 'it';
+      const line = { it:'Vi preghiamo di rispondere entro il ', fr:'Merci de répondre avant le ', en:'Kindly reply by ' }[L] || '';
+      by.textContent = line + g.replyBy + '.';
+      by.removeAttribute('data-i18n');          // a language switch must not undo it
+    }
+  }
+
   /* Only guests whose invitation included one see the plus-one option — which
    * means the apologetic note explaining who may bring one can go away. */
   const plusOpt  = form.querySelector('input[data-party][value="plus"]');

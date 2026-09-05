@@ -48,7 +48,7 @@ const I18N = {
     "gift.chf.h":"Bonifico · CHF","gift.chf.p":"In franchi — per gli ospiti in Svizzera.","gift.chf.note":"Importante: indicate la causale «Maxime Atoui, CH», altrimenti il bonifico potrebbe non arrivare.",
     "gift.iban.holder":"Beneficiario","gift.iban.ref":"Causale","gift.iban.bank":"Banca","gift.iban.corr":"BIC corrispondente",
 
-    "rsvp.over":"RSVP","rsvp.title":"Fateci sapere","rsvp.by":"Vi preghiamo di rispondere entro il [data].","rsvp.cta":"Conferma la presenza",
+    "rsvp.over":"RSVP","rsvp.title":"Fateci sapere","rsvp.by":"Vi preghiamo di rispondere entro il 30 aprile 2027.","rsvp.cta":"Conferma la presenza",
     "rsvp.f.name":"Nome e cognome","rsvp.f.email":"Email","rsvp.f.phone":"Telefono","rsvp.f.address":"Indirizzo postale","rsvp.f.attending":"Sarete dei nostri?","rsvp.f.yes":"Sì, con gioia","rsvp.f.no":"Purtroppo no","rsvp.f.party":"Venite da soli o accompagnati?","rsvp.f.alone":"Da solo/a","rsvp.f.plus":"Con un accompagnatore *","rsvp.f.plusnote":"* Solo gli invitati il cui invito indica un accompagnatore possono portarne uno. Ci dispiace tanto — lo spazio è limitato.","rsvp.f.plusname":"Nome dell'accompagnatore","rsvp.f.kids":"Verrete con dei bambini?","rsvp.f.kidsn":"Quanti bambini?","rsvp.f.kidsnames":"Nomi ed età dei bambini","rsvp.f.hello":"Bentornati","rsvp.f.diet":"Allergie o intolleranze","rsvp.f.shuttle":"Avete bisogno della navetta da/per Firenze?","rsvp.f.staying":"Dove alloggerete? (per organizzare la navetta)","rsvp.f.y":"Sì","rsvp.f.n":"No","rsvp.f.message":"Un messaggio per noi","rsvp.f.submit":"Invia la risposta","rsvp.f.close":"Chiudi",
     "rsvp.fallback":"Problemi con il modulo? Scrivete a <a class='mail' data-addr></a>.",
 
@@ -101,7 +101,7 @@ const I18N = {
     "gift.chf.h":"Virement · CHF","gift.chf.p":"En francs — pour les invités en Suisse.","gift.chf.note":"Important : indiquez la référence « Maxime Atoui, CH », sans quoi le virement risque de ne pas nous parvenir.",
     "gift.iban.holder":"Bénéficiaire","gift.iban.ref":"Référence","gift.iban.bank":"Banque","gift.iban.corr":"BIC correspondant",
 
-    "rsvp.over":"RSVP","rsvp.title":"Répondez-nous","rsvp.by":"Merci de répondre avant le [date].","rsvp.cta":"Confirmer ma présence",
+    "rsvp.over":"RSVP","rsvp.title":"Répondez-nous","rsvp.by":"Merci de répondre avant le 30 avril 2027.","rsvp.cta":"Confirmer ma présence",
     "rsvp.f.name":"Nom et prénom","rsvp.f.email":"E-mail","rsvp.f.phone":"Téléphone","rsvp.f.address":"Adresse postale","rsvp.f.attending":"Serez-vous des nôtres ?","rsvp.f.yes":"Oui, avec joie","rsvp.f.no":"Malheureusement non","rsvp.f.party":"Venez-vous seul·e ou accompagné·e ?","rsvp.f.alone":"Seul·e","rsvp.f.plus":"Avec un·e invité·e *","rsvp.f.plusnote":"* Seuls les invités dont l'invitation mentionne un·e accompagnant·e peuvent en amener un·e. Nous en sommes vraiment désolés — la place est limitée.","rsvp.f.plusname":"Nom de votre invité·e","rsvp.f.kids":"Viendrez-vous avec des enfants ?","rsvp.f.kidsn":"Combien d'enfants ?","rsvp.f.kidsnames":"Prénoms et âges des enfants","rsvp.f.hello":"Bon retour","rsvp.f.diet":"Allergies ou intolérances","rsvp.f.shuttle":"Avez-vous besoin de la navette depuis/vers Florence ?","rsvp.f.staying":"Où logerez-vous ? (pour organiser la navette)","rsvp.f.y":"Oui","rsvp.f.n":"Non","rsvp.f.message":"Un mot pour nous","rsvp.f.submit":"Envoyer la réponse","rsvp.f.close":"Fermer",
     "rsvp.fallback":"Un souci avec le formulaire ? Écrivez à <a class='mail' data-addr></a>.",
 
@@ -154,7 +154,7 @@ const I18N = {
     "gift.chf.h":"Bank transfer · CHF","gift.chf.p":"In francs — for guests in Switzerland.","gift.chf.note":"Important: include the reference “Maxime Atoui, CH”, otherwise the transfer may not reach us.",
     "gift.iban.holder":"Beneficiary","gift.iban.ref":"Reference","gift.iban.bank":"Bank","gift.iban.corr":"Correspondent BIC",
 
-    "rsvp.over":"RSVP","rsvp.title":"Let us know","rsvp.by":"Kindly reply by [date].","rsvp.cta":"Reply to our invitation",
+    "rsvp.over":"RSVP","rsvp.title":"Let us know","rsvp.by":"Kindly reply by 30 April 2027.","rsvp.cta":"Reply to our invitation",
     "rsvp.f.name":"Full name","rsvp.f.email":"Email","rsvp.f.phone":"Phone","rsvp.f.address":"Postal address","rsvp.f.attending":"Will you join us?","rsvp.f.yes":"Yes, with joy","rsvp.f.no":"Sadly, no","rsvp.f.party":"Are you coming alone or with someone?","rsvp.f.alone":"On my own","rsvp.f.plus":"With a plus-one *","rsvp.f.plusnote":"* Only guests whose invitation mentions a plus-one can bring someone. We're truly sorry — space is limited.","rsvp.f.plusname":"Your plus-one's name","rsvp.f.kids":"Will you be bringing children?","rsvp.f.kidsn":"How many children?","rsvp.f.kidsnames":"Children's names and ages","rsvp.f.hello":"Welcome back","rsvp.f.diet":"Allergies or dietary needs","rsvp.f.shuttle":"Do you need the shuttle to/from Florence?","rsvp.f.staying":"Where will you be staying? (to plan the shuttle)","rsvp.f.y":"Yes","rsvp.f.n":"No","rsvp.f.message":"A message for us","rsvp.f.submit":"Send reply","rsvp.f.close":"Close",
     "rsvp.fallback":"Trouble with the form? Email us at <a class='mail' data-addr></a>.",
 

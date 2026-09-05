@@ -49,15 +49,18 @@ const COPY = {
   it: { over:'VILLA CORSINI A MEZZOMONTE · FIRENZE', tag:'Ci sposiamo', date:'Venerdì 23 luglio 2027',
         body:'Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.',
         kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027', kWhere:'Dove',
-        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze', kDress:'Dress code', vDress:'Cocktail elegante', },
+        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze', kDress:'Dress code', vDress:'Cocktail elegante',
+        siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.', close:'A presto,' },
   fr: { over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:'Nous nous marions', date:'Vendredi 23 juillet 2027',
         body:'Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.',
         kDay:'Le jour', vDay:'Vendredi 23 juillet 2027', kWhere:'Lieu',
-        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Tenue', vDress:'Cocktail élégant', },
+        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Tenue', vDress:'Cocktail élégant',
+        siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.', close:'À très bientôt,' },
   en: { over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:"We're getting married", date:'Friday · 23 July 2027',
         body:"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
         kDay:'The day', vDay:'Friday 23 July 2027', kWhere:'Where',
-        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Dress code', vDress:'Elegant cocktail', },
+        vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Dress code', vDress:'Elegant cocktail',
+        siteLead:'The programme, travel, gifts and your reply are all on our site.', close:'See you very soon,' },
 };
 
 const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -78,7 +81,7 @@ body{width:600px;background:#FAF6EC;-webkit-font-smoothing:antialiased}
 .head{text-align:center;padding:34px 40px 0}
 .crest{width:104px;display:block;margin:0 auto}
 .over{font-family:Jost;font-size:11px;letter-spacing:5px;color:#6E7B5B;text-transform:uppercase;margin-top:22px}
-.names{font-family:Pinyon;font-size:76px;line-height:1;color:#3D352A;margin-top:6px}
+.names{font-family:Pinyon;font-size:76px;line-height:1.3;color:#3D352A;margin-top:2px}
 .names em{font-style:normal;color:#C47A54}
 .tag{font-family:Cormorant;font-style:italic;font-size:23px;color:#897C68;margin-top:2px}
 .date{font-family:Jost;font-size:13px;letter-spacing:4px;color:#3D352A;text-transform:uppercase;margin-top:14px}
@@ -86,8 +89,9 @@ body{width:600px;background:#FAF6EC;-webkit-font-smoothing:antialiased}
 .letter{margin:30px 34px 36px;background:#FDFBF5;border:1px solid #DCC9A4;padding:36px 40px 32px}
 .greet{font-family:Cormorant;font-size:24px;color:#3D352A}
 .body{font-family:EBG;font-size:17px;line-height:1.66;color:#3D352A;margin-top:13px}
-.note{font-family:EBG;font-style:italic;font-size:16px;line-height:1.62;color:#3D352A;margin-top:22px}
+.note{font-family:EBG;font-style:italic;font-size:16px;line-height:1.62;color:#3D352A;margin-top:22px;background:#F6EFE0;border-left:2px solid #C47A54;padding:14px 18px}
 .plus{font-family:Cormorant;font-style:italic;font-size:18px;color:#6E7B5B;text-align:center;margin-top:26px}
+.site{font-family:EBG;font-size:16px;line-height:1.62;color:#3D352A;text-align:center;margin-top:26px}
 table.facts{width:100%;border-collapse:collapse;margin-top:26px}
 table.facts td{padding:13px 0;vertical-align:middle}
 table.facts tr+tr td{border-top:1px solid #E4DCC9}
@@ -95,11 +99,16 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .v{font-family:EBG;font-size:16px;color:#3D352A;text-align:right}
 .sprig{width:20px;display:block;margin:22px auto 0;opacity:.85}
 /* the pieces, cut for the email: the header carries the gap before the villa,
-   the facts table sits flush in its own image (the gap above it is laid out
-   by the script that draws the letter) */
+   the facts table sits flush in its own image, and the sign-off is drawn
+   whole so the ampersand's swash is never clipped */
 .piece-head{background:#FAF6EC;padding-bottom:28px}
 .piece-facts{width:452px;background:#FDFBF5}
 .piece-facts table.facts{margin-top:0}
+.piece-mark{background:#FAF6EC;padding:16px 26px;display:inline-block}
+.piece-mark .m{font-family:Pinyon;font-size:46px;line-height:1.45;color:#3D352A;white-space:nowrap}
+.piece-mark .m em{font-style:normal;color:#C47A54}
+.piece-close{background:#FAF6EC;padding:10px 22px;display:inline-block}
+.piece-close .c{font-family:Cormorant;font-style:italic;font-size:20px;line-height:1.6;color:#897C68;white-space:nowrap}
 `;
 };
 
@@ -113,6 +122,8 @@ const headHtml = (lang) => {
   <div class="date">${c.date}</div>
 </div>`;
 };
+const markHtml = () => `<div class="m">Ilaria <em>&amp;</em> Maxime</div>`;
+const closeHtml = (lang) => `<div class="c">${(COPY[lang] || COPY.it).close}</div>`;
 const factsHtml = (lang) => {
   const c = COPY[lang] || COPY.it;
   return `<table class="facts">
@@ -135,11 +146,12 @@ ${headHtml(g.lang)}
   ${g.note ? `<div class="note">${esc(g.note)}</div>` : ''}
   ${factsHtml(g.lang)}
   ${plus ? `<div class="plus">${plus}</div>` : ''}
+  <div class="site">${c.siteLead}</div>
   <img class="sprig" src="${dataUri(path.join(IMG,'email-sprig.png'),'image/png')}">
 </div>`;
 }
 
-module.exports = { ensureFonts, PAGE_CSS, headHtml, factsHtml, html, dataUri, IMG, FONTS, COPY, chromium };
+module.exports = { ensureFonts, PAGE_CSS, headHtml, factsHtml, markHtml, closeHtml, html, dataUri, IMG, FONTS, COPY, chromium };
 
 if(require.main === module) (async () => {
   await ensureFonts();

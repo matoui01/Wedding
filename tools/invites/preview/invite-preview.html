@@ -274,7 +274,7 @@ const CFG = {
   // The parts of the invitation that never change per guest — the header
   // (crest, names, tagline, date) and the facts table, one per language —
   // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
-  // The letter itself is drawn at send time: see cardBlob_.
+  // The invitation itself is drawn at send time: see mailBlob_.
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
   IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
@@ -323,7 +323,7 @@ const COPY = {
     kWhere:'Dove', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze',
     kDress:'Dress code', vDress:'Cocktail elegante',
     siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.',
-    pwk:'Password del sito', cta:'Apri il sito e rispondi',
+    pwk:'Password del sito', cta:'Apri il sito e rispondi', byLabel:'Rispondete entro il',
     by:d=>'Vi preghiamo di confermare entro il '+d+'.',
     close:'A presto,',
     fl:'Ilaria & Maxime · 23 luglio 2027 · Villa Corsini a Mezzomonte',
@@ -338,7 +338,7 @@ const COPY = {
     kWhere:'Lieu', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Tenue', vDress:'Cocktail élégant',
     siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.',
-    pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre',
+    pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre', byLabel:'Merci de répondre avant le',
     by:d=>'Merci de confirmer avant le '+d+'.',
     close:'À très bientôt,',
     fl:'Ilaria & Maxime · 23 juillet 2027 · Villa Corsini a Mezzomonte',
@@ -353,7 +353,7 @@ const COPY = {
     kWhere:'Where', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Dress code', vDress:'Elegant cocktail',
     siteLead:'The programme, travel, gifts and your RSVP all live on our site.',
-    pwk:'Site password', cta:'Open the site and RSVP',
+    pwk:'Site password', cta:'Open the site and RSVP', byLabel:'Kindly reply by',
     by:d=>'Kindly reply by '+d+'.',
     close:'See you soon,',
     fl:'Ilaria & Maxime · 23 July 2027 · Villa Corsini a Mezzomonte',
@@ -492,67 +492,36 @@ function buildEmail_(g){
   const greet = greetingOf_(g);
   const plusText = plusLine_(g);
   const link = inviteLink_(g.token || '');
-  const I = CFG.IMG_BASE;
+  const by = c.by(g.replyBy || CFG.RSVP_BY[g.lang]);
 
-  /* The invitation is three images stacked without a seam — header, villa,
-     and the letter drawn moments ago for this guest — because Gmail, Outlook
-     and Yahoo strip web fonts and live text could never hold Pinyon Script or
-     EB Garamond. Below it sits only what a guest has to act on: the password
-     to read, the button to press, the date to remember — the one part where
-     a typeface does not matter. */
+  /* The invitation is one picture, and the picture is the link. Gmail,
+     Outlook and Yahoo all strip web fonts, so nothing set in Pinyon Script or
+     EB Garamond survives as live text — drawn, all of it survives, and a
+     single image carries no seams between the parts. Wrapping it in the link
+     also takes away Gmail's download/save overlay, which otherwise sits on
+     top of the invitation whenever the cursor passes over it.
+
+     Everything a guest needs in words — the password, the address, the day —
+     is in the plain-text half of the message below, which is what they get if
+     they read with images turned off. */
   const html =
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
-<style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:26px!important;padding-right:26px!important}}</style>
+<style>a{text-decoration:none}</style>
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc_(greet)} ${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
 <tr><td align="center" style="padding:30px 12px;">
-
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
-
-    <tr><td style="padding:0;">
-      <img src="cid:head" width="600" alt="Ilaria &amp; Maxime — ${c.tag} — ${c.date}" style="display:block;border:0;width:100%;height:auto;">
-    </td></tr>
-    <tr><td style="padding:0;">
-      <img src="cid:hero" width="600" alt="Villa Corsini a Mezzomonte" style="display:block;border:0;width:100%;height:auto;">
-    </td></tr>
-    <tr><td style="padding:0;">
-      <img src="cid:card" width="600" alt="${esc_(greet)} ${c.body}" style="display:block;border:0;width:100%;height:auto;">
-    </td></tr>
-
-    <tr><td class="px" align="center" style="padding:4px 56px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
-
-    <tr><td align="center" style="padding:20px 40px 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="border:1px solid ${T.lineGold};background:${T.panna2};">
-        <tr><td align="center" style="padding:11px 30px;">
-          <div style="font-family:${T.fUi};font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
-          <div style="font-family:${T.fUi};font-weight:500;font-size:19px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
-        </td></tr>
-      </table>
-    </td></tr>
-
-    <tr><td align="center" style="padding:20px 0 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" bgcolor="${T.salvia}">
-        <a href="${link}" style="display:inline-block;font-family:${T.fUi};font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#FBF8EF;padding:15px 38px;">${c.cta}</a>
-      </td></tr></table>
-    </td></tr>
-
-    <tr><td align="center" style="padding:13px 40px 0;font-family:${T.fUi};font-size:11px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
-
-    <tr><td align="center" style="padding:34px 16px 0;">
-      <img src="cid:close" height="20" alt="${c.close}" style="display:block;border:0;height:20px;width:auto;margin:0 auto;">
-    </td></tr>
-    <tr><td align="center" style="padding:8px 40px 0;">
-      <img src="cid:wordmark" width="180" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:180px;max-width:100%;height:auto;margin:0 auto;">
-    </td></tr>
-
-    <tr><td align="center" class="px" style="padding:36px 56px 40px;font-family:${T.fBody};font-size:12.5px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
-
-  </table>
+  <a href="${link}" style="display:block;width:600px;max-width:100%;">
+    <img src="cid:mail" width="600" alt="${esc_(greet)} ${c.body} ${esc_(by)}"
+         style="display:block;border:0;width:600px;max-width:100%;height:auto;">
+  </a>
+  <div style="padding:14px 20px 0;font-family:${T.fBody};font-size:12px;color:${T.muted};">
+    <a href="${link}" style="color:${T.salviaDeep};">${esc_(c.cta)}</a>
+  </div>
 </td></tr></table>
 </body></html>`;
 
@@ -568,7 +537,7 @@ ${plusText ? '\n' + plusText + '\n' : ''}
 ${c.siteLead}
 ${c.pwk}: ${sitePassword_()}
 ${link}
-${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}
+${by}
 
 ${c.close}
 Ilaria & Maxime

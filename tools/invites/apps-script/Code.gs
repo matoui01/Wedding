@@ -64,7 +64,7 @@ const CFG = {
   // The parts of the invitation that never change per guest — the header
   // (crest, names, tagline, date) and the facts table, one per language —
   // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
-  // The letter itself is drawn at send time: see cardBlob_.
+  // The invitation itself is drawn at send time: see mailBlob_.
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
   IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
@@ -203,7 +203,7 @@ const COPY = {
     kWhere:'Dove', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze',
     kDress:'Dress code', vDress:'Cocktail elegante',
     siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.',
-    pwk:'Password del sito', cta:'Apri il sito e rispondi',
+    pwk:'Password del sito', cta:'Apri il sito e rispondi', byLabel:'Rispondete entro il',
     by:d=>'Vi preghiamo di confermare entro il '+d+'.',
     close:'A presto,',
     fl:'Ilaria & Maxime · 23 luglio 2027 · Villa Corsini a Mezzomonte',
@@ -218,7 +218,7 @@ const COPY = {
     kWhere:'Lieu', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Tenue', vDress:'Cocktail élégant',
     siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.',
-    pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre',
+    pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre', byLabel:'Merci de répondre avant le',
     by:d=>'Merci de confirmer avant le '+d+'.',
     close:'À très bientôt,',
     fl:'Ilaria & Maxime · 23 juillet 2027 · Villa Corsini a Mezzomonte',
@@ -233,7 +233,7 @@ const COPY = {
     kWhere:'Where', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Dress code', vDress:'Elegant cocktail',
     siteLead:'The programme, travel, gifts and your RSVP all live on our site.',
-    pwk:'Site password', cta:'Open the site and RSVP',
+    pwk:'Site password', cta:'Open the site and RSVP', byLabel:'Kindly reply by',
     by:d=>'Kindly reply by '+d+'.',
     close:'See you soon,',
     fl:'Ilaria & Maxime · 23 July 2027 · Villa Corsini a Mezzomonte',
@@ -434,7 +434,7 @@ function onOpen(){
     .addItem('Make invite links for new rows',  'prepareGuests')
     .addItem('Review greetings — as they will be drawn', 'reviewGreetings')
     .addItem('Send this invitation now',       'sendSelectedRowNow')
-    .addItem('Preview this row’s letter — save a PNG to Drive', 'previewSelectedCard')
+    .addItem('Preview this row’s invitation — to my inbox', 'previewSelectedCard')
     .addSeparator()
     .addItem('Create drafts — selected rows',  'createDraftsForSelected')
     .addItem('Create drafts — filtered rows',  'createDraftsForFiltered')
@@ -831,7 +831,7 @@ function sendSelectedRowNow(){
     ui.ButtonSet.OK_CANCEL);
   if(answer !== ui.Button.OK) return;
 
-  toast_('Drawing ' + who + '’s letter…');
+  toast_('Drawing ' + who + '’s invitation…');
   let imgs;
   try { imgs = inlineImages_(g, 'invite'); }
   catch(err){ toast_('Nothing sent to ' + who + ' — ' + err.message); return; }
@@ -925,6 +925,31 @@ function fetchBlob_(file, name){
    header and the facts table, which never change per guest, are PNGs drawn
    from the same CSS; the villa is a JPEG. Stacked in the email they read as
    one card. */
+/* Advance widths per em, measured from the real font files by
+   tools/invites/assets/metrics.js. Slides gives no way to ask how tall a
+   paragraph came out, so the letter's height is computed the way Slides will
+   lay it out: greedy word wrap at these widths. */
+const METRICS = {"cormorant":{"0":0.5,"1":0.5,"2":0.5,"3":0.5,"4":0.5,"5":0.5,"6":0.5,"7":0.5,"8":0.5,"9":0.5," ":0.25,"!":0.333,"\"":0.408,"#":0.5,"$":0.5,"%":0.833,"&":0.778,"'":0.18,"(":0.333,")":0.333,"*":0.5,"+":0.564,",":0.25,"-":0.333,".":0.25,"/":0.278,":":0.278,";":0.278,"<":0.564,"=":0.564,">":0.564,"?":0.444,"@":0.921,"A":0.722,"B":0.667,"C":0.667,"D":0.722,"E":0.611,"F":0.556,"G":0.722,"H":0.722,"I":0.333,"J":0.389,"K":0.722,"L":0.611,"M":0.889,"N":0.722,"O":0.722,"P":0.556,"Q":0.722,"R":0.667,"S":0.556,"T":0.611,"U":0.722,"V":0.722,"W":0.944,"X":0.722,"Y":0.722,"Z":0.611,"[":0.333,"\\":0.278,"]":0.333,"^":0.469,"_":0.5,"`":0.333,"a":0.444,"b":0.5,"c":0.444,"d":0.5,"e":0.444,"f":0.333,"g":0.5,"h":0.5,"i":0.278,"j":0.278,"k":0.5,"l":0.278,"m":0.778,"n":0.5,"o":0.5,"p":0.5,"q":0.5,"r":0.333,"s":0.389,"t":0.278,"u":0.5,"v":0.5,"w":0.722,"x":0.5,"y":0.5,"z":0.444,"{":0.48,"|":0.2,"}":0.48,"~":0.541,"à":0.444,"á":0.444,"â":0.444,"ã":0.444,"ä":0.444,"å":0.444,"ç":0.444,"è":0.444,"é":0.444,"ê":0.444,"ë":0.444,"ì":0.278,"í":0.278,"î":0.278,"ï":0.278,"ñ":0.5,"ò":0.5,"ó":0.5,"ô":0.5,"õ":0.5,"ö":0.5,"ù":0.5,"ú":0.5,"û":0.5,"ü":0.5,"ý":0.5,"ÿ":0.5,"À":0.722,"Á":0.722,"Â":0.722,"Ã":0.722,"Ä":0.722,"Å":0.722,"Ç":0.667,"È":0.611,"É":0.611,"Ê":0.611,"Ë":0.611,"Ì":0.333,"Í":0.333,"Î":0.333,"Ï":0.333,"Ñ":0.722,"Ò":0.722,"Ó":0.722,"Ô":0.722,"Õ":0.722,"Ö":0.722,"Ù":0.722,"Ú":0.722,"Û":0.722,"Ü":0.722,"Ÿ":0.722,"’":0.333,"‘":0.333,"“":0.444,"”":0.444,"·":0.333,"—":1,"–":0.5,"…":1,"«":0.5,"»":0.5},"cormorant-italic":{"0":0.5,"1":0.5,"2":0.5,"3":0.5,"4":0.5,"5":0.5,"6":0.5,"7":0.5,"8":0.5,"9":0.5," ":0.25,"!":0.333,"\"":0.42,"#":0.5,"$":0.5,"%":0.833,"&":0.778,"'":0.214,"(":0.333,")":0.333,"*":0.5,"+":0.675,",":0.25,"-":0.333,".":0.25,"/":0.278,":":0.333,";":0.333,"<":0.675,"=":0.675,">":0.675,"?":0.5,"@":0.92,"A":0.611,"B":0.611,"C":0.667,"D":0.722,"E":0.611,"F":0.611,"G":0.722,"H":0.722,"I":0.333,"J":0.444,"K":0.667,"L":0.556,"M":0.833,"N":0.667,"O":0.722,"P":0.611,"Q":0.722,"R":0.611,"S":0.5,"T":0.556,"U":0.722,"V":0.611,"W":0.833,"X":0.611,"Y":0.556,"Z":0.556,"[":0.389,"\\":0.278,"]":0.389,"^":0.422,"_":0.5,"`":0.333,"a":0.5,"b":0.5,"c":0.444,"d":0.5,"e":0.444,"f":0.278,"g":0.5,"h":0.5,"i":0.278,"j":0.278,"k":0.444,"l":0.278,"m":0.722,"n":0.5,"o":0.5,"p":0.5,"q":0.5,"r":0.389,"s":0.389,"t":0.278,"u":0.5,"v":0.444,"w":0.667,"x":0.444,"y":0.444,"z":0.389,"{":0.4,"|":0.275,"}":0.4,"~":0.541,"à":0.5,"á":0.5,"â":0.5,"ã":0.5,"ä":0.5,"å":0.5,"ç":0.444,"è":0.444,"é":0.444,"ê":0.444,"ë":0.444,"ì":0.278,"í":0.278,"î":0.278,"ï":0.278,"ñ":0.5,"ò":0.5,"ó":0.5,"ô":0.5,"õ":0.5,"ö":0.5,"ù":0.5,"ú":0.5,"û":0.5,"ü":0.5,"ý":0.444,"ÿ":0.444,"À":0.611,"Á":0.611,"Â":0.611,"Ã":0.611,"Ä":0.611,"Å":0.611,"Ç":0.667,"È":0.611,"É":0.611,"Ê":0.611,"Ë":0.611,"Ì":0.333,"Í":0.333,"Î":0.333,"Ï":0.333,"Ñ":0.667,"Ò":0.722,"Ó":0.722,"Ô":0.722,"Õ":0.722,"Ö":0.722,"Ù":0.722,"Ú":0.722,"Û":0.722,"Ü":0.722,"Ÿ":0.556,"’":0.333,"‘":0.333,"“":0.556,"”":0.556,"·":0.25,"—":0.889,"–":0.5,"…":0.889,"«":0.5,"»":0.5},"ebg":{"0":0.5,"1":0.5,"2":0.5,"3":0.5,"4":0.5,"5":0.5,"6":0.5,"7":0.5,"8":0.5,"9":0.5," ":0.25,"!":0.333,"\"":0.408,"#":0.5,"$":0.5,"%":0.833,"&":0.778,"'":0.18,"(":0.333,")":0.333,"*":0.5,"+":0.564,",":0.25,"-":0.333,".":0.25,"/":0.278,":":0.278,";":0.278,"<":0.564,"=":0.564,">":0.564,"?":0.444,"@":0.921,"A":0.722,"B":0.667,"C":0.667,"D":0.722,"E":0.611,"F":0.556,"G":0.722,"H":0.722,"I":0.333,"J":0.389,"K":0.722,"L":0.611,"M":0.889,"N":0.722,"O":0.722,"P":0.556,"Q":0.722,"R":0.667,"S":0.556,"T":0.611,"U":0.722,"V":0.722,"W":0.944,"X":0.722,"Y":0.722,"Z":0.611,"[":0.333,"\\":0.278,"]":0.333,"^":0.469,"_":0.5,"`":0.333,"a":0.444,"b":0.5,"c":0.444,"d":0.5,"e":0.444,"f":0.333,"g":0.5,"h":0.5,"i":0.278,"j":0.278,"k":0.5,"l":0.278,"m":0.778,"n":0.5,"o":0.5,"p":0.5,"q":0.5,"r":0.333,"s":0.389,"t":0.278,"u":0.5,"v":0.5,"w":0.722,"x":0.5,"y":0.5,"z":0.444,"{":0.48,"|":0.2,"}":0.48,"~":0.541,"à":0.444,"á":0.444,"â":0.444,"ã":0.444,"ä":0.444,"å":0.444,"ç":0.444,"è":0.444,"é":0.444,"ê":0.444,"ë":0.444,"ì":0.278,"í":0.278,"î":0.278,"ï":0.278,"ñ":0.5,"ò":0.5,"ó":0.5,"ô":0.5,"õ":0.5,"ö":0.5,"ù":0.5,"ú":0.5,"û":0.5,"ü":0.5,"ý":0.5,"ÿ":0.5,"À":0.722,"Á":0.722,"Â":0.722,"Ã":0.722,"Ä":0.722,"Å":0.722,"Ç":0.667,"È":0.611,"É":0.611,"Ê":0.611,"Ë":0.611,"Ì":0.333,"Í":0.333,"Î":0.333,"Ï":0.333,"Ñ":0.722,"Ò":0.722,"Ó":0.722,"Ô":0.722,"Õ":0.722,"Ö":0.722,"Ù":0.722,"Ú":0.722,"Û":0.722,"Ü":0.722,"Ÿ":0.722,"’":0.333,"‘":0.333,"“":0.444,"”":0.444,"·":0.333,"—":1,"–":0.5,"…":1,"«":0.5,"»":0.5},"ebg-italic":{"0":0.5,"1":0.5,"2":0.5,"3":0.5,"4":0.5,"5":0.5,"6":0.5,"7":0.5,"8":0.5,"9":0.5," ":0.25,"!":0.333,"\"":0.42,"#":0.5,"$":0.5,"%":0.833,"&":0.778,"'":0.214,"(":0.333,")":0.333,"*":0.5,"+":0.675,",":0.25,"-":0.333,".":0.25,"/":0.278,":":0.333,";":0.333,"<":0.675,"=":0.675,">":0.675,"?":0.5,"@":0.92,"A":0.611,"B":0.611,"C":0.667,"D":0.722,"E":0.611,"F":0.611,"G":0.722,"H":0.722,"I":0.333,"J":0.444,"K":0.667,"L":0.556,"M":0.833,"N":0.667,"O":0.722,"P":0.611,"Q":0.722,"R":0.611,"S":0.5,"T":0.556,"U":0.722,"V":0.611,"W":0.833,"X":0.611,"Y":0.556,"Z":0.556,"[":0.389,"\\":0.278,"]":0.389,"^":0.422,"_":0.5,"`":0.333,"a":0.5,"b":0.5,"c":0.444,"d":0.5,"e":0.444,"f":0.278,"g":0.5,"h":0.5,"i":0.278,"j":0.278,"k":0.444,"l":0.278,"m":0.722,"n":0.5,"o":0.5,"p":0.5,"q":0.5,"r":0.389,"s":0.389,"t":0.278,"u":0.5,"v":0.444,"w":0.667,"x":0.444,"y":0.444,"z":0.389,"{":0.4,"|":0.275,"}":0.4,"~":0.541,"à":0.5,"á":0.5,"â":0.5,"ã":0.5,"ä":0.5,"å":0.5,"ç":0.444,"è":0.444,"é":0.444,"ê":0.444,"ë":0.444,"ì":0.278,"í":0.278,"î":0.278,"ï":0.278,"ñ":0.5,"ò":0.5,"ó":0.5,"ô":0.5,"õ":0.5,"ö":0.5,"ù":0.5,"ú":0.5,"û":0.5,"ü":0.5,"ý":0.444,"ÿ":0.444,"À":0.611,"Á":0.611,"Â":0.611,"Ã":0.611,"Ä":0.611,"Å":0.611,"Ç":0.667,"È":0.611,"É":0.611,"Ê":0.611,"Ë":0.611,"Ì":0.333,"Í":0.333,"Î":0.333,"Ï":0.333,"Ñ":0.667,"Ò":0.722,"Ó":0.722,"Ô":0.722,"Õ":0.722,"Ö":0.722,"Ù":0.722,"Ú":0.722,"Û":0.722,"Ü":0.722,"Ÿ":0.556,"’":0.333,"‘":0.333,"“":0.556,"”":0.556,"·":0.25,"—":0.889,"–":0.5,"…":0.889,"«":0.5,"»":0.5}};
+
+/* how many lines a string takes in a column that wide, at that size */
+function wrapLines_(str, face, sizePt, widthPt){
+  const w = METRICS[face] || METRICS.ebg;
+  const em = widthPt / sizePt;                       // the column, in ems
+  const width = (t) => { let x = 0; for(let i = 0; i < t.length; i++){ const c = w[t.charAt(i)]; x += (c === undefined ? 0.5 : c); } return x; };
+  const words = normText_(str).split(' ').filter(Boolean);
+  if(!words.length) return 1;
+  const space = w[' '] || 0.25;
+  let lines = 1, cur = 0;
+  for(let i = 0; i < words.length; i++){
+    const ww = width(words[i]);
+    const next = cur === 0 ? ww : cur + space + ww;
+    if(next <= em || cur === 0){ cur = next; }
+    else { lines++; cur = ww; }
+    if(cur > em){ lines += Math.ceil(cur / em) - 1; cur = em; }   // a word longer than the column
+  }
+  return lines;
+}
+
 const CARD = {
   W: 600,
   PAD:   { top: 30, bottom: 36, x: 34 },             // .letter margin
@@ -932,11 +957,23 @@ const CARD = {
   INSET: 7.2,                                        // Slides' fixed text-box inset
   // natural = the face's own line height as a multiple of its size, which is
   // what Slides' percentage spacing is relative to; lh is the CSS line-height
-  GREET: { font: 'Cormorant Garamond', size: 24, lh: 1.25, natural: 1.21, perLine: 40 },
-  BODY:  { font: 'EB Garamond', size: 17, lh: 1.66, natural: 1.27, gap: 13, lines: { it: 4, fr: 4, en: 4 } },
-  NOTE:  { font: 'EB Garamond', size: 16, lh: 1.62, natural: 1.27, gap: 22, perLine: 58, italic: true },
+  GREET: { font: 'Cormorant Garamond', face: 'cormorant', size: 24, lh: 1.25, natural: 1.21 },
+  BODY:  { font: 'EB Garamond', face: 'ebg', size: 17, lh: 1.66, natural: 1.27, gap: 13 },
+  // a line in the couple's own hand: its own ground, ruled in terracotta
+  NOTE:  { font: 'EB Garamond', face: 'ebg-italic', size: 16, lh: 1.62, natural: 1.27, gap: 22, italic: true,
+           pad: { x: 18, y: 14 }, bg: '#F6EFE0', rule: '#C47A54' },
   FACTS: { gap: 26, h: 143 },                        // email-facts-<lang>.png, 452 × 143 at 1×
-  PLUS:  { font: 'Cormorant Garamond', size: 18, lh: 1.4, natural: 1.21, gap: 26, perLine: 54, italic: true, center: true },
+  HEAD:  { h: 383 },                                 // email-head-<lang>.png, 600 × 383
+  HERO:  { h: 400 },                                 // email-estate.jpg, 1200 × 801
+  PW:    { gap: 26, w: 268, h: 66, label: { font: 'Jost', size: 10 }, value: { font: 'Jost', size: 20 } },
+  CTA:   { gap: 22, w: 320, h: 48, font: 'Jost', size: 12 },
+  DEAD:  { gap: 30, label: { font: 'Jost', size: 10 }, date: { font: 'Cormorant Garamond', face: 'cormorant', size: 26, lh: 1.3, natural: 1.21 } },
+  CLOSE: { gap: 34, h: 26 },                         // email-close-<lang>.png, 106–174 × 52
+  MARK:  { gap: 10, w: 200, h: 56 },                 // email-wordmark.png, 351 × 99
+  FOOT:  { gap: 26, font: 'EB Garamond', face: 'ebg', size: 12, lh: 1.5, natural: 1.27 },
+  END:   { pad: 34 },
+  PLUS:  { font: 'Cormorant Garamond', face: 'cormorant-italic', size: 18, lh: 1.4, natural: 1.21, gap: 26, italic: true, center: true },
+  SITE:  { font: 'EB Garamond', face: 'ebg', size: 16, lh: 1.62, natural: 1.27, gap: 26, center: true },
   SPRIG: { gap: 22, w: 20, h: 20 },
   THUMB: 'LARGE'                                     // 1600 px wide
 };
@@ -944,38 +981,88 @@ const CARD = {
 /* Where everything goes, in pt, for this guest's words. Line counts are
    estimated on the generous side: a line too many costs a little air, a line
    too few would overlap the next block. */
-function cardLayout_(lang, words, pageW, pageH){
-  const W = pageW || CARD.W;
+function mailLayout_(lang, words){
+  const W = CARD.W;
   const colX = CARD.PAD.x + CARD.IN.side;
   const colW = W - 2 * colX;
-  const lines = (str, per) => Math.max(1, Math.ceil(normText_(str).length / per));
-  const L = { colX, colW, text: [] };
-  let y = CARD.PAD.top + CARD.IN.top;
-  const text = (spec, str, n) => { const h = n * spec.size * spec.lh; L.text.push({ spec, str, y, h }); y += h; };
+  const L = { W, colX, colW, text: [], images: [], shapes: [] };
+  let y = 0;
 
-  text(CARD.GREET, words.greeting, lines(words.greeting, CARD.GREET.perLine));
+  const text = (spec, str, opt) => {
+    opt = opt || {};
+    const w = opt.w || colW;
+    const x = opt.x === undefined ? (W - w) / 2 : opt.x;
+    const h = wrapLines_(str, spec.face || 'ebg', spec.size, w) * spec.size * (spec.lh || 1.4);
+    L.text.push({ spec, str, y, h, x, w, center: opt.center !== undefined ? opt.center : spec.center,
+                  color: opt.color });
+    y += h;
+    return h;
+  };
+
+  // the fixed head of the letter: crest, names, tagline, date — then the villa
+  L.images.push({ key: 'head', x: 0, y, w: W, h: CARD.HEAD.h }); y += CARD.HEAD.h;
+  L.images.push({ key: 'hero', x: 0, y, w: W, h: CARD.HERO.h }); y += CARD.HERO.h;
+
+  // the letter itself, on its own paper
+  const panelTop = y + CARD.PAD.top;
+  y = panelTop + CARD.IN.top;
+  text(CARD.GREET, words.greeting, { x: colX });
   y += CARD.BODY.gap;
-  text(CARD.BODY, words.body, CARD.BODY.lines[lang] || 4);
-  if(words.note){ y += CARD.NOTE.gap; text(CARD.NOTE, words.note, lines(words.note, CARD.NOTE.perLine)); }
-  y += CARD.FACTS.gap; L.facts = { y }; y += CARD.FACTS.h;
-  if(words.plus){ y += CARD.PLUS.gap; text(CARD.PLUS, words.plus, lines(words.plus, CARD.PLUS.perLine)); }
-  y += CARD.SPRIG.gap; L.sprig = { y }; y += CARD.SPRIG.h;
-  y += CARD.IN.bottom;
-  L.W = W;
-  L.panelH = y - CARD.PAD.top;
-  L.pageH  = y + CARD.PAD.bottom;
-  // a page we did not get to choose: keep the panel on it, centred in what is
-  // left, rather than letting it run off the bottom
-  if(pageH){
-    L.pageH = pageH;
-    const slack = pageH - (L.panelH + CARD.PAD.top + CARD.PAD.bottom);
-    if(slack > 0){
-      const shift = slack / 2;
-      L.text.forEach(t => { t.y += shift; });
-      L.facts.y += shift; L.sprig.y += shift; L.panelTop = CARD.PAD.top + shift;
-    }
+  text(CARD.BODY, words.body, { x: colX });
+  if(words.note){
+    y += CARD.NOTE.gap;
+    const top = y;
+    y += CARD.NOTE.pad.y;
+    const h = text(CARD.NOTE, words.note, { x: colX + CARD.NOTE.pad.x, w: colW - 2 * CARD.NOTE.pad.x });
+    y += CARD.NOTE.pad.y;
+    L.shapes.push({ kind: 'note', x: colX, y: top, w: colW, h: h + 2 * CARD.NOTE.pad.y });
   }
-  L.panelTop = L.panelTop || CARD.PAD.top;
+  y += CARD.FACTS.gap;
+  L.images.push({ key: 'facts', x: colX, y, w: colW, h: CARD.FACTS.h }); y += CARD.FACTS.h;
+  if(words.plus){ y += CARD.PLUS.gap; text(CARD.PLUS, words.plus, { x: colX }); }
+  y += CARD.SITE.gap; text(CARD.SITE, words.site, { x: colX });
+  y += CARD.SPRIG.gap;
+  L.images.push({ key: 'sprig', x: (W - CARD.SPRIG.w) / 2, y, w: CARD.SPRIG.w, h: CARD.SPRIG.h });
+  y += CARD.SPRIG.h + CARD.IN.bottom;
+  L.panel = { x: CARD.PAD.x, y: panelTop, w: W - 2 * CARD.PAD.x, h: y - panelTop };
+
+  // how to answer: the password to type, the site to open, the day to answer by
+  y += CARD.PW.gap;
+  L.shapes.push({ kind: 'pw', x: (W - CARD.PW.w) / 2, y, w: CARD.PW.w, h: CARD.PW.h });
+  const pwInner = CARD.PW.w - 24;
+  const pwTop = y + 12;
+  y = pwTop;
+  text(CARD.PW.label, words.pwLabel.toUpperCase(), { w: pwInner, center: true, color: T.muted });
+  y += 2;
+  text(CARD.PW.value, words.password, { w: pwInner, center: true });
+  y = L.shapes[L.shapes.length - 1].y + CARD.PW.h;
+
+  y += CARD.CTA.gap;
+  L.shapes.push({ kind: 'cta', x: (W - CARD.CTA.w) / 2, y, w: CARD.CTA.w, h: CARD.CTA.h });
+  const ctaTop = y + (CARD.CTA.h - CARD.CTA.size * 1.4) / 2;
+  const ctaBottom = y + CARD.CTA.h;
+  y = ctaTop;
+  text({ font: CARD.CTA.font, size: CARD.CTA.size, lh: 1.4 }, words.cta.toUpperCase(),
+       { w: CARD.CTA.w, center: true, color: T.carta });
+  y = ctaBottom;
+
+  // the date, large enough to be remembered rather than read past
+  y += CARD.DEAD.gap;
+  text(CARD.DEAD.label, words.byLabel.toUpperCase(), { center: true, color: T.muted });
+  y += 4;
+  text(CARD.DEAD.date, words.replyBy, { center: true, color: T.terracotta });
+
+  y += CARD.CLOSE.gap;
+  L.images.push({ key: 'close', y, h: CARD.CLOSE.h, centerW: true });
+  y += CARD.CLOSE.h;
+  y += CARD.MARK.gap;
+  L.images.push({ key: 'mark', x: (W - CARD.MARK.w) / 2, y, w: CARD.MARK.w, h: CARD.MARK.h });
+  y += CARD.MARK.h;
+
+  y += CARD.FOOT.gap;
+  text(CARD.FOOT, words.foot, { center: true, color: T.muted });
+
+  L.pageH = y + CARD.END.pad;
   return L;
 }
 
@@ -984,32 +1071,42 @@ function emuToPt_(dim){
   return (dim && dim.unit === 'PT') ? m : m / 12700;
 }
 
-/* The letter panel for this guest, as a PNG blob — drawn now. Throws, with a
-   sentence a person can act on, rather than returning something half-made. */
-function cardBlob_(g){
+/* The whole invitation for this guest, as one picture — drawn now, from the
+   row as it reads at this moment. Throws, with a sentence a person can act
+   on, rather than returning something half-made. */
+function mailBlob_(g){
   const lang = normLang_(g.lang);
   const c = COPY[lang] || COPY.it;
-  const words = { greeting: greetingOf_(g), body: c.body, note: normText_(g.note), plus: plusLine_(g) };
-  let L = cardLayout_(lang, words);
+  const words = {
+    greeting: greetingOf_(g), body: c.body, note: normText_(g.note), plus: plusLine_(g),
+    site: c.siteLead, pwLabel: c.pwk, password: sitePassword_(), cta: c.cta,
+    byLabel: c.byLabel, replyBy: g.replyBy || CFG.RSVP_BY[lang], foot: c.fcLead + ' ' + CFG.REPLY_TO
+  };
+  const L = mailLayout_(lang, words);
 
-  const facts = fetchBlob_(CFG.IMG_FACTS(lang), 'facts.png');
-  const sprig = fetchBlob_(CFG.IMG_SPRIG, 'sprig.png');
-  if(!facts || !sprig) throw new Error('could not fetch the letter pieces from ' + CFG.IMG_BASE);
+  const blobs = {
+    head:  fetchBlob_(CFG.IMG_HEAD(lang),  'head.png'),
+    hero:  fetchBlob_(CFG.IMG_HERO,        'estate.jpg'),
+    facts: fetchBlob_(CFG.IMG_FACTS(lang), 'facts.png'),
+    sprig: fetchBlob_(CFG.IMG_SPRIG,       'sprig.png'),
+    close: fetchBlob_(CFG.IMG_CLOSE(lang), 'close.png'),
+    mark:  fetchBlob_(CFG.IMG_MARK,        'wordmark.png')
+  };
+  const missing = Object.keys(blobs).filter(k => !blobs[k]);
+  if(missing.length) throw new Error('could not fetch ' + missing.join(', ') + ' from ' + CFG.IMG_BASE);
 
   const EMU = 12700;
   const pres = Slides.Presentations.create({
-    title: 'Wedding HQ · letter (scratch)',
-    pageSize: { width:  { magnitude: Math.round(CARD.W * EMU),   unit: 'EMU' },
+    title: 'Wedding HQ · invitation (scratch)',
+    pageSize: { width:  { magnitude: Math.round(CARD.W * EMU),  unit: 'EMU' },
                 height: { magnitude: Math.round(L.pageH * EMU), unit: 'EMU' } }
   });
   const id = pres.presentationId;
   try {
-    // Slides sometimes hands back its default 720 × 405 page whatever was
-    // asked for. The letter is drawn to the page we actually got: same width
-    // in the email either way, and the panel keeps its proportions.
     const got = pres.pageSize ? { w: emuToPt_(pres.pageSize.width), h: emuToPt_(pres.pageSize.height) } : null;
-    if(got && got.w > 0 && Math.abs(got.h - L.pageH) > 1){
-      L = cardLayout_(lang, words, got.w, got.h);
+    if(got && Math.abs(got.h - L.pageH) > 2){
+      throw new Error('Slides drew a ' + Math.round(got.w) + ' × ' + Math.round(got.h) +
+                      ' pt page instead of ' + Math.round(CARD.W) + ' × ' + Math.round(L.pageH));
     }
     const deck  = SlidesApp.openById(id);
     const slide = deck.getSlides()[0];
@@ -1017,29 +1114,58 @@ function cardBlob_(g){
     slide.getPageElements().forEach(el => el.remove());
     slide.getBackground().setSolidFill(T.panna);
 
-    const panel = slide.insertShape(SlidesApp.ShapeType.RECTANGLE,
-      CARD.PAD.x, L.panelTop, L.W - 2 * CARD.PAD.x, L.panelH);
+    const plain = (shape) => { shape.getBorder().setTransparent(); return shape; };
+    // the letter's own paper, under everything the letter says
+    const panel = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, L.panel.x, L.panel.y, L.panel.w, L.panel.h);
     panel.getFill().setSolidFill(T.carta);
     panel.getBorder().setWeight(1);
     panel.getBorder().getLineFill().setSolidFill(T.lineGold);
 
+    L.shapes.forEach(sp => {
+      if(sp.kind === 'note'){
+        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h))
+          .getFill().setSolidFill(CARD.NOTE.bg);
+        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, 2, sp.h))
+          .getFill().setSolidFill(CARD.NOTE.rule);
+      } else if(sp.kind === 'pw'){
+        const box = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h);
+        box.getFill().setSolidFill(T.panna2);
+        box.getBorder().setWeight(1);
+        box.getBorder().getLineFill().setSolidFill(T.lineGold);
+      } else if(sp.kind === 'cta'){
+        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h))
+          .getFill().setSolidFill(T.salvia);
+      }
+    });
+
+    L.images.forEach(im => {
+      const blob = blobs[im.key];
+      if(im.centerW){
+        // a piece whose width follows its own proportions (the sign-off line)
+        const img = slide.insertImage(blob, 0, im.y, 10, im.h);
+        const w = im.h * (img.getInherentWidth() / img.getInherentHeight());
+        img.setWidth(w).setLeft((L.W - w) / 2);
+      } else {
+        slide.insertImage(blob, im.x, im.y, im.w, im.h);
+      }
+    });
+
     L.text.forEach(t => {
       // the box is taller than the text needs: text is top-aligned, and a box
-      // that is too short would make Slides shrink the type to fit it
-      const box = slide.insertTextBox(t.str, L.colX - CARD.INSET, t.y - CARD.INSET,
-                                      L.colW + 2 * CARD.INSET, t.h + 2 * CARD.INSET + 40);
+      // too short would make Slides shrink the type to fit it
+      const box = slide.insertTextBox(t.str, t.x - CARD.INSET, t.y - CARD.INSET,
+                                      t.w + 2 * CARD.INSET, t.h + 2 * CARD.INSET + 40);
       try { box.getAutofit().disableAutofit(); } catch(_){}
       const tr = box.getText();
       tr.getTextStyle().setFontFamily(t.spec.font).setFontSize(t.spec.size)
-        .setForegroundColor(t.spec.center ? T.salviaDeep : T.ink)
+        .setForegroundColor(t.color || T.ink)
         .setItalic(!!t.spec.italic).setBold(false);
-      tr.getParagraphStyle().setLineSpacing(Math.round(t.spec.lh / t.spec.natural * 100))
+      tr.getParagraphStyle()
+        .setLineSpacing(Math.round((t.spec.lh || 1.4) / (t.spec.natural || 1.2) * 100))
         .setSpaceAbove(0).setSpaceBelow(0)
-        .setParagraphAlignment(t.spec.center ? SlidesApp.ParagraphAlignment.CENTER
-                                             : SlidesApp.ParagraphAlignment.START);
+        .setParagraphAlignment(t.center ? SlidesApp.ParagraphAlignment.CENTER
+                                        : SlidesApp.ParagraphAlignment.START);
     });
-    slide.insertImage(facts, L.colX, L.facts.y, L.colW, CARD.FACTS.h);
-    slide.insertImage(sprig, (L.W - CARD.SPRIG.w) / 2, L.sprig.y, CARD.SPRIG.w, CARD.SPRIG.h);
     deck.saveAndClose();
 
     const thumb = Slides.Presentations.Pages.getThumbnail(id, slideId, {
@@ -1047,234 +1173,29 @@ function cardBlob_(g){
     });
     const res = UrlFetchApp.fetch(thumb.contentUrl, { muteHttpExceptions: true });
     if(res.getResponseCode() !== 200){
-      throw new Error('could not download the drawn letter (HTTP ' + res.getResponseCode() + ')');
+      throw new Error('could not download the drawn invitation (HTTP ' + res.getResponseCode() + ')');
     }
-    return res.getBlob().setName('card.png').setContentType('image/png');
+    // JPEG: a watercolour on ivory, three thousand pixels tall, is a megabyte
+    // as PNG and a fraction of that with no visible difference
+    return res.getBlob().getAs('image/jpeg').setName('invitation.jpg');
   } finally { trashOwnFile_(id); }
 }
 
-/* Bin a file this script made. drive.file is enough for that; DriveApp is
-   not, it asks for every file in the Drive. */
-function trashOwnFile_(id){
-  try {
-    UrlFetchApp.fetch('https://www.googleapis.com/drive/v3/files/' + id, {
-      method: 'patch', contentType: 'application/json',
-      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-      payload: JSON.stringify({ trashed: true }), muteHttpExceptions: true });
-  } catch(_){}
-}
-
-/* Everything the message embeds. The invitation draws its letter here and
-   now; anything that cannot be fetched or drawn throws rather than letting a
+/* Everything the message embeds. The invitation is drawn here and now, for
+   this guest; anything that cannot be drawn throws rather than letting a
    hollow email go out. */
 function inlineImages_(g, kind){
-  const out = {};
-  const mark = fetchBlob_(CFG.IMG_MARK, 'wordmark.png');
-  if(mark) out.wordmark = mark;
-  const close = fetchBlob_(CFG.IMG_CLOSE(g.lang), 'close.png');
-  if(close) out.close = close;
   if(kind === 'reminder'){
+    const out = {};
+    const mark = fetchBlob_(CFG.IMG_MARK, 'wordmark.png');
+    if(mark) out.wordmark = mark;
+    const close = fetchBlob_(CFG.IMG_CLOSE(g.lang), 'close.png');
+    if(close) out.close = close;
     const crest = fetchBlob_(CFG.IMG_CREST, 'crest.png');
     if(crest) out.crest = crest;
-  } else {
-    const head = fetchBlob_(CFG.IMG_HEAD(g.lang), 'head.png');
-    const hero = fetchBlob_(CFG.IMG_HERO, 'estate.jpg');
-    if(!head || !hero) throw new Error('could not fetch the header pieces from ' + CFG.IMG_BASE);
-    out.head = head;
-    out.hero = hero;
-    out.card = cardBlob_(g);
+    return out;
   }
-  return out;
-}
-
-/* Drafts for a set of rows. Each letter is drawn now, so a big batch takes a
-   few seconds a row; the run stops itself short of the six-minute limit and
-   says how many are left — running the same menu item again continues, since
-   drafted rows are marked and skipped. */
-function runInvites_(ctx, rowIdxs){
-  const deadlines = deadlineMap_();
-  const started = Date.now();
-  let made = 0, skipped = 0, failed = 0, left = 0, firstError = '';
-  for(let k = 0; k < rowIdxs.length; k++){
-    const i = rowIdxs[k];
-    if(Date.now() - started > 4.5 * 60 * 1000){ left++; continue; }
-    const to = String(cell_(ctx, i, 'email') || '').trim();
-    if(!sendable_(ctx, i)){ skipped++; continue; }
-    const g = guestFromRow_(ctx, i);
-    g.token = ensureToken_(ctx, i);
-    g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
-    let imgs;
-    try { imgs = inlineImages_(g, 'invite'); }
-    catch(err){ failed++; if(!firstError) firstError = err.message; continue; }
-    const m = buildEmail_(g);
-    GmailApp.createDraft(to, m.subject, m.text,
-      { htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs });
-    // record the date we actually promised this guest, not today's config
-    setCell_(ctx, i, 'reply by', rawDeadline_(deadlines, g.category));
-    setCell_(ctx, i, 'invite status', 'Draft created');
-    setCell_(ctx, i, 'invite sent', new Date());
-    made++;
-  }
-  toast_(made + ' draft(s) created in Gmail' +
-         (skipped ? ' · ' + skipped + ' skipped (no email, or on Hold/Cut)' : '') +
-         (failed ? ' · ⚠ ' + failed + ' could not be drawn — ' + firstError : '') +
-         (left ? ' · ' + left + ' not reached before the time limit: run this again' : '') +
-         '. Open Gmail ▸ Drafts to review and send.');
-}
-
-/* Reminders: anyone invited, still silent, and already past the deadline their
-   own category was given. Someone with a June deadline isn't chased in January
-   just because the family list was. */
-function createReminders(){
-  const ctx = readGuests_();
-  const deadlines = deadlineMap_();
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  let made = 0, notDue = 0;
-
-  for(let i = 0; i < ctx.data.length; i++){
-    const to = String(cell_(ctx, i, 'email') || '').trim();
-    if(!sendable_(ctx, i)) continue;
-    if(String(cell_(ctx, i, 'rsvp') || '').trim()) continue;            // already replied
-    if(!String(cell_(ctx, i, 'invite status') || '').trim()) continue;  // never invited
-    if(String(cell_(ctx, i, 'reminder sent') || '').trim()) continue;   // already nudged
-
-    const g = guestFromRow_(ctx, i);
-    const due = cell_(ctx, i, 'reply by') || rawDeadline_(deadlines, g.category);
-    if(due instanceof Date && !isNaN(due) && due >= today){ notDue++; continue; }
-
-    g.token = ensureToken_(ctx, i);
-    g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
-    const m = buildReminder_(g);
-    GmailApp.createDraft(to, m.subject, m.text, {
-      htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO,
-      inlineImages: inlineImages_(g, 'reminder')
-    });
-    setCell_(ctx, i, 'reminder sent', new Date());
-    made++;
-  }
-  toast_(made
-    ? made + ' reminder draft(s) created. Review them in Gmail ▸ Drafts.'
-      + (notDue ? ' · ' + notDue + ' not chased yet — their deadline is still ahead.' : '')
-    : (notDue
-        ? 'Nobody is overdue yet — ' + notDue + ' guest(s) still have time.'
-        : 'Nobody to remind — everyone invited has either replied or been nudged already.'));
-}
-
-/* The selected row's invitation — or the first row's — to your own inbox,
-   exactly as that guest would receive it, subject prefixed [TEST]. */
-function sendTestToMe(){
-  const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
-  const ctx = readGuests_();
-  if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
-  const rows = selectedDataRows_(ctx);
-  if(!rows.length){ toast_('Click any cell on the guest row you want to test first.'); return; }
-  const i = rows[0];
-  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
-  const g = guestFromRow_(ctx, i);
-  g.token = ensureToken_(ctx, i);
-  g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
-  toast_('Drawing ' + who + '’s letter…');
-  let imgs;
-  try { imgs = inlineImages_(g, 'invite'); }
-  catch(err){ toast_('No test sent — ' + err.message); return; }
-  const m = buildEmail_(g);
-  GmailApp.sendEmail(me, '[TEST] ' + m.subject, m.text, {
-    htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
-  });
-  toast_('Test of ' + who + '’s invitation sent to ' + me + '.');
-}
-/* The selected row's letter exactly as Send would draw it, sent to you on its
-   own — the picture, and nothing else, to look at the design or a long note. */
-function previewSelectedCard(){
-  const ctx = readGuests_();
-  if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
-  const rows = selectedDataRows_(ctx);
-  if(!rows.length){ toast_('Click any cell on the guest row you want to see first.'); return; }
-  const i = rows[0];
-  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
-  const g = guestFromRow_(ctx, i);
-  toast_('Drawing ' + who + '’s letter…');
-  let png;
-  try { png = cardBlob_(g); }
-  catch(err){ toast_('Could not draw it — ' + err.message); return; }
-  const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
-  GmailApp.sendEmail(me, '[PREVIEW] ' + who + '’s letter', 'The letter as it would be drawn right now.', {
-    name: CFG.SENDER_NAME,
-    htmlBody: '<img src="cid:letter" width="600" style="display:block;border:0;width:600px;max-width:100%;height:auto;">',
-    inlineImages: { letter: png }
-  });
-  toast_('Preview of ' + who + '’s letter sent to ' + me + '.');
-}
-
-function resetSelectedStatus(){
-  const ctx = readGuests_();
-  selectedDataRows_(ctx).forEach(i => {
-    setCell_(ctx, i, 'invite status', '');
-    setCell_(ctx, i, 'invite sent', '');
-    setCell_(ctx, i, 'reminder sent', '');
-  });
-  toast_('Invite status cleared for the selected rows — they are pending again.');
-}
-
-function guestFromRow_(ctx, i){
-  return {
-    lang:     normLang_(cell_(ctx, i, 'language')),
-    category: String(cell_(ctx, i, 'category') || '').trim(),
-    priority: String(cell_(ctx, i, 'priority') || '').trim(),
-    greeting: String(cell_(ctx, i, 'greeting') || '').trim(),
-    household:String(cell_(ctx, i, 'household') || '').trim(),
-    names:    String(cell_(ctx, i, 'invitee') || '').trim(),
-    plusOne:  truthy_(cell_(ctx, i, 'plus-one')),
-    plusName: String(cell_(ctx, i, 'plus-one name') || '').trim(),
-    kids:     truthy_(cell_(ctx, i, 'kids?')),
-    note:     String(cell_(ctx, i, 'personal note') || '').trim()
-  };
-}
-
-/* A row is sendable when it has an email and has not been set aside. A blank
-   Send? counts as Send, so a freshly imported list works before anyone has
-   made a single hold-or-cut decision. */
-function sendable_(ctx, i){
-  if(!String(cell_(ctx, i, 'email') || '').trim()) return false;
-  const st = String(cell_(ctx, i, 'send?') || '').trim().toLowerCase();
-  return st === '' || st === 'send';
-}
-
-/* ------------------------- per-category deadlines ------------------------ */
-/* Read once per run, not once per guest. "(default)" — or a blank category —
-   catches anyone the Deadlines tab doesn't name. */
-function deadlineMap_(){
-  const map = { __default__: null };
-  const sh = book_().getSheetByName(SHEETS.DEADLINES);
-  if(!sh || sh.getLastRow() < 2) return map;
-  sh.getRange(2, 1, sh.getLastRow() - 1, 2).getValues().forEach(r => {
-    const cat = String(r[0] || '').trim();
-    if(!cat) return;
-    if(/^\(?default\)?$/i.test(cat)) map.__default__ = r[1];
-    else map[cat.toLowerCase()] = r[1];
-  });
-  return map;
-}
-
-function rawDeadline_(map, category){
-  const c = String(category || '').trim().toLowerCase();
-  const v = (c && map[c] !== undefined) ? map[c] : map.__default__;
-  return (v === undefined || v === null || v === '') ? '' : v;
-}
-
-/* The deadline as the guest reads it, in their own language. A real date is
-   spelled out ("30 aprile 2027"); anything typed as text is used verbatim. */
-function deadlineFor_(map, category, lang){
-  const v = rawDeadline_(map, category);
-  if(v instanceof Date && !isNaN(v)){
-    // the calendar day as the sheet shows it — a script whose own timezone
-    // differs from the sheet's would otherwise read 30 April as the 29th
-    const ymd = Utilities.formatDate(v, book_().getSpreadsheetTimeZone(), 'yyyy-M-d').split('-').map(Number);
-    const m = MONTHS[lang] || MONTHS.it;
-    return ymd[2] + ' ' + m[ymd[1] - 1] + ' ' + ymd[0];
-  }
-  const s = String(v || '').trim();
-  return s || CFG.RSVP_BY[lang] || CFG.RSVP_BY.it;
+  return { mail: mailBlob_(g) };
 }
 
 /* ============================ 4. RSVPs IN ================================ */
@@ -1404,67 +1325,36 @@ function buildEmail_(g){
   const greet = greetingOf_(g);
   const plusText = plusLine_(g);
   const link = inviteLink_(g.token || '');
-  const I = CFG.IMG_BASE;
+  const by = c.by(g.replyBy || CFG.RSVP_BY[g.lang]);
 
-  /* The invitation is three images stacked without a seam — header, villa,
-     and the letter drawn moments ago for this guest — because Gmail, Outlook
-     and Yahoo strip web fonts and live text could never hold Pinyon Script or
-     EB Garamond. Below it sits only what a guest has to act on: the password
-     to read, the button to press, the date to remember — the one part where
-     a typeface does not matter. */
+  /* The invitation is one picture, and the picture is the link. Gmail,
+     Outlook and Yahoo all strip web fonts, so nothing set in Pinyon Script or
+     EB Garamond survives as live text — drawn, all of it survives, and a
+     single image carries no seams between the parts. Wrapping it in the link
+     also takes away Gmail's download/save overlay, which otherwise sits on
+     top of the invitation whenever the cursor passes over it.
+
+     Everything a guest needs in words — the password, the address, the day —
+     is in the plain-text half of the message below, which is what they get if
+     they read with images turned off. */
   const html =
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
-<style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:26px!important;padding-right:26px!important}}</style>
+<style>a{text-decoration:none}</style>
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc_(greet)} ${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
 <tr><td align="center" style="padding:30px 12px;">
-
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
-
-    <tr><td style="padding:0;">
-      <img src="cid:head" width="600" alt="Ilaria &amp; Maxime — ${c.tag} — ${c.date}" style="display:block;border:0;width:100%;height:auto;">
-    </td></tr>
-    <tr><td style="padding:0;">
-      <img src="cid:hero" width="600" alt="Villa Corsini a Mezzomonte" style="display:block;border:0;width:100%;height:auto;">
-    </td></tr>
-    <tr><td style="padding:0;">
-      <img src="cid:card" width="600" alt="${esc_(greet)} ${c.body}" style="display:block;border:0;width:100%;height:auto;">
-    </td></tr>
-
-    <tr><td class="px" align="center" style="padding:4px 56px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
-
-    <tr><td align="center" style="padding:20px 40px 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="border:1px solid ${T.lineGold};background:${T.panna2};">
-        <tr><td align="center" style="padding:11px 30px;">
-          <div style="font-family:${T.fUi};font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${T.muted};">${c.pwk}</div>
-          <div style="font-family:${T.fUi};font-weight:500;font-size:19px;letter-spacing:5px;color:${T.ink};padding-top:3px;">${esc_(sitePassword_())}</div>
-        </td></tr>
-      </table>
-    </td></tr>
-
-    <tr><td align="center" style="padding:20px 0 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" bgcolor="${T.salvia}">
-        <a href="${link}" style="display:inline-block;font-family:${T.fUi};font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#FBF8EF;padding:15px 38px;">${c.cta}</a>
-      </td></tr></table>
-    </td></tr>
-
-    <tr><td align="center" style="padding:13px 40px 0;font-family:${T.fUi};font-size:11px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
-
-    <tr><td align="center" style="padding:34px 16px 0;">
-      <img src="cid:close" height="20" alt="${c.close}" style="display:block;border:0;height:20px;width:auto;margin:0 auto;">
-    </td></tr>
-    <tr><td align="center" style="padding:8px 40px 0;">
-      <img src="cid:wordmark" width="180" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:180px;max-width:100%;height:auto;margin:0 auto;">
-    </td></tr>
-
-    <tr><td align="center" class="px" style="padding:36px 56px 40px;font-family:${T.fBody};font-size:12.5px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
-
-  </table>
+  <a href="${link}" style="display:block;width:600px;max-width:100%;">
+    <img src="cid:mail" width="600" alt="${esc_(greet)} ${c.body} ${esc_(by)}"
+         style="display:block;border:0;width:600px;max-width:100%;height:auto;">
+  </a>
+  <div style="padding:14px 20px 0;font-family:${T.fBody};font-size:12px;color:${T.muted};">
+    <a href="${link}" style="color:${T.salviaDeep};">${esc_(c.cta)}</a>
+  </div>
 </td></tr></table>
 </body></html>`;
 
@@ -1480,7 +1370,7 @@ ${plusText ? '\n' + plusText + '\n' : ''}
 ${c.siteLead}
 ${c.pwk}: ${sitePassword_()}
 ${link}
-${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}
+${by}
 
 ${c.close}
 Ilaria & Maxime
