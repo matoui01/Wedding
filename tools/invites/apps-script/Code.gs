@@ -944,9 +944,10 @@ const CARD = {
 /* Where everything goes, in pt, for this guest's words. Line counts are
    estimated on the generous side: a line too many costs a little air, a line
    too few would overlap the next block. */
-function cardLayout_(lang, words){
+function cardLayout_(lang, words, pageW, pageH){
+  const W = pageW || CARD.W;
   const colX = CARD.PAD.x + CARD.IN.side;
-  const colW = CARD.W - 2 * colX;
+  const colW = W - 2 * colX;
   const lines = (str, per) => Math.max(1, Math.ceil(normText_(str).length / per));
   const L = { colX, colW, text: [] };
   let y = CARD.PAD.top + CARD.IN.top;
@@ -960,8 +961,21 @@ function cardLayout_(lang, words){
   if(words.plus){ y += CARD.PLUS.gap; text(CARD.PLUS, words.plus, lines(words.plus, CARD.PLUS.perLine)); }
   y += CARD.SPRIG.gap; L.sprig = { y }; y += CARD.SPRIG.h;
   y += CARD.IN.bottom;
+  L.W = W;
   L.panelH = y - CARD.PAD.top;
   L.pageH  = y + CARD.PAD.bottom;
+  // a page we did not get to choose: keep the panel on it, centred in what is
+  // left, rather than letting it run off the bottom
+  if(pageH){
+    L.pageH = pageH;
+    const slack = pageH - (L.panelH + CARD.PAD.top + CARD.PAD.bottom);
+    if(slack > 0){
+      const shift = slack / 2;
+      L.text.forEach(t => { t.y += shift; });
+      L.facts.y += shift; L.sprig.y += shift; L.panelTop = CARD.PAD.top + shift;
+    }
+  }
+  L.panelTop = L.panelTop || CARD.PAD.top;
   return L;
 }
 
@@ -976,22 +990,26 @@ function cardBlob_(g){
   const lang = normLang_(g.lang);
   const c = COPY[lang] || COPY.it;
   const words = { greeting: greetingOf_(g), body: c.body, note: normText_(g.note), plus: plusLine_(g) };
-  const L = cardLayout_(lang, words);
+  let L = cardLayout_(lang, words);
 
   const facts = fetchBlob_(CFG.IMG_FACTS(lang), 'facts.png');
   const sprig = fetchBlob_(CFG.IMG_SPRIG, 'sprig.png');
   if(!facts || !sprig) throw new Error('could not fetch the letter pieces from ' + CFG.IMG_BASE);
 
+  const EMU = 12700;
   const pres = Slides.Presentations.create({
     title: 'Wedding HQ · letter (scratch)',
-    pageSize: { width: { magnitude: CARD.W, unit: 'PT' }, height: { magnitude: L.pageH, unit: 'PT' } }
+    pageSize: { width:  { magnitude: Math.round(CARD.W * EMU),   unit: 'EMU' },
+                height: { magnitude: Math.round(L.pageH * EMU), unit: 'EMU' } }
   });
   const id = pres.presentationId;
   try {
-    const gotH = pres.pageSize ? emuToPt_(pres.pageSize.height) : 0;
-    if(Math.abs(gotH - L.pageH) > 1){
-      throw new Error('Slides did not accept the page size (asked for ' + Math.round(L.pageH) +
-                      ' pt, got ' + Math.round(gotH) + ')');
+    // Slides sometimes hands back its default 720 × 405 page whatever was
+    // asked for. The letter is drawn to the page we actually got: same width
+    // in the email either way, and the panel keeps its proportions.
+    const got = pres.pageSize ? { w: emuToPt_(pres.pageSize.width), h: emuToPt_(pres.pageSize.height) } : null;
+    if(got && got.w > 0 && Math.abs(got.h - L.pageH) > 1){
+      L = cardLayout_(lang, words, got.w, got.h);
     }
     const deck  = SlidesApp.openById(id);
     const slide = deck.getSlides()[0];
@@ -1000,7 +1018,7 @@ function cardBlob_(g){
     slide.getBackground().setSolidFill(T.panna);
 
     const panel = slide.insertShape(SlidesApp.ShapeType.RECTANGLE,
-      CARD.PAD.x, CARD.PAD.top, CARD.W - 2 * CARD.PAD.x, L.panelH);
+      CARD.PAD.x, L.panelTop, L.W - 2 * CARD.PAD.x, L.panelH);
     panel.getFill().setSolidFill(T.carta);
     panel.getBorder().setWeight(1);
     panel.getBorder().getLineFill().setSolidFill(T.lineGold);
@@ -1021,7 +1039,7 @@ function cardBlob_(g){
                                              : SlidesApp.ParagraphAlignment.START);
     });
     slide.insertImage(facts, L.colX, L.facts.y, L.colW, CARD.FACTS.h);
-    slide.insertImage(sprig, (CARD.W - CARD.SPRIG.w) / 2, L.sprig.y, CARD.SPRIG.w, CARD.SPRIG.h);
+    slide.insertImage(sprig, (L.W - CARD.SPRIG.w) / 2, L.sprig.y, CARD.SPRIG.w, CARD.SPRIG.h);
     deck.saveAndClose();
 
     const thumb = Slides.Presentations.Pages.getThumbnail(id, slideId, {
@@ -1140,7 +1158,8 @@ function sendTestToMe(){
   const ctx = readGuests_();
   if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
   const rows = selectedDataRows_(ctx);
-  const i = rows.length === 1 ? rows[0] : 0;
+  if(!rows.length){ toast_('Click any cell on the guest row you want to test first.'); return; }
+  const i = rows[0];
   const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
   const g = guestFromRow_(ctx, i);
   g.token = ensureToken_(ctx, i);
@@ -1161,7 +1180,8 @@ function previewSelectedCard(){
   const ctx = readGuests_();
   if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
   const rows = selectedDataRows_(ctx);
-  const i = rows.length ? rows[0] : 0;
+  if(!rows.length){ toast_('Click any cell on the guest row you want to see first.'); return; }
+  const i = rows[0];
   const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
   const g = guestFromRow_(ctx, i);
   toast_('Drawing ' + who + '’s letter…');
@@ -1567,13 +1587,15 @@ function factRow_(k, v, first){
    script properties the first time setup runs. */
 function book_(){
   const props = PropertiesService.getScriptProperties();
-  const id = props.getProperty('SHEET_ID');
-  if(id){ try { return SpreadsheetApp.openById(id); } catch(_){ /* fall through */ } }
+  // The sheet you have open, whenever there is one: a copy fetched by id is a
+  // different object and knows nothing about which cells you selected.
   const ss = SpreadsheetApp.getActive();
   if(ss){
     try { props.setProperty('SHEET_ID', ss.getId()); } catch(_){}
     return ss;
   }
+  const id = props.getProperty('SHEET_ID');
+  if(id){ try { return SpreadsheetApp.openById(id); } catch(_){ /* fall through */ } }
   throw new Error('No workbook bound yet — open the sheet and run "Set up / repair the workbook" once.');
 }
 
@@ -1651,7 +1673,10 @@ function setCell_(ctx, rowIdx, key, value){
    drafting those would quietly invite the wrong people. */
 function selectedDataRows_(ctx){
   const sh = ctx.sh;
-  const ranges = (sh.getActiveRangeList() ? sh.getActiveRangeList().getRanges() : [sh.getActiveRange()]);
+  const active = SpreadsheetApp.getActiveSheet();
+  if(!active || active.getSheetId() !== sh.getSheetId()) return [];
+  const list = active.getActiveRangeList();
+  const ranges = list ? list.getRanges() : [active.getActiveRange()].filter(Boolean);
   const set = {};
   ranges.forEach(r => {
     const start = r.getRow(), n = r.getNumRows();
