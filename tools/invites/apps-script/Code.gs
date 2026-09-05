@@ -26,14 +26,14 @@
 
 /* ----------------------------- CONFIG ------------------------------------ */
 const CFG = {
-  SITE_URL    : 'https://matoui01.github.io/Wedding/',
+  SITE_URL    : 'https://ilariaemaxime.com/',
   PASSWORD    : 'XXXXXX',                 // ← the site password from your invite gate
   SENDER_NAME : 'Ilaria & Maxime',
   REPLY_TO    : 'maxime.ilaria@gmail.com',
 
-  // Hosted images. estate-cut.png is already live. Commit the two email-*.png
-  // files (provided alongside this script) to site/assets/img/ to light up the
-  // crest + sprig; the email still looks right if they're missing.
+  // Hosted images — deliberately on the github.io address, NOT the custom
+  // domain: sent emails sit in inboxes for years, and this URL keeps serving
+  // the images even after ilariaemaxime.com is allowed to lapse in 2027.
   IMG_BASE : 'https://matoui01.github.io/Wedding/assets/img/',
   IMG_CREST: 'email-crest.png',
   IMG_SPRIG: 'email-sprig.png',
