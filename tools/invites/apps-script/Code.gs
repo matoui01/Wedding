@@ -1000,14 +1000,17 @@ const CARD = {
      how to answer. Every line of it is a picture — Slides has no Jost and no
      letter-spacing, and this is where the design is both — drawn at 600 px
      wide and placed at its own proportions, never stretched. */
+  /* Each drawn line is a picture 600 px wide with the type centred in it, so
+     it is placed at the full column width: at any other width the type comes
+     out that much smaller than it was set. r is the picture's own height. */
   RULE:  { gap: 26, w: 56 },
-  PW:    { gap: 22, w: 268, h: 76, pad: 15,
-           label: { w: 260, r: 0.0483 },             // email-pwk-<lang>.png
-           value: { w: 232, r: 0.0700 } },           // the password, from the Drive
-  CTA:   { gap: 22, w: 320, h: 46, label: { w: 250, r: 0.0517 } },
-  DEAD:  { gap: 26, label: { w: 260, r: 0.0483 },
+  PW:    { gap: 22, w: 300, h: 84, pad: 17,
+           label: { r: 0.0483 },                     // email-pwk-<lang>.png
+           value: { r: 0.0700 } },                   // the password, from the Drive
+  CTA:   { gap: 22, w: 330, h: 48, label: { r: 0.0517 } },
+  DEAD:  { gap: 26, label: { r: 0.0483 },
            date: { font: 'Cormorant Garamond', face: 'cormorant', size: 27, lh: 1.25, natural: 1.21 } },
-  CLOSE: { gap: 30, w: 200, r: 0.0783 },             // email-close-<lang>.png
+  CLOSE: { gap: 28, r: 0.0783 },                     // email-close-<lang>.png
   MARK:  { gap: 8, w: 210, h: 62 },                  // email-wordmark.png, 1340 × 396
   FOOT:  { gap: 24, font: 'EB Garamond', face: 'ebg', size: 12.5, lh: 1.5, natural: 1.27 },
   END:   { pad: 26 },
@@ -1074,9 +1077,9 @@ function mailLayout_(lang, words){
   L.panel = { x: CARD.PAD.x, y: panelTop, w: W - 2 * CARD.PAD.x, h: y - panelTop };
 
   // how to answer, in one movement
-  const img = (key, w, r, extra) => {
-    L.images.push({ key, x: (W - w) / 2, y, w, h: w * r });
-    y += w * r;
+  const img = (key, r, extra) => {
+    L.images.push({ key, x: 0, y, w: W, h: W * r });
+    y += W * r;
     if(extra) y += extra;
   };
 
@@ -1090,27 +1093,27 @@ function mailLayout_(lang, words){
   const pwTop = y;
   L.shapes.push({ kind: 'pw', x: (W - CARD.PW.w) / 2, y, w: CARD.PW.w, h: CARD.PW.h });
   y += CARD.PW.pad;
-  img('pwk', CARD.PW.label.w, CARD.PW.label.r, 7);
-  img('pw',  CARD.PW.value.w, CARD.PW.value.r);
+  img('pwk', CARD.PW.label.r, 8);
+  img('pw',  CARD.PW.value.r);
   y = pwTop + CARD.PW.h;
 
   y += CARD.CTA.gap;
   L.anchors.push(y);
   const ctaTop = y;
   L.shapes.push({ kind: 'cta', x: (W - CARD.CTA.w) / 2, y, w: CARD.CTA.w, h: CARD.CTA.h });
-  y += (CARD.CTA.h - CARD.CTA.label.w * CARD.CTA.label.r) / 2;
-  img('cta', CARD.CTA.label.w, CARD.CTA.label.r);
+  y += (CARD.CTA.h - W * CARD.CTA.label.r) / 2;
+  img('cta', CARD.CTA.label.r);
   y = ctaTop + CARD.CTA.h;
 
   // the date, set large enough to be remembered rather than read past
   y += CARD.DEAD.gap;
   L.anchors.push(y);
-  img('by', CARD.DEAD.label.w, CARD.DEAD.label.r, 6);
+  img('by', CARD.DEAD.label.r, 6);
   text(CARD.DEAD.date, words.replyBy, { center: true, color: T.terracotta });
 
   y += CARD.CLOSE.gap;
   L.anchors.push(y);
-  img('close', CARD.CLOSE.w, CARD.CLOSE.r, CARD.MARK.gap);
+  img('close', CARD.CLOSE.r, CARD.MARK.gap);
   L.images.push({ key: 'mark', x: (W - CARD.MARK.w) / 2, y, w: CARD.MARK.w, h: CARD.MARK.h });
   y += CARD.MARK.h;
 
@@ -1164,6 +1167,39 @@ function drawInfo_(blob, page){
          Math.round(page.w) + ' × ' + Math.round(page.h) + ' pt page';
 }
 
+/* The measurements above are the design as written here, and every one of
+   them can be corrected from the outside: a small JSON beside the pictures,
+   read once every few minutes, whose numbers are merged into CARD. Tuning the
+   rhythm of the invitation then costs a file, not a reinstall of this script.
+   Anything the file does not mention keeps the value written above. */
+let TUNED = false;
+function tuneCard_(){
+  if(TUNED) return;
+  TUNED = true;
+  let text = null;
+  try {
+    const cache = CacheService.getScriptCache();
+    text = cache.get('email-layout');
+    if(!text){
+      const res = UrlFetchApp.fetch(CFG.IMG_BASE + '../email-layout.json', { muteHttpExceptions: true });
+      if(res.getResponseCode() === 200){ text = res.getContentText(); cache.put('email-layout', text, 300); }
+    }
+  } catch(_){}
+  if(!text) return;
+  try {
+    const over = JSON.parse(text);
+    Object.keys(over).forEach(k => {
+      if(CARD[k] && typeof CARD[k] === 'object' && typeof over[k] === 'object'){
+        Object.keys(over[k]).forEach(k2 => {
+          if(CARD[k][k2] && typeof CARD[k][k2] === 'object' && typeof over[k][k2] === 'object'){
+            Object.keys(over[k][k2]).forEach(k3 => { CARD[k][k2][k3] = over[k][k2][k3]; });
+          } else CARD[k][k2] = over[k][k2];
+        });
+      } else CARD[k] = over[k];
+    });
+  } catch(_){}
+}
+
 function emuToPt_(dim){
   const m = Number(dim && dim.magnitude) || 0;
   return (dim && dim.unit === 'PT') ? m : m / 12700;
@@ -1201,6 +1237,7 @@ function mailBlobs_(g){
     site: c.siteLead, cta: c.cta,
     byLabel: c.byLabel, replyBy: g.replyBy || CFG.RSVP_BY[lang], foot: c.fcLead + ' ' + CFG.REPLY_TO
   };
+  tuneCard_();                                       // the numbers, as last published
   const L = mailLayout_(lang, words);
 
   const blobs = {
@@ -1290,6 +1327,9 @@ function drawSlice_(slide, L, blobs, top, sliceH){
       box.getFill().setSolidFill(T.panna2);
       box.getBorder().setWeight(weight);
       box.getBorder().getLineFill().setSolidFill(T.lineGold);
+    } else if(sp.kind === 'cta'){
+      plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y + y0, sp.w, sp.h))
+        .getFill().setSolidFill(T.salvia);
     } else if(sp.kind === 'rule'){
       plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y + y0, sp.w, Math.max(1, sp.h)))
         .getFill().setSolidFill(T.lineGold);
@@ -1907,9 +1947,6 @@ function buildEmail_(g){
     <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
            style="width:600px;max-width:100%;border-collapse:collapse;">${stack}</table>
   </a>
-  <div style="padding:14px 20px 0;font-family:${T.fBody};font-size:12px;color:${T.muted};">
-    <a href="${link}" style="color:${T.salviaDeep};">${esc_(c.cta)}</a>
-  </div>
 </td></tr></table>
 </body></html>`;
 
