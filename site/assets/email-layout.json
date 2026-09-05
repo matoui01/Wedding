@@ -1,13 +1,13 @@
 {
  "PAD": {
-  "top": 30,
-  "bottom": 36,
+  "top": 26,
+  "bottom": 30,
   "x": 34
  },
  "IN": {
-  "top": 36,
+  "top": 32,
   "side": 40,
-  "bottom": 32
+  "bottom": 28
  },
  "GREET": {
   "size": 24,
@@ -15,64 +15,64 @@
  },
  "BODY": {
   "size": 17,
-  "lh": 1.66,
-  "gap": 13
+  "lh": 1.6,
+  "gap": 11
  },
  "NOTE": {
   "size": 16,
-  "lh": 1.62,
-  "gap": 22,
+  "lh": 1.58,
+  "gap": 18,
   "bg": "#EEF2E9",
   "rule": "#93A586"
  },
  "FACTS": {
-  "gap": 26,
+  "gap": 20,
   "h": 143
  },
  "PLUS": {
   "size": 18,
-  "gap": 26
+  "gap": 20
  },
  "SITE": {
   "size": 16,
-  "gap": 26
+  "gap": 20
  },
  "SPRIG": {
-  "gap": 22,
+  "gap": 16,
   "w": 20,
   "h": 20
  },
  "RULE": {
-  "gap": 26,
+  "gap": 20,
   "w": 56
  },
  "PW": {
-  "gap": 22,
-  "w": 300,
-  "h": 84,
-  "pad": 17
+  "gap": 18,
+  "w": 340,
+  "h": 78,
+  "pad": 14
  },
  "CTA": {
-  "gap": 22,
-  "w": 330,
-  "h": 48
+  "gap": 16,
+  "w": 340,
+  "h": 44
  },
  "DEAD": {
-  "gap": 26
+  "gap": 20
  },
  "CLOSE": {
-  "gap": 28
+  "gap": 22
  },
  "MARK": {
-  "gap": 8,
+  "gap": 4,
   "w": 210,
   "h": 62
  },
  "FOOT": {
-  "gap": 24,
+  "gap": 18,
   "size": 12.5
  },
  "END": {
-  "pad": 26
+  "pad": 22
  }
 }
