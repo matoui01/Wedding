@@ -50,17 +50,20 @@ const COPY = {
         body:'Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.',
         kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027', kWhere:'Dove',
         vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze', kDress:'Dress code', vDress:'Cocktail elegante',
-        siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.', close:'A presto,' },
+        siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.', close:'A presto,',
+        pwk:'Password del sito', cta:'Apri il sito e rispondi', byLabel:'Rispondete entro il' },
   fr: { over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:'Nous nous marions', date:'Vendredi 23 juillet 2027',
         body:'Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.',
         kDay:'Le jour', vDay:'Vendredi 23 juillet 2027', kWhere:'Lieu',
         vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Tenue', vDress:'Cocktail élégant',
-        siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.', close:'À très bientôt,' },
+        siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.', close:'À très bientôt,',
+        pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre', byLabel:'Merci de répondre avant le' },
   en: { over:'VILLA CORSINI A MEZZOMONTE · FLORENCE', tag:"We're getting married", date:'Friday · 23 July 2027',
         body:"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
         kDay:'The day', vDay:'Friday 23 July 2027', kWhere:'Where',
         vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence', kDress:'Dress code', vDress:'Elegant cocktail',
-        siteLead:'The programme, travel, gifts and your reply are all on our site.', close:'See you very soon,' },
+        siteLead:'The programme, travel, gifts and your reply are all on our site.', close:'See you very soon,',
+        pwk:'Site password', cta:'Open the site and RSVP', byLabel:'Kindly reply by' },
 };
 
 const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -104,6 +107,17 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .piece-head{background:#FAF6EC;padding-bottom:28px}
 .piece-facts{width:452px;background:#FDFBF5}
 .piece-facts table.facts{margin-top:0}
+/* Every piece below is drawn at a fixed width so the script knows its
+   proportions without measuring, and every one of them is set in Jost —
+   which Slides cannot render, so anything with real letter-spacing has to
+   arrive as a picture. None of them carries a guest's name. */
+.piece-fixed{width:600px;background:#FAF6EC;display:flex;align-items:center;justify-content:center}
+.piece-fixed.h56{height:56px}
+.piece-fixed.h64{height:64px}
+.piece-ui{font-family:Jost;font-size:11px;letter-spacing:3.2px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
+.piece-cta{width:600px;height:64px;display:flex;align-items:center;justify-content:center;background:#93A586}
+.piece-cta .t{font-family:Jost;font-size:13px;letter-spacing:3.4px;text-transform:uppercase;color:#FBF8EF;white-space:nowrap}
+.piece-close .c2{font-family:Cormorant;font-style:italic;font-size:22px;color:#897C68;white-space:nowrap}
 .piece-mark{background:#FAF6EC;padding:16px 26px;display:inline-block}
 .piece-mark .m{font-family:Pinyon;font-size:46px;line-height:1.45;color:#3D352A;white-space:nowrap}
 .piece-mark .m em{font-family:Cormorant;font-style:italic;font-size:.55em;color:#C47A54;vertical-align:.14em}
@@ -124,6 +138,13 @@ const headHtml = (lang) => {
 };
 const markHtml = () => `<div class="m">Ilaria <em>&amp;</em> Maxime</div>`;
 const closeHtml = (lang) => `<div class="c">${(COPY[lang] || COPY.it).close}</div>`;
+/* the four fixed-width pieces: sign-off, password label, reply-by label, button */
+const fixedHtml = {
+  close: (lang) => `<div class="piece-fixed h56"><div class="c2">${(COPY[lang] || COPY.it).close}</div></div>`,
+  pwk:   (lang) => `<div class="piece-fixed h56"><div class="piece-ui">${(COPY[lang] || COPY.it).pwk}</div></div>`,
+  by:    (lang) => `<div class="piece-fixed h56"><div class="piece-ui">${(COPY[lang] || COPY.it).byLabel}</div></div>`,
+  cta:   (lang) => `<div class="piece-cta"><div class="t">${(COPY[lang] || COPY.it).cta}</div></div>`,
+};
 const factsHtml = (lang) => {
   const c = COPY[lang] || COPY.it;
   return `<table class="facts">
@@ -151,7 +172,7 @@ ${headHtml(g.lang)}
 </div>`;
 }
 
-module.exports = { ensureFonts, PAGE_CSS, headHtml, factsHtml, markHtml, closeHtml, html, dataUri, IMG, FONTS, COPY, chromium };
+module.exports = { ensureFonts, PAGE_CSS, headHtml, factsHtml, markHtml, closeHtml, fixedHtml, html, dataUri, IMG, FONTS, COPY, chromium };
 
 if(require.main === module) (async () => {
   await ensureFonts();

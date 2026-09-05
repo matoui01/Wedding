@@ -12,25 +12,28 @@
  *   node tools/invites/assets/render-pieces.js
  */
 const path = require('path');
-const { ensureFonts, PAGE_CSS, headHtml, factsHtml, markHtml, closeHtml, IMG, chromium } = require('./render-card.js');
+const { ensureFonts, PAGE_CSS, headHtml, factsHtml, markHtml, closeHtml, fixedHtml, IMG, chromium } = require('./render-card.js');
 
 (async () => {
   await ensureFonts();
   const b = await chromium.launch({
     executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
-  // 3× so the pieces still out-resolve the page the invitation is exported at:
-// a 1200 pt template exports 1600 px across, and an image drawn at 1200 px
-// would be stretched to fill it
-const p = await b.newPage({ viewport: { width: 600, height: 800 }, deviceScaleFactor: 3 });
+  // 4× so the pieces still out-resolve the page the invitation is exported at:
+// an 1800 pt template exports 2400 px across, and an image drawn smaller
+// than that would be stretched to fill it
+const p = await b.newPage({ viewport: { width: 600, height: 800 }, deviceScaleFactor: 4 });
   for(const lang of ['it', 'fr', 'en']){
     await p.setContent(`<!doctype html><meta charset="utf-8"><style>${PAGE_CSS()}</style>
       <div class="piece-head" id="head">${headHtml(lang)}</div>
       <div class="piece-facts" id="facts">${factsHtml(lang)}</div>
       <div class="piece-mark" id="mark">${markHtml()}</div>
-      <div class="piece-close" id="close">${closeHtml(lang)}</div>`, { waitUntil: 'load' });
+      <div id="close">${fixedHtml.close(lang)}</div>
+      <div id="pwk">${fixedHtml.pwk(lang)}</div>
+      <div id="by">${fixedHtml.by(lang)}</div>
+      <div id="cta">${fixedHtml.cta(lang)}</div>`, { waitUntil: 'load' });
     await p.evaluate(() => document.fonts.ready);
     await p.waitForTimeout(200);
-    for(const id of ['head', 'facts', 'close'].concat(lang === 'it' ? ['mark'] : [])){
+    for(const id of ['head', 'facts', 'close', 'pwk', 'by', 'cta'].concat(lang === 'it' ? ['mark'] : [])){
       const el = await p.$('#' + id);
       const box = await el.boundingBox();
       const out = path.join(IMG, id === 'mark' ? 'email-wordmark.png' : `email-${id}-${lang}.png`);

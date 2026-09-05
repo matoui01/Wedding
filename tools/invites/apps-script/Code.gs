@@ -72,6 +72,13 @@ const CFG = {
   SCRATCH  : 'Wedding HQ · invitation (scratch)',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
   IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
+  // Slides has no Jost and no letter-spacing at all, so every line that
+  // depends on either is drawn in the browser and fetched as a picture. None
+  // of them carries anything about a guest — the password stays live text,
+  // because a public asset must never be the place it is written down.
+  IMG_PWK  : function(l){ return 'email-pwk-' + l + '.png'; },
+  IMG_BY   : function(l){ return 'email-by-' + l + '.png'; },
+  IMG_CTA  : function(l){ return 'email-cta-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -971,13 +978,17 @@ const CARD = {
   FACTS: { gap: 26, h: 143 },                        // email-facts-<lang>.png, 452 × 143 at 1×
   HEAD:  { h: 383 },                                 // email-head-<lang>.png, 600 × 383
   HERO:  { h: 400 },                                 // email-estate.jpg, 1200 × 801
-  PW:    { gap: 26, w: 268, h: 66, label: { font: 'Jost', size: 10 }, value: { font: 'Jost', size: 20 } },
-  CTA:   { gap: 22, w: 320, h: 48, font: 'Jost', size: 12 },
-  DEAD:  { gap: 30, label: { font: 'Jost', size: 10 }, date: { font: 'Cormorant Garamond', face: 'cormorant', size: 26, lh: 1.3, natural: 1.21 } },
-  CLOSE: { gap: 34, h: 26 },                         // email-close-<lang>.png, 106–174 × 52
-  MARK:  { gap: 10, w: 200, h: 56 },                 // email-wordmark.png, 351 × 99
-  FOOT:  { gap: 26, font: 'EB Garamond', face: 'ebg', size: 12, lh: 1.5, natural: 1.27 },
-  END:   { pad: 34 },
+  // the reply block, read as one movement: a rule, then how to answer
+  RULE:  { gap: 34, w: 60 },
+  PW:    { gap: 26, w: 300, h: 74, labelH: 26,       // email-pwk-<lang>.png, 600 × 56
+           value: { font: 'Cormorant Garamond', face: 'cormorant', size: 27, lh: 1.2, natural: 1.21 } },
+  CTA:   { gap: 24, w: 330, h: 35 },                 // email-cta-<lang>.png, 600 × 64
+  DEAD:  { gap: 30, labelH: 22,                      // email-by-<lang>.png, 600 × 56
+           date: { font: 'Cormorant Garamond', face: 'cormorant', size: 28, lh: 1.25, natural: 1.21 } },
+  CLOSE: { gap: 40, h: 30 },                         // email-close-<lang>.png, 600 × 56
+  MARK:  { gap: 6, w: 224, h: 63 },                  // email-wordmark.png, 1005 × 297
+  FOOT:  { gap: 30, font: 'EB Garamond', face: 'ebg', size: 12.5, lh: 1.5, natural: 1.27 },
+  END:   { pad: 40 },
   // how the slack on a fixed-height page is spent: above the letter, above
   // the reply block, under the sign-off
   SLACK: { panel: 0.25, reply: 0.45 },
@@ -1035,34 +1046,33 @@ function mailLayout_(lang, words){
   y += CARD.SPRIG.h + CARD.IN.bottom;
   L.panel = { x: CARD.PAD.x, y: panelTop, w: W - 2 * CARD.PAD.x, h: y - panelTop };
 
-  // how to answer: the password to type, the site to open, the day to answer by
+  // how to answer: a rule to close the letter, then the password to type, the
+  // site to open, and the day to answer by, each with room around it
+  y += CARD.RULE.gap;
+  L.shapes.push({ kind: 'rule', x: (W - CARD.RULE.w) / 2, y, w: CARD.RULE.w, h: 1 });
+  y += 1;
+
   y += CARD.PW.gap;
   L.shapes.push({ kind: 'pw', x: (W - CARD.PW.w) / 2, y, w: CARD.PW.w, h: CARD.PW.h });
-  const pwInner = CARD.PW.w - 24;
-  const pwTop = y + 12;
-  y = pwTop;
-  text(CARD.PW.label, words.pwLabel.toUpperCase(), { w: pwInner, center: true, color: T.muted });
-  y += 2;
-  text(CARD.PW.value, words.password, { w: pwInner, center: true });
-  y = L.shapes[L.shapes.length - 1].y + CARD.PW.h;
+  const pwTop = y;
+  y += 13;
+  L.images.push({ key: 'pwk', x: (W - CARD.PW.w) / 2, y, w: CARD.PW.w, h: CARD.PW.labelH });
+  y += CARD.PW.labelH - 2;
+  text(CARD.PW.value, words.password, { w: CARD.PW.w, center: true });
+  y = pwTop + CARD.PW.h;
 
   y += CARD.CTA.gap;
-  L.shapes.push({ kind: 'cta', x: (W - CARD.CTA.w) / 2, y, w: CARD.CTA.w, h: CARD.CTA.h });
-  const ctaTop = y + (CARD.CTA.h - CARD.CTA.size * 1.4) / 2;
-  const ctaBottom = y + CARD.CTA.h;
-  y = ctaTop;
-  text({ font: CARD.CTA.font, size: CARD.CTA.size, lh: 1.4 }, words.cta.toUpperCase(),
-       { w: CARD.CTA.w, center: true, color: T.carta });
-  y = ctaBottom;
+  L.images.push({ key: 'cta', x: (W - CARD.CTA.w) / 2, y, w: CARD.CTA.w, h: CARD.CTA.h });
+  y += CARD.CTA.h;
 
-  // the date, large enough to be remembered rather than read past
+  // the date, set large enough to be remembered rather than read past
   y += CARD.DEAD.gap;
-  text(CARD.DEAD.label, words.byLabel.toUpperCase(), { center: true, color: T.muted });
-  y += 4;
+  L.images.push({ key: 'by', x: (W - 300) / 2, y, w: 300, h: CARD.DEAD.labelH });
+  y += CARD.DEAD.labelH + 2;
   text(CARD.DEAD.date, words.replyBy, { center: true, color: T.terracotta });
 
   y += CARD.CLOSE.gap;
-  L.images.push({ key: 'close', y, h: CARD.CLOSE.h, centerW: true });
+  L.images.push({ key: 'close', x: (W - 300) / 2, y, w: 300, h: CARD.CLOSE.h });
   y += CARD.CLOSE.h;
   y += CARD.MARK.gap;
   L.images.push({ key: 'mark', x: (W - CARD.MARK.w) / 2, y, w: CARD.MARK.w, h: CARD.MARK.h });
@@ -1138,7 +1148,10 @@ function mailBlob_(g){
     facts: fetchBlob_(CFG.IMG_FACTS(lang), 'facts.png'),
     sprig: fetchBlob_(CFG.IMG_SPRIG,       'sprig.png'),
     close: fetchBlob_(CFG.IMG_CLOSE(lang), 'close.png'),
-    mark:  fetchBlob_(CFG.IMG_MARK,        'wordmark.png')
+    mark:  fetchBlob_(CFG.IMG_MARK,        'wordmark.png'),
+    pwk:   fetchBlob_(CFG.IMG_PWK(lang),   'pwk.png'),
+    by:    fetchBlob_(CFG.IMG_BY(lang),    'by.png'),
+    cta:   fetchBlob_(CFG.IMG_CTA(lang),   'cta.png')
   };
   const missing = Object.keys(blobs).filter(k => !blobs[k]);
   if(missing.length) throw new Error('could not fetch ' + missing.join(', ') + ' from ' + CFG.IMG_BASE);
@@ -1183,23 +1196,15 @@ function mailBlob_(g){
         box.getFill().setSolidFill(T.panna2);
         box.getBorder().setWeight(Math.max(1, Math.round(L.k || 1)));
         box.getBorder().getLineFill().setSolidFill(T.lineGold);
-      } else if(sp.kind === 'cta'){
-        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h))
-          .getFill().setSolidFill(T.salvia);
+      } else if(sp.kind === 'rule'){
+        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, Math.max(1, sp.h)))
+          .getFill().setSolidFill(T.lineGold);
       }
     });
 
-    L.images.forEach(im => {
-      const blob = blobs[im.key];
-      if(im.centerW){
-        // a piece whose width follows its own proportions (the sign-off line)
-        const img = slide.insertImage(blob, 0, im.y, 10, im.h);
-        const w = im.h * (img.getInherentWidth() / img.getInherentHeight());
-        img.setWidth(w).setLeft((L.W - w) / 2);
-      } else {
-        slide.insertImage(blob, im.x, im.y, im.w, im.h);
-      }
-    });
+    // every piece is drawn at a known width, so none of them has to be
+    // measured after the fact — which is what left the sign-off line missing
+    L.images.forEach(im => { slide.insertImage(blobs[im.key], im.x, im.y, im.w, im.h); });
 
     L.text.forEach(t => {
       // the box is taller than the text needs: text is top-aligned, and a box
