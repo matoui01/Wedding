@@ -611,9 +611,26 @@ function createDraftsForPending(){
   runInvites_(ctx, rows);
 }
 
+/* Fetch the guest's card and embed it in the message rather than linking to
+   it. A hotlinked image goes through Gmail's own proxy, which refuses some
+   hosts outright and blocks images by default for unknown senders — an
+   invitation that arrives as an empty rectangle is worse than no invitation.
+   An embedded image travels inside the mail and cannot be refused.
+   Returns null if the card has not been rendered and deployed yet, in which
+   case the draft still goes out with the alt text and the live details. */
+function cardBlob_(token){
+  if(!token) return null;
+  const url = CFG.IMG_BASE + CFG.IMG_CARD(token);
+  try {
+    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    if(res.getResponseCode() !== 200) return null;
+    return res.getBlob().setName('card.jpg');
+  } catch(_){ return null; }
+}
+
 function runInvites_(ctx, rowIdxs){
   const deadlines = deadlineMap_();
-  let made = 0, skipped = 0;
+  let made = 0, skipped = 0, missingCards = 0;
   rowIdxs.forEach(i => {
     const to = String(cell_(ctx, i, 'email') || '').trim();
     if(!sendable_(ctx, i)){ skipped++; return; }
@@ -621,9 +638,10 @@ function runInvites_(ctx, rowIdxs){
     g.token = ensureToken_(ctx, i);
     g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
     const m = buildEmail_(g);
-    GmailApp.createDraft(to, m.subject, m.text, {
-      htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO
-    });
+    const opts = { htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO };
+    const card = cardBlob_(g.token);
+    if(card){ opts.inlineImages = { card: card }; } else { missingCards++; }
+    GmailApp.createDraft(to, m.subject, m.text, opts);
     // record the date we actually promised this guest, not today's config
     setCell_(ctx, i, 'reply by', rawDeadline_(deadlines, g.category));
     setCell_(ctx, i, 'invite status', 'Draft created');
@@ -632,6 +650,7 @@ function runInvites_(ctx, rowIdxs){
   });
   toast_(made + ' draft(s) created in Gmail' +
          (skipped ? ' · ' + skipped + ' skipped (no email, or on Hold/Cut)' : '') +
+         (missingCards ? ' · ⚠ ' + missingCards + ' without a card — run render-cards.js and deploy first' : '') +
          '. Open Gmail ▸ Drafts to review and send.');
 }
 
@@ -908,7 +927,7 @@ function buildEmail_(g){
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
 
     <tr><td style="padding:0;">
-      <img src="${I}${CFG.IMG_CARD(g.token || '')}" width="600" alt="${esc_(greet)} ${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
+      <img src="cid:card" width="600" alt="${esc_(greet)} ${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
     </td></tr>
 
     <tr><td class="px" align="center" style="padding:4px 52px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>

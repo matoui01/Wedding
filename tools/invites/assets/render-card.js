@@ -131,7 +131,8 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
   const b = await chromium.launch({
     executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args:['--no-sandbox'] });
   // 2x so the card stays crisp on a retina phone
-  const p = await b.newPage({ viewport:{ width:600, height:1000 }, deviceScaleFactor:2 });
+  const scale = Number(process.env.CARD_SCALE || 2);
+  const p = await b.newPage({ viewport:{ width:600, height:1000 }, deviceScaleFactor:scale });
   await p.setContent(html(g), { waitUntil:'load' });
   await p.evaluate(() => document.fonts.ready);
   await p.waitForTimeout(300);
@@ -141,7 +142,7 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
   let buf;
   for(const q of [88, 82, 76, 70, 64]){
     buf = await p.screenshot({ type:'jpeg', quality:q, fullPage:true });
-    if(buf.length <= 320 * 1024) break;
+    if(buf.length <= Number(process.env.CARD_MAX_KB || 320) * 1024) break;
   }
   fs.writeFileSync(out, buf);
   await b.close();
