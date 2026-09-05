@@ -18,8 +18,8 @@ const I18N = {
     "welcome.over":"Benvenuti","welcome.title":"Insieme, in Toscana",
     "welcome.body":"Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.",
 
-    "story.over":"La nostra storia","story.title":"Da [città] a Firenze",
-    "story.body":"<em>[DA PERSONALIZZARE]</em> Come ci siamo incontrati, e come siamo arrivati fin qui… <em>(qualche riga vostra)</em>",
+    "story.over":"La nostra storia","story.title":"Benvenuti al nostro matrimonio",
+    "story.body":"Dopo un cammino che ci ha portati fin qui, abbiamo la gioia di celebrare il nostro matrimonio circondati dalle persone che contano di più per noi. Questo giorno segna l'inizio di un nuovo capitolo — un capitolo che non vediamo l'ora di vivere e condividere insieme. Siamo felicissimi di avervi con noi in questa occasione speciale.",
 
     "day.over":"Il giorno","day.title":"Il programma","day.note":"Gli orari saranno confermati.",
     "day.t1":"Arrivo & benvenuto","day.t2":"Cerimonia","day.t3":"Aperitivo nei giardini","day.t4":"Cena nella galleria affrescata","day.t5":"Si balla","day.t6":"Saluti","day.t6.time":"tardi",
@@ -72,8 +72,8 @@ const I18N = {
     "welcome.over":"Bienvenue","welcome.title":"Tous ensemble, en Toscane",
     "welcome.body":"Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.",
 
-    "story.over":"Notre histoire","story.title":"De [ville] à Florence",
-    "story.body":"<em>[À PERSONNALISER]</em> Comment nous nous sommes rencontrés, et le chemin jusqu'ici… <em>(quelques lignes de vous)</em>",
+    "story.over":"Notre histoire","story.title":"Bienvenue à notre mariage",
+    "story.body":"Après un chemin qui nous a menés jusqu'ici, nous avons la joie de célébrer notre mariage entourés de celles et ceux qui comptent le plus pour nous. Ce jour marque le début d'un nouveau chapitre — un chapitre que nous avons hâte de vivre et de partager ensemble. Nous sommes si heureux de vous compter parmi nous en cette occasion si particulière.",
 
     "day.over":"Le jour J","day.title":"Le déroulé","day.note":"Les horaires seront confirmés.",
     "day.t1":"Arrivée & accueil","day.t2":"Cérémonie","day.t3":"Cocktail dans les jardins","day.t4":"Dîner dans la galerie à fresques","day.t5":"Soirée dansante","day.t6":"Fin de soirée","day.t6.time":"tard",
@@ -126,8 +126,8 @@ const I18N = {
     "welcome.over":"Welcome","welcome.title":"Together, in Tuscany",
     "welcome.body":"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
 
-    "story.over":"Our story","story.title":"From [city] to Florence",
-    "story.body":"<em>[TO PERSONALISE]</em> How we met, and how we got here… <em>(a few lines in your own words)</em>",
+    "story.over":"Our story","story.title":"Welcome to our wedding",
+    "story.body":"After a journey that has brought us to this moment, we are delighted to celebrate our wedding surrounded by the people who matter most to us. This day marks the beginning of a new chapter — one that we look forward to sharing and enjoying together. We are so happy to have you with us as we celebrate this special occasion.",
 
     "day.over":"The day","day.title":"The programme","day.note":"Times to be confirmed.",
     "day.t1":"Arrival & welcome","day.t2":"Ceremony","day.t3":"Aperitivo in the gardens","day.t4":"Dinner in the frescoed gallery","day.t5":"Dancing","day.t6":"Farewell","day.t6.time":"late",
