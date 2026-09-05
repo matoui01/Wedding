@@ -57,6 +57,10 @@ const CFG = {
   // web fonts, so as live text they fall back to Georgia and the design goes
   // with them. Built by tools/invites/assets/build-email-assets.py.
   IMG_MARK : 'email-wordmark.png',
+  // The two display lines, per language. Same reason as the wordmark: Gmail
+  // will not load Cormorant, and these are where the design lives.
+  IMG_TAG  : function(l){ return 'email-tag-' + l + '.png'; },
+  IMG_CLOSE: function(l){ return 'email-close-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -906,7 +910,9 @@ function buildEmail_(g){
       <img src="${I}${CFG.IMG_MARK}" width="420" class="nm" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:420px;max-width:100%;height:auto;margin:0 auto;">
     </td></tr>
 
-    <tr><td align="center" style="padding:10px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:21px;color:${T.muted};">${c.tag}</td></tr>
+    <tr><td align="center" style="padding:12px 16px 0;">
+      <img src="${I}${CFG.IMG_TAG(g.lang)}" height="21" alt="${c.tag}" style="display:block;border:0;height:21px;width:auto;margin:0 auto;">
+    </td></tr>
 
     <tr><td align="center" style="padding:12px 16px 0;font-family:${T.fUi};font-size:12px;letter-spacing:4px;color:${T.ink};text-transform:uppercase;">${c.date}</td></tr>
 
@@ -957,7 +963,9 @@ function buildEmail_(g){
 
         <tr><td align="center" style="padding:12px 36px 0;font-family:${T.fUi};font-size:11px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
 
-        <tr><td align="center" style="padding:30px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:20px;color:${T.ink};">${c.close}</td></tr>
+        <tr><td align="center" style="padding:30px 16px 0;">
+          <img src="${I}${CFG.IMG_CLOSE(g.lang)}" height="20" alt="${c.close}" style="display:block;border:0;height:20px;width:auto;margin:0 auto;">
+        </td></tr>
         <tr><td align="center" style="padding:6px 36px 34px;">
           <img src="${I}${CFG.IMG_MARK}" width="200" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:200px;max-width:100%;height:auto;margin:0 auto;">
         </td></tr>
@@ -1022,7 +1030,7 @@ function buildReminder_(g){
       <img src="${I}${CFG.IMG_MARK}" width="300" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:300px;max-width:100%;height:auto;margin:0 auto;">
     </td></tr>
 
-    <tr><td align="center" style="padding:10px 40px 0;font-family:${T.fDisplay};font-style:italic;font-size:19px;color:${T.muted};">${c.rTag}</td></tr>
+    <tr><td align="center" style="padding:12px 40px 0;font-family:${T.fDisplay};font-style:italic;font-size:19px;color:${T.muted};">${c.rTag}</td></tr>
 
     <tr><td class="px" style="padding:26px 34px 34px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.carta}" style="background:${T.carta};border:1px solid ${T.lineGold};">
@@ -1055,7 +1063,9 @@ function buildReminder_(g){
 
         <tr><td align="center" style="padding:12px 36px 0;font-family:${T.fUi};font-size:11px;letter-spacing:1px;color:${T.muted};">${c.by(g.replyBy || CFG.RSVP_BY[g.lang])}</td></tr>
 
-        <tr><td align="center" style="padding:28px 16px 0;font-family:${T.fDisplay};font-style:italic;font-size:20px;color:${T.ink};">${c.close}</td></tr>
+        <tr><td align="center" style="padding:28px 16px 0;">
+          <img src="${I}${CFG.IMG_CLOSE(g.lang)}" height="20" alt="${c.close}" style="display:block;border:0;height:20px;width:auto;margin:0 auto;">
+        </td></tr>
         <tr><td align="center" style="padding:6px 36px 32px;">
           <img src="${I}${CFG.IMG_MARK}" width="190" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:190px;max-width:100%;height:auto;margin:0 auto;">
         </td></tr>

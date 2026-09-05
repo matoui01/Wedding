@@ -27,10 +27,25 @@ ROOT = pathlib.Path(__file__).resolve().parents[3]
 IMG = ROOT / "site" / "assets" / "img"
 
 PINYON = "https://fonts.gstatic.com/s/pinyonscript/v24/6xKpdSJbL9-e9LuoeQiDRQR8aOI.ttf"
+CORMORANT_ITALIC = ("https://fonts.gstatic.com/s/cormorantgaramond/v21/"
+                    "co3smX5slCNuHLi8bLeY9MK7whWMhyjYrGFEsdtdc62E6zd58jDOjw.ttf")
+
+# The display lines, per language. Gmail strips web fonts, so these are the
+# only way to hold Cormorant italic in an inbox; the body paragraph stays live
+# text, where a good fallback stack is enough and the copy stays selectable.
+DISPLAY_LINES = {
+    "tag-it":   "Ci sposiamo",
+    "tag-fr":   "Nous nous marions",
+    "tag-en":   "We\u2019re getting married",
+    "close-it": "A presto,",
+    "close-fr": "\u00c0 tr\u00e8s bient\u00f4t,",
+    "close-en": "See you soon,",
+}
 
 INK = (61, 53, 42)          # --ink        #3D352A
 TERRACOTTA = (196, 122, 84)  # --terracotta #C47A54
 PANNA = (250, 246, 236)      # --panna      #FAF6EC
+MUTED = (137, 124, 104)      # --muted      #897C68
 
 SCALE = 2                    # retina; the email displays these at half width
 
@@ -89,10 +104,29 @@ def hero(src, dst, width=1200, target_kb=200):
     return flat.size, buf.tell()
 
 
+def display_line(dst, text, raw, px, colour):
+    """One line of Cormorant italic, rendered at 2x on transparency."""
+    font = ImageFont.truetype(io.BytesIO(raw), px * SCALE)
+    box = font.getbbox(text)
+    pad = round(px * SCALE * 0.14)
+    im = Image.new("RGBA", (box[2] - box[0] + pad * 2, box[3] - box[1] + pad * 2), (0, 0, 0, 0))
+    ImageDraw.Draw(im).text((pad - box[0], pad - box[1]), text, font=font, fill=colour + (255,))
+    im = im.crop(im.getbbox())
+    im.save(dst, "PNG", optimize=True)
+    return im.size
+
+
 def main():
     w = wordmark(IMG / "email-wordmark.png")
     print(f"email-wordmark.png  {w[0]}x{w[1]}px  "
           f"{(IMG / 'email-wordmark.png').stat().st_size // 1024} KB")
+
+    raw = font_bytes(CORMORANT_ITALIC)
+    for key, text in DISPLAY_LINES.items():
+        colour = MUTED if key.startswith("tag") else INK
+        px = 21 if key.startswith("tag") else 20
+        w, h = display_line(IMG / f"email-{key}.png", text, raw, px, colour)
+        print(f"email-{key}.png{' ' * (14 - len(key))}{w}x{h}px")
 
     size, nbytes = hero(IMG / "estate-cut.png", IMG / "email-estate.jpg")
     was = (IMG / "estate-cut.png").stat().st_size
