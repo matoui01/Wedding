@@ -984,7 +984,7 @@ const CARD = {
   PLUS:  { font: 'Cormorant Garamond', face: 'cormorant-italic', size: 18, lh: 1.4, natural: 1.21, gap: 26, italic: true, center: true },
   SITE:  { font: 'EB Garamond', face: 'ebg', size: 16, lh: 1.62, natural: 1.27, gap: 26, center: true },
   SPRIG: { gap: 22, w: 20, h: 20 },
-  THUMB: 'LARGE'                                     // 1600 px wide
+  THUMB: 'LARGE'                                     // the fallback export
 };
 
 /* Where everything goes, in pt, for this guest's words. Line counts are
@@ -1099,6 +1099,26 @@ function emuToPt_(dim){
   return (dim && dim.unit === 'PT') ? m : m / 12700;
 }
 
+/* Everything above is measured in the design's own 600 pt column. The
+   template page may be wider — twice as wide, say — and then the whole
+   drawing is scaled to it, which is the only way to get a picture with enough
+   pixels in it: Slides exports a page at its own size, so a bigger page is a
+   sharper invitation. */
+function scaleLayout_(L, k){
+  if(Math.abs(k - 1) < 0.001) return L;
+  const S = (o, keys) => keys.forEach(key => { if(typeof o[key] === 'number') o[key] *= k; });
+  L.text.forEach(t => {
+    S(t, ['x', 'y', 'w', 'h']);
+    t.size = t.spec.size * k;                        // the face is set in points too
+  });
+  L.images.forEach(im => S(im, ['x', 'y', 'w', 'h']));
+  L.shapes.forEach(sp => S(sp, ['x', 'y', 'w', 'h']));
+  S(L.panel, ['x', 'y', 'w', 'h']);
+  S(L, ['W', 'colX', 'colW', 'contentH', 'pageH']);
+  L.k = k;
+  return L;
+}
+
 /* The whole invitation for this guest, as one picture — drawn now, from the
    row as it reads at this moment. Throws, with a sentence a person can act
    on, rather than returning something half-made. */
@@ -1127,13 +1147,16 @@ function mailBlob_(g){
   try {
     const info = Slides.Presentations.get(id);
     const page = info.pageSize ? { w: emuToPt_(info.pageSize.width), h: emuToPt_(info.pageSize.height) } : null;
-    if(!page || Math.abs(page.w - CARD.W) > 2){
+    if(!page || page.w < CARD.W - 2){
       throw new Error('the template page is ' + (page ? Math.round(page.w) + ' pt' : 'an unknown size') +
-                      ' wide — it has to be ' + CARD.W + ' pt (Slides ▸ File ▸ Page setup ▸ Custom)');
+                      ' wide — it has to be at least ' + CARD.W + ' pt (Slides ▸ File ▸ Page setup ▸ Custom)');
     }
+    const k = page.w / CARD.W;                       // 1200 pt wide → drawn at 2×
+    scaleLayout_(L, k);
     if(L.contentH > page.h + 1){
-      throw new Error('this invitation needs ' + Math.round(L.contentH) + ' pt and the template page is ' +
-                      Math.round(page.h) + ' pt tall — make the template taller, or shorten the note');
+      throw new Error('this invitation needs a page ' + Math.round(L.contentH / k) + ' × ' +
+                      Math.round(page.w / k) + ' pt at this width; the template is ' +
+                      Math.round(page.w) + ' × ' + Math.round(page.h) + ' — make it taller');
     }
     fitToPage_(L, page.h);
     const deck  = SlidesApp.openById(id);
@@ -1146,19 +1169,19 @@ function mailBlob_(g){
     // the letter's own paper, under everything the letter says
     const panel = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, L.panel.x, L.panel.y, L.panel.w, L.panel.h);
     panel.getFill().setSolidFill(T.carta);
-    panel.getBorder().setWeight(1);
+    panel.getBorder().setWeight(Math.max(1, Math.round(L.k || 1)));
     panel.getBorder().getLineFill().setSolidFill(T.lineGold);
 
     L.shapes.forEach(sp => {
       if(sp.kind === 'note'){
         plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h))
           .getFill().setSolidFill(CARD.NOTE.bg);
-        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, 2, sp.h))
+        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, 2 * (L.k || 1), sp.h))
           .getFill().setSolidFill(CARD.NOTE.rule);
       } else if(sp.kind === 'pw'){
         const box = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h);
         box.getFill().setSolidFill(T.panna2);
-        box.getBorder().setWeight(1);
+        box.getBorder().setWeight(Math.max(1, Math.round(L.k || 1)));
         box.getBorder().getLineFill().setSolidFill(T.lineGold);
       } else if(sp.kind === 'cta'){
         plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h))
@@ -1181,11 +1204,12 @@ function mailBlob_(g){
     L.text.forEach(t => {
       // the box is taller than the text needs: text is top-aligned, and a box
       // too short would make Slides shrink the type to fit it
-      const box = slide.insertTextBox(t.str, t.x - CARD.INSET, t.y - CARD.INSET,
-                                      t.w + 2 * CARD.INSET, t.h + 2 * CARD.INSET + 40);
+      const inset = CARD.INSET * (L.k || 1);
+      const box = slide.insertTextBox(t.str, t.x - inset, t.y - inset,
+                                      t.w + 2 * inset, t.h + 2 * inset + 40 * (L.k || 1));
       try { box.getAutofit().disableAutofit(); } catch(_){}
       const tr = box.getText();
-      tr.getTextStyle().setFontFamily(t.spec.font).setFontSize(t.spec.size)
+      tr.getTextStyle().setFontFamily(t.spec.font).setFontSize(t.size || t.spec.size)
         .setForegroundColor(t.color || T.ink)
         .setItalic(!!t.spec.italic).setBold(false);
       tr.getParagraphStyle()
@@ -1196,16 +1220,30 @@ function mailBlob_(g){
     });
     deck.saveAndClose();
 
-    const thumb = Slides.Presentations.Pages.getThumbnail(id, slideId, {
-      'thumbnailProperties.mimeType': 'PNG', 'thumbnailProperties.thumbnailSize': CARD.THUMB
-    });
-    const res = UrlFetchApp.fetch(thumb.contentUrl, { muteHttpExceptions: true });
-    if(res.getResponseCode() !== 200){
-      throw new Error('could not download the drawn invitation (HTTP ' + res.getResponseCode() + ')');
+    // Drive exports the page at its own size — 1 pt becomes 1⅓ px — while a
+    // thumbnail caps the long side at 1600 px, which on a page three times
+    // taller than it is wide left the invitation 505 px across and Gmail
+    // stretching it back up to 600.
+    let png = null;
+    try {
+      const exp = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
+        '/export/png?id=' + id + '&pageid=' + slideId,
+        { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+      if(exp.getResponseCode() === 200 && exp.getBlob().getBytes().length > 20000) png = exp.getBlob();
+    } catch(_){}
+    if(!png){
+      const thumb = Slides.Presentations.Pages.getThumbnail(id, slideId, {
+        'thumbnailProperties.mimeType': 'PNG', 'thumbnailProperties.thumbnailSize': CARD.THUMB
+      });
+      const res = UrlFetchApp.fetch(thumb.contentUrl, { muteHttpExceptions: true });
+      if(res.getResponseCode() !== 200){
+        throw new Error('could not download the drawn invitation (HTTP ' + res.getResponseCode() + ')');
+      }
+      png = res.getBlob();
     }
     // JPEG: a watercolour on ivory, three thousand pixels tall, is a megabyte
     // as PNG and a fraction of that with no visible difference
-    return res.getBlob().getAs('image/jpeg').setName('invitation.jpg');
+    return png.getAs('image/jpeg').setName('invitation.jpg');
   } finally { deleteOwnFile_(id); }
 }
 
