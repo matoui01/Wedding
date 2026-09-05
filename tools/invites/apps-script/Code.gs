@@ -831,7 +831,8 @@ function buildEmail_(g){
   const c = COPY[g.lang] || COPY.it;
   const greet = g.greeting || (g.names ? greetingFromNames_(g.names, g.lang) : c.fallbackGreet);
   const note = (g.note ? noteBlock_(esc_(g.note)) : '');
-  const plus = (g.plusOne ? plusBlock_(plusLine_(c, g)) : '');
+  const plusText = plusLine_(c, g);
+  const plus = (g.plusOne ? plusBlock_(plusText) : '');
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
@@ -922,7 +923,7 @@ ${g.note ? '\n' + g.note + '\n' : ''}
 ${c.kDay}: ${c.vDay}
 ${c.kWhere}: ${c.vWhere}
 ${c.kDress}: ${c.vDress}
-${g.plusOne ? '\n' + c.plus + '\n' : ''}
+${g.plusOne ? '\n' + plusText + '\n' : ''}
 ${c.siteLead}
 ${c.pwk}: ${CFG.PASSWORD}
 ${link}
