@@ -41,7 +41,7 @@
    website and the probe run the last *deployed* version, which is a separate
    thing — so when a fix appears to have had no effect, this is the first
    number to look at. */
-const VERSION = '2026-09-05-b';
+const VERSION = '2026-09-05-c';
 
 const CFG = {
   SITE_URL    : 'https://ilariaemaxime.com/',
@@ -231,7 +231,7 @@ const COPY = {
     kDay:'Il giorno', vDay:'Venerdì 23 luglio 2027',
     kWhere:'Dove', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Firenze',
     kDress:'Dress code', vDress:'Cocktail elegante',
-    siteLead:'Programma, viaggio, regali e conferma di presenza sono tutti sul nostro sito.',
+    siteLead:'Il programma, il viaggio e la vostra risposta sono sul nostro sito.',
     pwk:'Password del sito', cta:'Apri il sito e rispondi', byLabel:'Rispondete entro il',
     by:d=>'Vi preghiamo di confermare entro il '+d+'.',
     close:'A presto,',
@@ -246,7 +246,7 @@ const COPY = {
     kDay:'Le jour', vDay:'Vendredi 23 juillet 2027',
     kWhere:'Lieu', vWhere:'Villa Corsini a Mezzomonte · Impruneta, Florence',
     kDress:'Tenue', vDress:'Cocktail élégant',
-    siteLead:'Le programme, le voyage, les cadeaux et votre réponse sont sur notre site.',
+    siteLead:'Le programme, le voyage et votre réponse sont sur notre site.',
     pwk:'Mot de passe du site', cta:'Ouvrir le site et répondre', byLabel:'Merci de répondre avant le',
     by:d=>'Merci de confirmer avant le '+d+'.',
     close:'À très bientôt,',
