@@ -1356,7 +1356,14 @@ function exportPage_(id, pageId, i, n, page){
     const res = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
       '/export/' + fmt + '?id=' + id + '&pageid=' + pageId,
       { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
-    return (res.getResponseCode() === 200 && res.getBlob().getBytes().length > 5000) ? res.getBlob() : null;
+    // Size says nothing about success here: a slice that is mostly cream is a
+    // very small PNG, and treating small as failed sent exactly those slices
+    // down the low-resolution fallback — so some came back 1600 px wide among
+    // others at 2400, which is a seam straight across the invitation.
+    if(res.getResponseCode() !== 200) return null;
+    const blob = res.getBlob();
+    const type = String(blob.getContentType() || '');
+    return (type.indexOf('image/') === 0 && blob.getBytes().length > 200) ? blob : null;
   };
   /* PNG where it is small — flat cream and script stay perfectly clean — and
      Google's own JPEG where it is not, which is the watercolour and the
