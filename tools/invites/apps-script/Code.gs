@@ -65,6 +65,10 @@ const CFG = {
   // (crest, names, tagline, date) and the facts table, one per language —
   // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
   // The invitation itself is drawn at send time: see mailBlob_.
+  // Slides quietly ignores the page size asked for when a presentation is
+  // created, so the invitation is drawn on a copy of a template whose size
+  // was set once by hand. This is the name to look for in the Drive.
+  TEMPLATE : 'Wedding HQ · invitation template',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
   IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
@@ -972,6 +976,9 @@ const CARD = {
   MARK:  { gap: 10, w: 200, h: 56 },                 // email-wordmark.png, 351 × 99
   FOOT:  { gap: 26, font: 'EB Garamond', face: 'ebg', size: 12, lh: 1.5, natural: 1.27 },
   END:   { pad: 34 },
+  // how the slack on a fixed-height page is spent: above the letter, above
+  // the reply block, under the sign-off
+  SLACK: { panel: 0.25, reply: 0.45 },
   PLUS:  { font: 'Cormorant Garamond', face: 'cormorant-italic', size: 18, lh: 1.4, natural: 1.21, gap: 26, italic: true, center: true },
   SITE:  { font: 'EB Garamond', face: 'ebg', size: 16, lh: 1.62, natural: 1.27, gap: 26, center: true },
   SPRIG: { gap: 22, w: 20, h: 20 },
@@ -1062,7 +1069,26 @@ function mailLayout_(lang, words){
   y += CARD.FOOT.gap;
   text(CARD.FOOT, words.foot, { center: true, color: T.muted });
 
-  L.pageH = y + CARD.END.pad;
+  L.contentH = y + CARD.END.pad;
+  L.pageH = L.contentH;
+  return L;
+}
+
+/* The page is a fixed height, the letter is not: a note adds lines, a long
+   greeting adds one. The difference is spread over three gaps — above the
+   letter, above the reply block, under the sign-off — so a short invitation
+   reads as generously set rather than as one with a hole in it. */
+function fitToPage_(L, pageH){
+  L.pageH = pageH;
+  const slack = pageH - L.contentH;
+  if(Math.abs(slack) < 1) return L;
+  const panelTop = L.panel.y, replyTop = L.panel.y + L.panel.h;
+  const shift = (y) => (y >= panelTop ? slack * CARD.SLACK.panel : 0) +
+                       (y >= replyTop ? slack * CARD.SLACK.reply : 0);
+  L.text.forEach(t => { t.y += shift(t.y); });
+  L.images.forEach(im => { im.y += shift(im.y); });
+  L.shapes.forEach(sp => { sp.y += shift(sp.y); });
+  L.panel.y += shift(panelTop);
   return L;
 }
 
@@ -1095,19 +1121,19 @@ function mailBlob_(g){
   const missing = Object.keys(blobs).filter(k => !blobs[k]);
   if(missing.length) throw new Error('could not fetch ' + missing.join(', ') + ' from ' + CFG.IMG_BASE);
 
-  const EMU = 12700;
-  const pres = Slides.Presentations.create({
-    title: 'Wedding HQ · invitation (scratch)',
-    pageSize: { width:  { magnitude: Math.round(CARD.W * EMU),  unit: 'EMU' },
-                height: { magnitude: Math.round(L.pageH * EMU), unit: 'EMU' } }
-  });
-  const id = pres.presentationId;
+  const id = copyTemplate_();
   try {
-    const got = pres.pageSize ? { w: emuToPt_(pres.pageSize.width), h: emuToPt_(pres.pageSize.height) } : null;
-    if(got && Math.abs(got.h - L.pageH) > 2){
-      throw new Error('Slides drew a ' + Math.round(got.w) + ' × ' + Math.round(got.h) +
-                      ' pt page instead of ' + Math.round(CARD.W) + ' × ' + Math.round(L.pageH));
+    const info = Slides.Presentations.get(id);
+    const page = info.pageSize ? { w: emuToPt_(info.pageSize.width), h: emuToPt_(info.pageSize.height) } : null;
+    if(!page || Math.abs(page.w - CARD.W) > 2){
+      throw new Error('the template page is ' + (page ? Math.round(page.w) + ' pt' : 'an unknown size') +
+                      ' wide — it has to be ' + CARD.W + ' pt (Slides ▸ File ▸ Page setup ▸ Custom)');
     }
+    if(L.contentH > page.h + 1){
+      throw new Error('this invitation needs ' + Math.round(L.contentH) + ' pt and the template page is ' +
+                      Math.round(page.h) + ' pt tall — make the template taller, or shorten the note');
+    }
+    fitToPage_(L, page.h);
     const deck  = SlidesApp.openById(id);
     const slide = deck.getSlides()[0];
     const slideId = slide.getObjectId();
@@ -1179,6 +1205,19 @@ function mailBlob_(g){
     // as PNG and a fraction of that with no visible difference
     return res.getBlob().getAs('image/jpeg').setName('invitation.jpg');
   } finally { trashOwnFile_(id); }
+}
+
+/* A copy of the template, to draw this one invitation on and then bin. The
+   template exists only because Slides will not make a page of a given size
+   through the API; its own size is set once, by hand, in Slides. */
+function copyTemplate_(){
+  const it = DriveApp.getFilesByName(CFG.TEMPLATE);
+  if(!it.hasNext()){
+    throw new Error('there is no Drive file named "' + CFG.TEMPLATE + '". Make an empty Google Slides ' +
+                    'file with exactly that name, then File ▸ Page setup ▸ Custom ▸ ' + CARD.W +
+                    ' × 1900, in points');
+  }
+  return it.next().makeCopy('Wedding HQ · invitation (scratch)').getId();
 }
 
 /* Everything the message embeds. The invitation is drawn here and now, for

@@ -275,6 +275,10 @@ const CFG = {
   // (crest, names, tagline, date) and the facts table, one per language —
   // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
   // The invitation itself is drawn at send time: see mailBlob_.
+  // Slides quietly ignores the page size asked for when a presentation is
+  // created, so the invitation is drawn on a copy of a template whose size
+  // was set once by hand. This is the name to look for in the Drive.
+  TEMPLATE : 'Wedding HQ · invitation template',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
   IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
