@@ -1626,6 +1626,17 @@ function doPost(e){
 function doGet(e){
   const out = { ok: false };
   try {
+    /* A way to run the drawing from outside the spreadsheet, so it can be
+       tested without a person clicking a menu item and reporting back. It
+       draws one guest's invitation and answers with its size, or with why it
+       failed — never with anything about the guest. Guarded by the
+       spreadsheet's own id, which only someone who already has the sheet
+       knows; there is nothing here worth having without it. */
+    const probe = String((e && e.parameter && e.parameter.probe) || '');
+    if(probe){
+      if(probe !== book_().getId()) return json_({ ok: false, error: 'no' });
+      return json_(probeDraw_(e.parameter));
+    }
     const token = String((e && e.parameter && e.parameter.g) || '').trim().toLowerCase();
     if(token){
       const sh = book_().getSheetByName(SHEETS.GUESTS);
@@ -1656,8 +1667,50 @@ function doGet(e){
   } catch(err){
     console.error('guest lookup failed: ' + err);
   }
-  return ContentService.createTextOutput(JSON.stringify(out))
+  return json_(out);
+}
+
+function json_(o){
+  return ContentService.createTextOutput(JSON.stringify(o))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/* Draw one row's invitation and report what came out: the page it was drawn
+   on, the pixels, the weight — and, on failure, the line that failed. */
+function probeDraw_(params){
+  const started = Date.now();
+  try {
+    const ctx = readGuests_();
+    if(!ctx.data.length) return { ok: false, error: 'no guest rows' };
+    let i = 0;
+    const want = String(params.g || '').trim().toLowerCase();
+    if(want){
+      for(let k = 0; k < ctx.data.length; k++){
+        if(String(cell_(ctx, k, 'token') || '').trim().toLowerCase() === want){ i = k; break; }
+      }
+    } else if(params.row){
+      i = Math.max(0, Number(params.row) - 2);
+    }
+    const g = guestFromRow_(ctx, i);
+    g.token = String(cell_(ctx, i, 'token') || '').trim() || 'preview';
+    g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
+    const blob = mailBlob_(g);
+    const out = { ok: true, row: i + 2, lang: g.lang, greeting: greetingOf_(g),
+                  info: LAST_DRAW, ms: Date.now() - started };
+    if(params.mailto){
+      GmailApp.sendEmail(String(params.mailto), '[PROBE] invitation', LAST_DRAW, {
+        name: CFG.SENDER_NAME,
+        htmlBody: '<img src="cid:mail" width="600" style="display:block;border:0;width:600px;max-width:100%;height:auto;">',
+        inlineImages: { mail: blob }
+      });
+      out.mailed = true;
+    }
+    return out;
+  } catch(err){
+    return { ok: false, error: String(err && err.message || err),
+             where: String(err && err.stack || '').split('\n').slice(0, 3).join(' | '),
+             ms: Date.now() - started };
+  }
 }
 
 /* Token first (exact, private), email second (a guest who typed the address we
