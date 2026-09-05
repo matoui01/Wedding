@@ -1238,14 +1238,21 @@ function mailBlob_(g){
         .setForegroundColor(t.color || T.ink)
         .setItalic(!!t.spec.italic).setBold(false);
       const ps = tr.getParagraphStyle();
-      // Slides takes line spacing as a percentage of the face's own leading
-      // and refuses anything under 100 — which the password line, set tighter
-      // than the face is drawn, asked for. Never worth failing a send over.
-      const spacing = Math.round((t.spec.lh || 1.4) / (t.spec.natural || 1.2) * 100);
-      try { ps.setLineSpacing(Math.max(100, Math.min(400, spacing || 100))); } catch(_){}
-      ps.setSpaceAbove(0).setSpaceBelow(0)
-        .setParagraphAlignment(t.center ? SlidesApp.ParagraphAlignment.CENTER
-                                        : SlidesApp.ParagraphAlignment.START);
+      /* Leading. Slides has taken this as a percentage of the face's own
+         leading (100 = as drawn) and, in other builds, as a plain multiple —
+         and rejects whichever it isn't with "invalid argument: spacing". Both
+         are offered, and if the call refuses them the paragraph keeps the
+         face's own leading, which is exactly what the block was measured
+         against. Nothing here is worth failing an invitation over. */
+      const ratio = Math.max(1, Math.min(4, (t.spec.lh || 1.4) / (t.spec.natural || 1.2)));
+      try { ps.setLineSpacing(Math.round(ratio * 100)); }
+      catch(_){ try { ps.setLineSpacing(ratio); } catch(__){} }
+      try { ps.setSpaceAbove(0); } catch(_){}
+      try { ps.setSpaceBelow(0); } catch(_){}
+      try {
+        ps.setParagraphAlignment(t.center ? SlidesApp.ParagraphAlignment.CENTER
+                                          : SlidesApp.ParagraphAlignment.START);
+      } catch(_){}
     });
     deck.saveAndClose();
 
