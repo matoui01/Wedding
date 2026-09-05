@@ -63,13 +63,10 @@ const COPY = {
 const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const dataUri = (f, mime) => `data:${mime};base64,` + fs.readFileSync(f).toString('base64');
 
-function html(g){
-  const c = COPY[g.lang] || COPY.it;
-  const plus = g.plus ? esc(g.plus) : '';
+const PAGE_CSS = () => {
   const face = (fam, file, style) =>
     `@font-face{font-family:'${fam}';font-style:${style||'normal'};src:url('${dataUri(path.join(FONTS,file),'font/ttf')}');}`;
-
-  return `<!doctype html><meta charset="utf-8"><style>
+  return `
 ${face('Pinyon','PinyonScript.ttf')}
 ${face('Cormorant','Cormorant.ttf')}
 ${face('Cormorant','CormorantItalic.ttf','italic')}
@@ -97,30 +94,54 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .k{font-family:Jost;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
 .v{font-family:EBG;font-size:16px;color:#3D352A;text-align:right}
 .sprig{width:20px;display:block;margin:22px auto 0;opacity:.85}
-</style>
-<div class="head">
+/* the pieces, cut for the email: the header carries the gap before the villa,
+   the facts table sits flush in its own image (the gap above it is laid out
+   by the script that draws the letter) */
+.piece-head{background:#FAF6EC;padding-bottom:28px}
+.piece-facts{width:452px;background:#FDFBF5}
+.piece-facts table.facts{margin-top:0}
+`;
+};
+
+const headHtml = (lang) => {
+  const c = COPY[lang] || COPY.it;
+  return `<div class="head">
   <img class="crest" src="${dataUri(path.join(IMG,'email-crest.png'),'image/png')}">
   <div class="over">${c.over}</div>
   <div class="names">Ilaria <em>&amp;</em> Maxime</div>
   <div class="tag">${c.tag}</div>
   <div class="date">${c.date}</div>
-</div>
+</div>`;
+};
+const factsHtml = (lang) => {
+  const c = COPY[lang] || COPY.it;
+  return `<table class="facts">
+    <tr><td class="k">${c.kDay}</td><td class="v">${c.vDay}</td></tr>
+    <tr><td class="k">${c.kWhere}</td><td class="v">${c.vWhere}</td></tr>
+    <tr><td class="k">${c.kDress}</td><td class="v">${c.vDress}</td></tr>
+  </table>`;
+};
+
+/* the whole card, as a proof of the design — what the email should add up to */
+function html(g){
+  const c = COPY[g.lang] || COPY.it;
+  const plus = g.plus ? esc(g.plus) : '';
+  return `<!doctype html><meta charset="utf-8"><style>${PAGE_CSS()}</style>
+${headHtml(g.lang)}
 <img class="hero" src="${dataUri(path.join(IMG,'email-estate.jpg'),'image/jpeg')}">
 <div class="letter">
   <div class="greet">${esc(g.greeting)}</div>
   <div class="body">${c.body}</div>
   ${g.note ? `<div class="note">${esc(g.note)}</div>` : ''}
-  <table class="facts">
-    <tr><td class="k">${c.kDay}</td><td class="v">${c.vDay}</td></tr>
-    <tr><td class="k">${c.kWhere}</td><td class="v">${c.vWhere}</td></tr>
-    <tr><td class="k">${c.kDress}</td><td class="v">${c.vDress}</td></tr>
-  </table>
+  ${factsHtml(g.lang)}
   ${plus ? `<div class="plus">${plus}</div>` : ''}
   <img class="sprig" src="${dataUri(path.join(IMG,'email-sprig.png'),'image/png')}">
 </div>`;
 }
 
-(async () => {
+module.exports = { ensureFonts, PAGE_CSS, headHtml, factsHtml, html, dataUri, IMG, FONTS, COPY, chromium };
+
+if(require.main === module) (async () => {
   await ensureFonts();
   const g = JSON.parse(process.argv[2]);
   const out = process.argv[3];

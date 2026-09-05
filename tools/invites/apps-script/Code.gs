@@ -61,19 +61,12 @@ const CFG = {
   // will not load Cormorant, and these are where the design lives.
   IMG_TAG  : function(l){ return 'email-tag-' + l + '.png'; },
   IMG_CLOSE: function(l){ return 'email-close-' + l + '.png'; },
-  // The whole invitation, per guest, drawn from the real fonts. Nothing about
-  // the invitation is live text: the greeting sits where the design puts it,
-  // after the villa, and no mail client can restyle any of it.
-  //
-  // The cards live in a Drive folder rather than on the website, because each
-  // one carries a guest's name and their personal note — and the website's
-  // repository is public. The script runs as the couple's own account, so it
-  // reads them straight out of Drive; nothing about a guest is ever published.
-  // Each file is named card-<token>-<key>.jpg, where the key is a fingerprint
-  // of the words drawn on it (see cardKey_). A row edited after its card was
-  // made — a greeting corrected, a note added — no longer matches any file,
-  // and the send refuses rather than mailing a card that says something else.
-  CARDS_FOLDER : 'Wedding cards',
+  // The parts of the invitation that never change per guest — the header
+  // (crest, names, tagline, date) and the facts table, one per language —
+  // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
+  // The letter itself is drawn at send time: see cardBlob_.
+  IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
+  IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -253,15 +246,11 @@ const COPY = {
 /* ======================= words shared with the renderer ================== */
 /* >>> shared
    Everything between these two markers is plain JavaScript with no Apps
-   Script in it. tools/invites/assets/render-cards.js evaluates exactly this
-   text when it draws the cards, so the greeting on a card, the greeting in
-   the email's text version and the file name the send looks for all come
-   from one definition and cannot drift apart. Keep it that way: nothing here
-   may touch CFG, COPY, SpreadsheetApp or any other global. */
-
-// Bump when the card's design or static wording changes: every existing card
-// then stops matching and has to be drawn again.
-const CARD_VERSION = '2026-09-05';
+   Script in it: the words a guest is addressed with, and nothing else.
+   tools/invites/preview/build-preview.py lifts exactly this text into the
+   proof sheet, so what the preview says and what is sent cannot drift apart.
+   Keep it that way: nothing here may touch CFG, COPY, SpreadsheetApp or any
+   other global. */
 
 const JOIN     = { it:' e ',   fr:' et ',   en:' and ' };
 const PLURAL   = { it:'Cari ', fr:'Chers ', en:'Dear ' };
@@ -344,29 +333,57 @@ function plusLine_(g){
   return PLUS_COPY[normLang_(g.lang)];
 }
 
-// FNV-1a over the string's UTF-16 units: eight hex characters that change
-// whenever any word on the card does. A fingerprint, not a secret.
-function hash32_(s){
-  let h = 0x811c9dc5;
-  for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
-  return ('0000000' + h.toString(16)).slice(-8);
-}
-function cardKey_(g){
-  return hash32_([CARD_VERSION, normLang_(g.lang), greetingOf_(g), plusLine_(g), normText_(g.note)].join('\n'));
-}
-function cardName_(token, key){ return 'card-' + token + '-' + key + '.jpg'; }
 /* <<< shared */
 
 /* Column letters are derived, never typed: every formula below asks
    GUEST_HEADER where a column actually is. Inserting a column then costs
    nothing, where a hard-coded "!V2:V" would quietly start reading its
    neighbour. */
+/* Column positions come from the header row as it is, not from GUEST_HEADER's
+   order — columns get dragged around, and a formula pointing at the wrong one
+   is the kind of bug that counts the wrong thing without a word. */
+let HEADER_ = null;
+function liveHeader_(){
+  if(HEADER_) return HEADER_;
+  const sh = book_().getSheetByName(SHEETS.GUESTS);
+  const n = sh ? sh.getLastColumn() : 0;
+  const keys = n ? sh.getRange(1, 1, 1, n).getValues()[0].map(canon_) : [];
+  HEADER_ = keys.some(k => k) ? keys : GUEST_HEADER.map(h => h.toLowerCase());
+  return HEADER_;
+}
+function colIndex_(name){
+  const i = liveHeader_().indexOf(String(name).toLowerCase());
+  if(i < 0) throw new Error('Guests has no "' + name + '" column — run "Set up / repair the workbook"');
+  return i + 1;
+}
 function colLetter_(name){
-  const i = GUEST_HEADER.indexOf(name);
-  if(i < 0) throw new Error('unknown Guests column: ' + name);
-  let n = i + 1, out = '';
+  let n = colIndex_(name), out = '';
   while(n > 0){ const r = (n - 1) % 26; out = String.fromCharCode(65 + r) + out; n = Math.floor((n - 1) / 26); }
   return out;
+}
+
+/* Formulas written by a script must use this sheet's own argument separator:
+   "," in an English sheet, ";" where the decimal mark is a comma (an Italian
+   or French one) — and there, columns inside {…} are split by "\" instead.
+   Found out once, on a scratch cell, rather than assumed from the locale.
+   Templates below write § for the argument separator and ¦ for the array one. */
+let SEP_ = null;
+function sep_(){
+  if(SEP_) return SEP_;
+  const ss = book_();
+  const sh = ss.getSheetByName(SHEETS.DEADLINES) || ss.getSheetByName(SHEETS.DASH) || ss.getSheets()[0];
+  const probe = sh.getRange('Z100');
+  try {
+    probe.setFormula('=IF(1=1;7;0)');
+    SpreadsheetApp.flush();
+    SEP_ = probe.getDisplayValue() === '7' ? ';' : ',';
+  } catch(_){ SEP_ = ','; }
+  finally { probe.clearContent(); }
+  return SEP_;
+}
+function f_(tpl){
+  const sp = sep_();
+  return tpl.replace(/§/g, sp).replace(/¦/g, sp === ';' ? '\\' : ',');
 }
 function gCol_(name){ const L = colLetter_(name); return SHEETS.GUESTS + '!' + L + '2:' + L; }
 function gA1_(name){ const L = colLetter_(name); return L + '2:' + L; }
@@ -378,6 +395,7 @@ function onOpen(){
     .addSeparator()
     .addItem('Prepare guests — invite links & greetings', 'prepareGuests')
     .addItem('Send this invitation now',       'sendSelectedRowNow')
+    .addItem('Preview this row’s letter — save a PNG to Drive', 'previewSelectedCard')
     .addSeparator()
     .addItem('Create drafts — selected rows',  'createDraftsForSelected')
     .addItem('Create drafts — filtered rows',  'createDraftsForFiltered')
@@ -403,7 +421,7 @@ function setupWorkbook(){
   buildDashboard_(ss);
 
   ss.setActiveSheet(ss.getSheetByName(SHEETS.DASH));
-  toast_('Workbook ready. Fill in Guests (columns A–N), then run "Generate missing invite links".');
+  toast_('Workbook ready. Fill in Guests, then run "Prepare guests — invite links & greetings".');
 }
 
 /* --- Deadlines: one row per category, with the date it must reply by ------ */
@@ -427,20 +445,43 @@ function buildDeadlines_(ss){
 
 function buildGuests_(ss){
   const sh = ss.getSheetByName(SHEETS.GUESTS) || ss.insertSheet(SHEETS.GUESTS, 0);
-  sh.getRange(1, 1, 1, GUEST_HEADER.length).setValues([GUEST_HEADER]);
+  // A fresh sheet gets the full header. An existing one keeps its columns in
+  // whatever order you have put them, and only gains the ones it lacks.
+  const n = sh.getLastColumn();
+  const have = n ? sh.getRange(1, 1, 1, n).getValues()[0].map(canon_) : [];
+  if(!have.some(k => k)){
+    sh.getRange(1, 1, 1, GUEST_HEADER.length).setValues([GUEST_HEADER]);
+  } else {
+    const missing = GUEST_HEADER.filter(h => have.indexOf(h.toLowerCase()) < 0);
+    if(missing.length) sh.getRange(1, n + 1, 1, missing.length).setValues([missing]);
+  }
+  HEADER_ = null;
+  const cols = sh.getLastColumn();
   sh.setFrozenRows(1);
   sh.setFrozenColumns(2);
 
-  sh.getRange(1, 1, 1, GUEST_FILL_COLS)
-    .setBackground(T.salvia).setFontColor('#FFFFFF').setFontWeight('bold');
-  sh.getRange(1, GUEST_FILL_COLS + 1, 1, GUEST_HEADER.length - GUEST_FILL_COLS)
-    .setBackground(T.panna2).setFontColor(T.muted).setFontWeight('bold').setFontStyle('italic');
-  sh.getRange(1, 1, 1, GUEST_HEADER.length).setVerticalAlignment('middle');
+  // the columns you fill, and the ones the script writes — tinted so nobody
+  // types into the latter — told apart by name, wherever they sit
+  const yours = GUEST_HEADER.slice(0, GUEST_FILL_COLS).map(h => h.toLowerCase());
+  const widths = { household:190, invitee:150, 'plus-one':80, 'plus-one name':140, 'kids?':70,
+    'kids est.':80, side:80, category:130, subcategory:150, priority:70, 'send?':70, wave:60,
+    email:230, language:90, greeting:190, 'personal note':250, seats:60, token:80,
+    'invite link':290, 'reply by':110, 'invite status':120, 'invite sent':110,
+    'reminder sent':110, rsvp:70, adults:70, children:70, coming:70, diet:190, shuttle:80,
+    'rsvp at':130 };
+  liveHeader_().forEach((k, i) => {
+    if(!k) return;
+    const head = sh.getRange(1, i + 1);
+    if(yours.indexOf(k) >= 0){
+      head.setBackground(T.salvia).setFontColor('#FFFFFF').setFontWeight('bold').setFontStyle('normal');
+    } else {
+      head.setBackground(T.panna2).setFontColor(T.muted).setFontWeight('bold').setFontStyle('italic');
+      sh.getRange(2, i + 1, Math.max(sh.getMaxRows() - 1, 1), 1).setBackground('#FCFAF4');
+    }
+    if(widths[k]) sh.setColumnWidth(i + 1, widths[k]);
+  });
+  sh.getRange(1, 1, 1, cols).setVerticalAlignment('middle');
   sh.setRowHeight(1, 34);
-
-  const widths = [190, 150, 80, 140, 70, 80, 130, 150, 80, 70, 70, 60, 230, 90, 190, 250,
-                  60, 80, 290, 110, 120, 110, 110, 70, 70, 70, 70, 190, 80, 130];
-  widths.forEach((w, i) => sh.setColumnWidth(i + 1, w));
 
   const list = (vals, strict) => SpreadsheetApp.newDataValidation()
     .requireValueInList(vals, true).setAllowInvalid(!strict).build();
@@ -454,16 +495,19 @@ function buildGuests_(ss){
   R('Send?').setDataValidation(list(SEND_STATES, true));
   R('Language').setDataValidation(list(['it', 'fr', 'en'], true));
 
-  // the script-written block, tinted so nobody types into it
-  sh.getRange(2, GUEST_FILL_COLS + 1, Math.max(sh.getMaxRows() - 1, 1),
-              GUEST_HEADER.length - GUEST_FILL_COLS).setBackground('#FCFAF4');
   R('Reply by').setNumberFormat('d mmm yyyy');
 
   // Seats you are planning for: the invitee, a plus-one if they have one, and
-  // your own estimate of their children. Replaced by the real count on reply.
-  sh.getRange(colLetter_('Seats') + '2').setFormula(
-    '=ARRAYFORMULA(IF(' + gA1_('Invitee') + '="","",' +
-    '1+IF(LOWER(' + gA1_('Plus-one') + ')="yes",1,0)+N(' + gA1_('Kids est.') + ')))');
+  // your own estimate of their children. One formula that grows with the
+  // list — unless someone has typed real numbers into the column, which win.
+  const seats = sh.getRange(2, colIndex_('Seats'), Math.max(sh.getLastRow() - 1, 1), 1);
+  const typed = seats.getValues().some((r, k) => r[0] !== '' && !seats.getFormulas()[k][0]);
+  if(!typed){
+    seats.clearContent();
+    sh.getRange(colLetter_('Seats') + '2').setFormula(f_(
+      '=ARRAYFORMULA(IF(' + gA1_('Invitee') + '=""§""§' +
+      '1+IF(LOWER(' + gA1_('Plus-one') + ')="yes"§1§0)+N(' + gA1_('Kids est.') + ')))'));
+  }
 
   const rule = () => SpreadsheetApp.newConditionalFormatRule();
   sh.setConditionalFormatRules([
@@ -478,16 +522,16 @@ function buildGuests_(ss){
     rule().whenTextEqualTo('Cut').setBackground('#EDEAE4').setFontColor(T.muted)
       .setRanges([R('Send?')]).build(),
     // a guest with no email can never be invited — make that impossible to miss
-    rule().whenFormulaSatisfied('=AND($' + colLetter_('Invitee') + '2<>"",$' + colLetter_('Email') + '2="")')
+    rule().whenFormulaSatisfied(f_('=AND($' + colLetter_('Invitee') + '2<>""§$' + colLetter_('Email') + '2="")'))
       .setBackground('#F6E6DE').setRanges([R('Email')]).build(),
     // your estimate versus what the parents actually said
-    rule().whenFormulaSatisfied('=AND($' + colLetter_('RSVP') + '2<>"",$' +
-        colLetter_('Children') + '2<>$' + colLetter_('Kids est.') + '2)')
+    rule().whenFormulaSatisfied(f_('=AND($' + colLetter_('RSVP') + '2<>""§$' +
+        colLetter_('Children') + '2<>$' + colLetter_('Kids est.') + '2)'))
       .setBackground('#F4EEDD').setRanges([R('Children')]).build()
   ]);
 
   if(!sh.getFilter()){
-    sh.getRange(1, 1, Math.max(sh.getLastRow(), 2), GUEST_HEADER.length).createFilter();
+    sh.getRange(1, 1, Math.max(sh.getLastRow(), 2), cols).createFilter();
   }
   return sh;
 }
@@ -523,26 +567,26 @@ function buildDashboard_(ss){
     ['SEATS', ''],
     ['Target', (typeof target === 'number' && target > 0) ? target : DEFAULT_TARGET],
     ['Confirmed coming',   '=SUM(' + gCol_('Coming') + ')'],
-    ['Awaiting reply',     '=SUMIFS(' + gCol_('Seats') + ',' + gCol_('Invite sent') + ',"<>",' + gCol_('RSVP') + ',"")'],
+    ['Awaiting reply',     '=SUMIFS(' + gCol_('Seats') + '§' + gCol_('Invite sent') + '§"<>"§' + gCol_('RSVP') + '§"")'],
     ['Room left to offer', '=B5-B6-B7'],
-    ['On hold',            '=SUMIF(' + gCol_('Send?') + ',"Hold",' + gCol_('Seats') + ')'],
-    ['Cut',                '=SUMIF(' + gCol_('Send?') + ',"Cut",' + gCol_('Seats') + ')'],
+    ['On hold',            '=SUMIF(' + gCol_('Send?') + '§"Hold"§' + gCol_('Seats') + ')'],
+    ['Cut',                '=SUMIF(' + gCol_('Send?') + '§"Cut"§' + gCol_('Seats') + ')'],
     ['', ''],
     ['INVITES', ''],
-    ['Queued to send',     '=SUMIFS(' + gCol_('Seats') + ',' + gCol_('Send?') + ',"Send",' + gCol_('Invite sent') + ',"")'],
-    ['Drafts created',     '=COUNTIF(' + gCol_('Invite status') + ',"*draft*")'],
+    ['Queued to send',     '=SUMIFS(' + gCol_('Seats') + '§' + gCol_('Send?') + '§"Send"§' + gCol_('Invite sent') + '§"")'],
+    ['Drafts created',     '=COUNTIF(' + gCol_('Invite status') + '§"*draft*")'],
     ['Invites sent',       '=COUNTA(' + gCol_('Invite sent') + ')'],
     ['Reminders sent',     '=COUNTA(' + gCol_('Reminder sent') + ')'],
-    ['Missing an email',   '=COUNTIFS(' + gCol_('Invitee') + ',"<>",' + gCol_('Email') + ',"")'],
+    ['Missing an email',   '=COUNTIFS(' + gCol_('Invitee') + '§"<>"§' + gCol_('Email') + '§"")'],
     ['', ''],
     ['REPLIES', ''],
-    ['Replied',            '=COUNTIF(' + gCol_('RSVP') + ',"<>")'],
-    ['Coming (households)','=COUNTIF(' + gCol_('RSVP') + ',"Yes")'],
-    ['Not coming',         '=COUNTIF(' + gCol_('RSVP') + ',"No")'],
+    ['Replied',            '=COUNTIF(' + gCol_('RSVP') + '§"<>")'],
+    ['Coming (households)','=COUNTIF(' + gCol_('RSVP') + '§"Yes")'],
+    ['Not coming',         '=COUNTIF(' + gCol_('RSVP') + '§"No")'],
     ['Children — you guessed', '=SUM(' + gCol_('Kids est.') + ')'],
     ['Children — confirmed',   '=SUM(' + gCol_('Children') + ')'],
-    ['Shuttle seats',      '=SUMIF(' + gCol_('Shuttle') + ',"Yes",' + gCol_('Coming') + ')']
-  ];
+    ['Shuttle seats',      '=SUMIF(' + gCol_('Shuttle') + '§"Yes"§' + gCol_('Coming') + ')']
+  ].map(r => [r[0], (typeof r[1] === 'string' && r[1].charAt(0) === '=') ? f_(r[1]) : r[1]]);
   sh.getRange(1, 1, stats.length, 2).setValues(stats);
 
   sh.getRange('A1').setFontSize(22).setFontColor(T.ink).setFontWeight('bold');
@@ -572,12 +616,12 @@ function buildDashboard_(ss){
     values.forEach((v, i) => {
       const r = anchorRow + 2 + i, q = '"' + v + '"';
       sh.getRange(r, 4).setValue(v);
-      sh.getRange(r, 5).setFormula('=COUNTIF(' + gc + ',' + q + ')');
-      sh.getRange(r, 6).setFormula('=SUMIF(' + gc + ',' + q + ',' + gCol_('Seats') + ')');
-      sh.getRange(r, 7).setFormula('=COUNTIFS(' + gc + ',' + q + ',' + gCol_('RSVP') + ',"<>")');
-      sh.getRange(r, 8).setFormula('=SUMIFS(' + gCol_('Coming') + ',' + gc + ',' + q + ')');
+      sh.getRange(r, 5).setFormula(f_('=COUNTIF(' + gc + '§' + q + ')'));
+      sh.getRange(r, 6).setFormula(f_('=SUMIF(' + gc + '§' + q + '§' + gCol_('Seats') + ')'));
+      sh.getRange(r, 7).setFormula(f_('=COUNTIFS(' + gc + '§' + q + '§' + gCol_('RSVP') + '§"<>")'));
+      sh.getRange(r, 8).setFormula(f_('=SUMIFS(' + gCol_('Coming') + '§' + gc + '§' + q + ')'));
       if(withDeadline){
-        sh.getRange(r, 9).setFormula('=IFERROR(VLOOKUP(D' + r + ',' + D + '!A:B,2,FALSE),"")')
+        sh.getRange(r, 9).setFormula(f_('=IFERROR(VLOOKUP(D' + r + '§' + D + '!A:B§2§FALSE)§"")'))
           .setNumberFormat('d mmm yyyy');
       }
     });
@@ -596,23 +640,23 @@ function buildDashboard_(ss){
       .setFontSize(10).setFontWeight('bold').setFontColor(T.salviaDeep);
     sh.getRange(5, col, 1, headers.length).setValues([headers])
       .setFontWeight('bold').setFontColor(T.muted).setFontSize(10);
-    sh.getRange(anchor + '6').setFormula(formula);
+    sh.getRange(anchor + '6').setFormula(f_(formula));
   }
   listBlock('K', 'NEXT TO PROMOTE — on hold, best priority first',
     ['Household', 'Subcategory', 'Priority', 'Seats'],
-    '=IFERROR(SORT(FILTER({' + gCol_('Household') + ',' + gCol_('Subcategory') + ',' +
-      gCol_('Priority') + ',' + gCol_('Seats') + '},(' + gCol_('Send?') + '="Hold")*(' +
-      gCol_('Household') + '<>"")),3,TRUE),"— nobody on hold —")');
+    '=IFERROR(SORT(FILTER({' + gCol_('Household') + '¦' + gCol_('Subcategory') + '¦' +
+      gCol_('Priority') + '¦' + gCol_('Seats') + '}§(' + gCol_('Send?') + '="Hold")*(' +
+      gCol_('Household') + '<>""))§3§TRUE)§"— nobody on hold —")');
 
   listBlock('P', 'WHO HASN’T REPLIED — invited, still silent',
     ['Household', 'Subcategory', 'Priority'],
-    '=IFERROR(SORT(FILTER({' + gCol_('Household') + ',' + gCol_('Subcategory') + ',' +
-      gCol_('Priority') + '},(' + gCol_('Invite sent') + '<>"")*(' + gCol_('RSVP') + '="")),3,TRUE),' +
+    '=IFERROR(SORT(FILTER({' + gCol_('Household') + '¦' + gCol_('Subcategory') + '¦' +
+      gCol_('Priority') + '}§(' + gCol_('Invite sent') + '<>"")*(' + gCol_('RSVP') + '=""))§3§TRUE)§' +
       '"— everyone invited has replied —")');
 
   listBlock('T', 'DIETARY NEEDS', ['Household', 'Note'],
-    '=IFERROR(FILTER({' + gCol_('Household') + ',' + gCol_('Diet') + '},' +
-      gCol_('Diet') + '<>""),"— none noted yet —")');
+    '=IFERROR(FILTER({' + gCol_('Household') + '¦' + gCol_('Diet') + '}§' +
+      gCol_('Diet') + '<>"")§"— none noted yet —")');
 
   [210, 90, 30, 150, 70, 60, 70, 70, 100, 30, 190, 150, 70, 60, 30,
    190, 150, 70, 30, 190, 240].forEach((w, i) => sh.setColumnWidth(i + 1, w));
@@ -688,8 +732,8 @@ function inviteLink_(token){
    set to Hold or Cut, or a guest whose card has not been published yet. */
 /* One click, one guest, straight to their inbox — after showing you exactly
    which words are going. It refuses, and says why, rather than sending
-   anything doubtful: no address, a row on Hold or Cut, or no card in Drive
-   that matches the row as it reads now. */
+   anything doubtful: no address, a row on Hold or Cut, a letter that could
+   not be drawn. */
 function sendSelectedRowNow(){
   const ui = SpreadsheetApp.getUi();
   const ctx = readGuests_();
@@ -710,8 +754,6 @@ function sendSelectedRowNow(){
   const g = guestFromRow_(ctx, i);
   g.token = ensureToken_(ctx, i);
   g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
-  const problem = cardProblem_(g);
-  if(problem){ toast_('Nothing sent to ' + who + ': ' + problem + '.'); return; }
 
   const already = String(cell_(ctx, i, 'invite status') || '').trim();
   const sentOn  = cell_(ctx, i, 'invite sent');
@@ -726,9 +768,11 @@ function sendSelectedRowNow(){
     ui.ButtonSet.OK_CANCEL);
   if(answer !== ui.Button.OK) return;
 
+  toast_('Drawing ' + who + '’s letter…');
+  let imgs;
+  try { imgs = inlineImages_(g, 'invite'); }
+  catch(err){ toast_('Nothing sent to ' + who + ' — ' + err.message); return; }
   const m = buildEmail_(g);
-  const imgs = inlineImages_(g, 'invite');
-  if(!imgs.card){ toast_('The card disappeared from Drive between the check and the send. Nothing sent.'); return; }
   GmailApp.sendEmail(to, m.subject, m.text, {
     htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
   });
@@ -803,50 +847,136 @@ function fetchBlob_(file, name){
   } catch(_){ return null; }
 }
 
-/* The guest's card, read from the Drive folder(s) named CFG.CARDS_FOLDER.
-   Every folder of that name is searched — a second upload must not hide the
-   first — and only a file whose name carries the fingerprint of the row's
-   current words counts (see cardKey_): a card drawn before the greeting was
-   corrected simply no longer exists as far as the send is concerned. */
-let CARDS_FOLDERS_ = null;
-function cardsFolders_(){
-  if(CARDS_FOLDERS_) return CARDS_FOLDERS_;
-  const out = [];
-  try {
-    const it = DriveApp.getFoldersByName(CFG.CARDS_FOLDER);
-    while(it.hasNext()) out.push(it.next());
-  } catch(_){}
-  return (CARDS_FOLDERS_ = out);
-}
-function cardFile_(name){
-  const folders = cardsFolders_();
-  for(let k = 0; k < folders.length; k++){
-    try {
-      const files = folders[k].getFilesByName(name);
-      if(files.hasNext()) return files.next();
-    } catch(_){}
-  }
-  return null;
-}
-function cardBlob_(g){
-  if(!g.token) return null;
-  const f = cardFile_(cardName_(g.token, cardKey_(g)));
-  return f ? f.getBlob().setName('card.jpg') : null;
-}
-/* Why this row cannot go out yet, as one plain sentence — or '' when it can. */
-function cardProblem_(g){
-  if(!cardsFolders_().length) return 'there is no Drive folder named "' + CFG.CARDS_FOLDER + '"';
-  if(!g.token) return 'the row has no invite link yet';
-  if(cardFile_(cardName_(g.token, cardKey_(g)))) return '';
-  let older = false;
-  cardsFolders_().forEach(f => {
-    try { if(f.searchFiles("title contains 'card-" + g.token + "-'").hasNext()) older = true; } catch(_){}
-  });
-  return older
-    ? 'the card in Drive was drawn from an earlier greeting, note or plus-one — it needs re-rendering'
-    : 'there is no card for this guest in "' + CFG.CARDS_FOLDER + '" yet';
+/* ====================== THE LETTER, DRAWN AT SEND TIME =================== */
+/* Gmail, Outlook and Yahoo strip web fonts, so the letter cannot travel as
+   live text — it travels as a picture of itself. That picture is drawn here,
+   when you press Send, from the row as it reads at that moment: greeting,
+   plus-one line, note. Nothing is drawn in advance and nothing is stored.
+
+   The drawing surface is Google Slides, the one Google service that
+   rasterises text in a chosen Google Font — and Cormorant Garamond and EB
+   Garamond are Google Fonts. A scratch presentation is created with a page
+   exactly the height this letter needs, the panel and its text are laid out
+   to the site's own CSS metrics (1 pt here = 1 px there), the page is
+   exported as a 1600 px PNG, and the scratch file goes to the bin. The
+   header and the facts table, which never change per guest, are PNGs drawn
+   from the same CSS; the villa is a JPEG. Stacked in the email they read as
+   one card. */
+const CARD = {
+  W: 600,
+  PAD:   { top: 30, bottom: 36, x: 34 },             // .letter margin
+  IN:    { top: 36, side: 40, bottom: 32 },          // .letter padding
+  INSET: 7.2,                                        // Slides' fixed text-box inset
+  // natural = the face's own line height as a multiple of its size, which is
+  // what Slides' percentage spacing is relative to; lh is the CSS line-height
+  GREET: { font: 'Cormorant Garamond', size: 24, lh: 1.25, natural: 1.21, perLine: 40 },
+  BODY:  { font: 'EB Garamond', size: 17, lh: 1.66, natural: 1.27, gap: 13, lines: { it: 4, fr: 4, en: 4 } },
+  NOTE:  { font: 'EB Garamond', size: 16, lh: 1.62, natural: 1.27, gap: 22, perLine: 58, italic: true },
+  FACTS: { gap: 26, h: 143 },                        // email-facts-<lang>.png, 452 × 143 at 1×
+  PLUS:  { font: 'Cormorant Garamond', size: 18, lh: 1.4, natural: 1.21, gap: 26, perLine: 54, italic: true, center: true },
+  SPRIG: { gap: 22, w: 20, h: 20 },
+  THUMB: 'LARGE'                                     // 1600 px wide
+};
+
+/* Where everything goes, in pt, for this guest's words. Line counts are
+   estimated on the generous side: a line too many costs a little air, a line
+   too few would overlap the next block. */
+function cardLayout_(lang, words){
+  const colX = CARD.PAD.x + CARD.IN.side;
+  const colW = CARD.W - 2 * colX;
+  const lines = (str, per) => Math.max(1, Math.ceil(normText_(str).length / per));
+  const L = { colX, colW, text: [] };
+  let y = CARD.PAD.top + CARD.IN.top;
+  const text = (spec, str, n) => { const h = n * spec.size * spec.lh; L.text.push({ spec, str, y, h }); y += h; };
+
+  text(CARD.GREET, words.greeting, lines(words.greeting, CARD.GREET.perLine));
+  y += CARD.BODY.gap;
+  text(CARD.BODY, words.body, CARD.BODY.lines[lang] || 4);
+  if(words.note){ y += CARD.NOTE.gap; text(CARD.NOTE, words.note, lines(words.note, CARD.NOTE.perLine)); }
+  y += CARD.FACTS.gap; L.facts = { y }; y += CARD.FACTS.h;
+  if(words.plus){ y += CARD.PLUS.gap; text(CARD.PLUS, words.plus, lines(words.plus, CARD.PLUS.perLine)); }
+  y += CARD.SPRIG.gap; L.sprig = { y }; y += CARD.SPRIG.h;
+  y += CARD.IN.bottom;
+  L.panelH = y - CARD.PAD.top;
+  L.pageH  = y + CARD.PAD.bottom;
+  return L;
 }
 
+function emuToPt_(dim){
+  const m = Number(dim && dim.magnitude) || 0;
+  return (dim && dim.unit === 'PT') ? m : m / 12700;
+}
+
+/* The letter panel for this guest, as a PNG blob — drawn now. Throws, with a
+   sentence a person can act on, rather than returning something half-made. */
+function cardBlob_(g){
+  const lang = normLang_(g.lang);
+  const c = COPY[lang] || COPY.it;
+  const words = { greeting: greetingOf_(g), body: c.body, note: normText_(g.note), plus: plusLine_(g) };
+  const L = cardLayout_(lang, words);
+
+  const facts = fetchBlob_(CFG.IMG_FACTS(lang), 'facts.png');
+  const sprig = fetchBlob_(CFG.IMG_SPRIG, 'sprig.png');
+  if(!facts || !sprig) throw new Error('could not fetch the letter pieces from ' + CFG.IMG_BASE);
+
+  const pres = Slides.Presentations.create({
+    title: 'Wedding HQ · letter (scratch)',
+    pageSize: { width: { magnitude: CARD.W, unit: 'PT' }, height: { magnitude: L.pageH, unit: 'PT' } }
+  });
+  const id = pres.presentationId;
+  try {
+    const gotH = pres.pageSize ? emuToPt_(pres.pageSize.height) : 0;
+    if(Math.abs(gotH - L.pageH) > 1){
+      throw new Error('Slides did not accept the page size (asked for ' + Math.round(L.pageH) +
+                      ' pt, got ' + Math.round(gotH) + ')');
+    }
+    const deck  = SlidesApp.openById(id);
+    const slide = deck.getSlides()[0];
+    const slideId = slide.getObjectId();
+    slide.getPageElements().forEach(el => el.remove());
+    slide.getBackground().setSolidFill(T.panna);
+
+    const panel = slide.insertShape(SlidesApp.ShapeType.RECTANGLE,
+      CARD.PAD.x, CARD.PAD.top, CARD.W - 2 * CARD.PAD.x, L.panelH);
+    panel.getFill().setSolidFill(T.carta);
+    panel.getBorder().setWeight(1);
+    panel.getBorder().getLineFill().setSolidFill(T.lineGold);
+
+    L.text.forEach(t => {
+      // the box is taller than the text needs: text is top-aligned, and a box
+      // that is too short would make Slides shrink the type to fit it
+      const box = slide.insertTextBox(t.str, L.colX - CARD.INSET, t.y - CARD.INSET,
+                                      L.colW + 2 * CARD.INSET, t.h + 2 * CARD.INSET + 40);
+      try { box.getAutofit().disableAutofit(); } catch(_){}
+      const tr = box.getText();
+      tr.getTextStyle().setFontFamily(t.spec.font).setFontSize(t.spec.size)
+        .setForegroundColor(t.spec.center ? T.salviaDeep : T.ink)
+        .setItalic(!!t.spec.italic).setBold(false);
+      tr.getParagraphStyle().setLineSpacing(Math.round(t.spec.lh / t.spec.natural * 100))
+        .setSpaceAbove(0).setSpaceBelow(0)
+        .setParagraphAlignment(t.spec.center ? SlidesApp.ParagraphAlignment.CENTER
+                                             : SlidesApp.ParagraphAlignment.START);
+    });
+    slide.insertImage(facts, L.colX, L.facts.y, L.colW, CARD.FACTS.h);
+    slide.insertImage(sprig, (CARD.W - CARD.SPRIG.w) / 2, L.sprig.y, CARD.SPRIG.w, CARD.SPRIG.h);
+    deck.saveAndClose();
+
+    const thumb = Slides.Presentations.Pages.getThumbnail(id, slideId, {
+      'thumbnailProperties.mimeType': 'PNG', 'thumbnailProperties.thumbnailSize': CARD.THUMB
+    });
+    const res = UrlFetchApp.fetch(thumb.contentUrl, { muteHttpExceptions: true });
+    if(res.getResponseCode() !== 200){
+      throw new Error('could not download the drawn letter (HTTP ' + res.getResponseCode() + ')');
+    }
+    return res.getBlob().setName('card.png').setContentType('image/png');
+  } finally {
+    try { DriveApp.getFileById(id).setTrashed(true); } catch(_){}
+  }
+}
+
+/* Everything the message embeds. The invitation draws its letter here and
+   now; anything that cannot be fetched or drawn throws rather than letting a
+   hollow email go out. */
 function inlineImages_(g, kind){
   const out = {};
   const mark = fetchBlob_(CFG.IMG_MARK, 'wordmark.png');
@@ -857,40 +987,48 @@ function inlineImages_(g, kind){
     const crest = fetchBlob_(CFG.IMG_CREST, 'crest.png');
     if(crest) out.crest = crest;
   } else {
-    // only the invitation carries a card, and only the crest the reminder
-    // shows — attaching both to both put 238 KB of unused crest in every
-    // invitation
-    const card = cardBlob_(g);
-    if(card) out.card = card;
+    const head = fetchBlob_(CFG.IMG_HEAD(g.lang), 'head.png');
+    const hero = fetchBlob_(CFG.IMG_HERO, 'estate.jpg');
+    if(!head || !hero) throw new Error('could not fetch the header pieces from ' + CFG.IMG_BASE);
+    out.head = head;
+    out.hero = hero;
+    out.card = cardBlob_(g);
   }
   return out;
 }
 
+/* Drafts for a set of rows. Each letter is drawn now, so a big batch takes a
+   few seconds a row; the run stops itself short of the six-minute limit and
+   says how many are left — running the same menu item again continues, since
+   drafted rows are marked and skipped. */
 function runInvites_(ctx, rowIdxs){
   const deadlines = deadlineMap_();
-  let made = 0, skipped = 0, missingCards = 0;
-  rowIdxs.forEach(i => {
+  const started = Date.now();
+  let made = 0, skipped = 0, failed = 0, left = 0, firstError = '';
+  for(let k = 0; k < rowIdxs.length; k++){
+    const i = rowIdxs[k];
+    if(Date.now() - started > 4.5 * 60 * 1000){ left++; continue; }
     const to = String(cell_(ctx, i, 'email') || '').trim();
-    if(!sendable_(ctx, i)){ skipped++; return; }
+    if(!sendable_(ctx, i)){ skipped++; continue; }
     const g = guestFromRow_(ctx, i);
     g.token = ensureToken_(ctx, i);
     g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
-    // a draft without its card is a blank invitation one click from going out
-    if(cardProblem_(g)){ missingCards++; return; }
+    let imgs;
+    try { imgs = inlineImages_(g, 'invite'); }
+    catch(err){ failed++; if(!firstError) firstError = err.message; continue; }
     const m = buildEmail_(g);
-    const opts = { htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO };
-    opts.inlineImages = inlineImages_(g, 'invite');
-    GmailApp.createDraft(to, m.subject, m.text, opts);
+    GmailApp.createDraft(to, m.subject, m.text,
+      { htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs });
     // record the date we actually promised this guest, not today's config
     setCell_(ctx, i, 'reply by', rawDeadline_(deadlines, g.category));
     setCell_(ctx, i, 'invite status', 'Draft created');
     setCell_(ctx, i, 'invite sent', new Date());
     made++;
-  });
+  }
   toast_(made + ' draft(s) created in Gmail' +
          (skipped ? ' · ' + skipped + ' skipped (no email, or on Hold/Cut)' : '') +
-         (missingCards ? ' · ⚠ ' + missingCards + ' skipped: no card in "' + CFG.CARDS_FOLDER +
-            '" matches the row (use “Send this invitation now” on one of them to see why)' : '') +
+         (failed ? ' · ⚠ ' + failed + ' could not be drawn — ' + firstError : '') +
+         (left ? ' · ' + left + ' not reached before the time limit: run this again' : '') +
          '. Open Gmail ▸ Drafts to review and send.');
 }
 
@@ -944,14 +1082,32 @@ function sendTestToMe(){
   const g = guestFromRow_(ctx, i);
   g.token = ensureToken_(ctx, i);
   g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
-  const problem = cardProblem_(g);
-  if(problem){ toast_('No test sent — ' + who + ': ' + problem + '.'); return; }
+  toast_('Drawing ' + who + '’s letter…');
+  let imgs;
+  try { imgs = inlineImages_(g, 'invite'); }
+  catch(err){ toast_('No test sent — ' + err.message); return; }
   const m = buildEmail_(g);
   GmailApp.sendEmail(me, '[TEST] ' + m.subject, m.text, {
-    htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO,
-    inlineImages: inlineImages_(g, 'invite')
+    htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
   });
   toast_('Test of ' + who + '’s invitation sent to ' + me + '.');
+}
+/* The selected row's letter exactly as Send would draw it, saved as a PNG in
+   your Drive instead of mailed — to look at the design, or at a long note. */
+function previewSelectedCard(){
+  const ctx = readGuests_();
+  if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
+  const rows = selectedDataRows_(ctx);
+  const i = rows.length ? rows[0] : 0;
+  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
+  const g = guestFromRow_(ctx, i);
+  toast_('Drawing ' + who + '’s letter…');
+  let png;
+  try { png = cardBlob_(g); }
+  catch(err){ toast_('Could not draw it — ' + err.message); return; }
+  const file = DriveApp.createFile(png.setName('Wedding HQ · letter preview · ' + who + '.png'));
+  SpreadsheetApp.getUi().alert('Letter preview saved to your Drive',
+    file.getName() + '\n\n' + file.getUrl(), SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
 function resetSelectedStatus(){
@@ -1040,7 +1196,7 @@ function doPost(e){
     let row = 0;
     if(guests) row = matchGuestRow_(guests, token, email);
     if(row){
-      const hCol = GUEST_HEADER.indexOf('Household') + 1;
+      const hCol = colIndex_('Household');
       matched = String(guests.getRange(row, hCol).getValue() || 'row ' + row);
     }
 
@@ -1059,7 +1215,7 @@ function doPost(e){
 
     if(row){
       const set = (colName, v) => {
-        const c = GUEST_HEADER.indexOf(colName);
+        const c = liveHeader_().indexOf(colName.toLowerCase());
         if(c >= 0) guests.getRange(row, c + 1).setValue(v);
       };
       set('RSVP', attending ? 'Yes' : 'No');
@@ -1094,8 +1250,9 @@ function doGet(e){
       const sh = book_().getSheetByName(SHEETS.GUESTS);
       const row = sh ? matchGuestRow_(sh, token, '') : 0;
       if(row){
-        const vals = sh.getRange(row, 1, 1, GUEST_HEADER.length).getValues()[0];
-        const get = (n) => vals[GUEST_HEADER.indexOf(n)];
+        const H = liveHeader_();
+        const vals = sh.getRange(row, 1, 1, H.length).getValues()[0];
+        const get = (n) => vals[H.indexOf(n.toLowerCase())];
         const lang = normLang_(get('Language'));
         out.ok       = true;
         out.invitee  = String(get('Invitee') || '');
@@ -1121,9 +1278,10 @@ function doGet(e){
 function matchGuestRow_(sh, token, email){
   const last = sh.getLastRow();
   if(last < 2) return 0;
-  const tokCol = GUEST_HEADER.indexOf('Token');
-  const emCol  = GUEST_HEADER.indexOf('Email');
-  const vals = sh.getRange(2, 1, last - 1, GUEST_HEADER.length).getValues();
+  const H = liveHeader_();
+  const tokCol = H.indexOf('token');
+  const emCol  = H.indexOf('email');
+  const vals = sh.getRange(2, 1, last - 1, H.length).getValues();
 
   if(token){
     for(let i = 0; i < vals.length; i++){
@@ -1148,17 +1306,12 @@ function buildEmail_(g){
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
-  /* The invitation is an image. Gmail, Outlook and Yahoo all strip web fonts,
-     so live text could never hold Pinyon Script or EB Garamond — a picture of
-     the card can, in every client, which is how stationery services solve
-     this. Everything a guest has to *act* on stays live text below it: the
-     password to read, the link to press, the date to remember. */
-  /* Three movements, not a card with leftovers stapled underneath:
-     a personal opening in the couple's own voice, the formal invitation
-     itself, and one compact strip telling the guest how to reply. */
-  /* The invitation is the card and nothing else. Below it sits only what a
-     guest has to act on — the password to read, the button to press, the date
-     to remember — which is the one part where a typeface does not matter. */
+  /* The invitation is three images stacked without a seam — header, villa,
+     and the letter drawn moments ago for this guest — because Gmail, Outlook
+     and Yahoo strip web fonts and live text could never hold Pinyon Script or
+     EB Garamond. Below it sits only what a guest has to act on: the password
+     to read, the button to press, the date to remember — the one part where
+     a typeface does not matter. */
   const html =
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1173,6 +1326,12 @@ function buildEmail_(g){
 
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
 
+    <tr><td style="padding:0;">
+      <img src="cid:head" width="600" alt="Ilaria &amp; Maxime — ${c.tag} — ${c.date}" style="display:block;border:0;width:100%;height:auto;">
+    </td></tr>
+    <tr><td style="padding:0;">
+      <img src="cid:hero" width="600" alt="Villa Corsini a Mezzomonte" style="display:block;border:0;width:100%;height:auto;">
+    </td></tr>
     <tr><td style="padding:0;">
       <img src="cid:card" width="600" alt="${esc_(greet)} ${c.body}" style="display:block;border:0;width:100%;height:auto;">
     </td></tr>

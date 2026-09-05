@@ -271,19 +271,12 @@ const CFG = {
   // will not load Cormorant, and these are where the design lives.
   IMG_TAG  : function(l){ return 'email-tag-' + l + '.png'; },
   IMG_CLOSE: function(l){ return 'email-close-' + l + '.png'; },
-  // The whole invitation, per guest, drawn from the real fonts. Nothing about
-  // the invitation is live text: the greeting sits where the design puts it,
-  // after the villa, and no mail client can restyle any of it.
-  //
-  // The cards live in a Drive folder rather than on the website, because each
-  // one carries a guest's name and their personal note — and the website's
-  // repository is public. The script runs as the couple's own account, so it
-  // reads them straight out of Drive; nothing about a guest is ever published.
-  // Each file is named card-<token>-<key>.jpg, where the key is a fingerprint
-  // of the words drawn on it (see cardKey_). A row edited after its card was
-  // made — a greeting corrected, a note added — no longer matches any file,
-  // and the send refuses rather than mailing a card that says something else.
-  CARDS_FOLDER : 'Wedding cards',
+  // The parts of the invitation that never change per guest — the header
+  // (crest, names, tagline, date) and the facts table, one per language —
+  // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
+  // The letter itself is drawn at send time: see cardBlob_.
+  IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
+  IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -388,15 +381,11 @@ const TOKEN_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 
 /* >>> shared
    Everything between these two markers is plain JavaScript with no Apps
-   Script in it. tools/invites/assets/render-cards.js evaluates exactly this
-   text when it draws the cards, so the greeting on a card, the greeting in
-   the email's text version and the file name the send looks for all come
-   from one definition and cannot drift apart. Keep it that way: nothing here
-   may touch CFG, COPY, SpreadsheetApp or any other global. */
-
-// Bump when the card's design or static wording changes: every existing card
-// then stops matching and has to be drawn again.
-const CARD_VERSION = '2026-09-05';
+   Script in it: the words a guest is addressed with, and nothing else.
+   tools/invites/preview/build-preview.py lifts exactly this text into the
+   proof sheet, so what the preview says and what is sent cannot drift apart.
+   Keep it that way: nothing here may touch CFG, COPY, SpreadsheetApp or any
+   other global. */
 
 const JOIN     = { it:' e ',   fr:' et ',   en:' and ' };
 const PLURAL   = { it:'Cari ', fr:'Chers ', en:'Dear ' };
@@ -479,17 +468,6 @@ function plusLine_(g){
   return PLUS_COPY[normLang_(g.lang)];
 }
 
-// FNV-1a over the string's UTF-16 units: eight hex characters that change
-// whenever any word on the card does. A fingerprint, not a secret.
-function hash32_(s){
-  let h = 0x811c9dc5;
-  for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
-  return ('0000000' + h.toString(16)).slice(-8);
-}
-function cardKey_(g){
-  return hash32_([CARD_VERSION, normLang_(g.lang), greetingOf_(g), plusLine_(g), normText_(g.note)].join('\n'));
-}
-function cardName_(token, key){ return 'card-' + token + '-' + key + '.jpg'; }
 /* <<< shared */
 
 function buildEmail_(g){
@@ -499,17 +477,12 @@ function buildEmail_(g){
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
-  /* The invitation is an image. Gmail, Outlook and Yahoo all strip web fonts,
-     so live text could never hold Pinyon Script or EB Garamond — a picture of
-     the card can, in every client, which is how stationery services solve
-     this. Everything a guest has to *act* on stays live text below it: the
-     password to read, the link to press, the date to remember. */
-  /* Three movements, not a card with leftovers stapled underneath:
-     a personal opening in the couple's own voice, the formal invitation
-     itself, and one compact strip telling the guest how to reply. */
-  /* The invitation is the card and nothing else. Below it sits only what a
-     guest has to act on — the password to read, the button to press, the date
-     to remember — which is the one part where a typeface does not matter. */
+  /* The invitation is three images stacked without a seam — header, villa,
+     and the letter drawn moments ago for this guest — because Gmail, Outlook
+     and Yahoo strip web fonts and live text could never hold Pinyon Script or
+     EB Garamond. Below it sits only what a guest has to act on: the password
+     to read, the button to press, the date to remember — the one part where
+     a typeface does not matter. */
   const html =
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -524,6 +497,12 @@ function buildEmail_(g){
 
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
 
+    <tr><td style="padding:0;">
+      <img src="cid:head" width="600" alt="Ilaria &amp; Maxime — ${c.tag} — ${c.date}" style="display:block;border:0;width:100%;height:auto;">
+    </td></tr>
+    <tr><td style="padding:0;">
+      <img src="cid:hero" width="600" alt="Villa Corsini a Mezzomonte" style="display:block;border:0;width:100%;height:auto;">
+    </td></tr>
     <tr><td style="padding:0;">
       <img src="cid:card" width="600" alt="${esc_(greet)} ${c.body}" style="display:block;border:0;width:100%;height:auto;">
     </td></tr>
