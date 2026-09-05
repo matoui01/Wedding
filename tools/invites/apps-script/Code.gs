@@ -1234,8 +1234,11 @@ function rawDeadline_(map, category){
 function deadlineFor_(map, category, lang){
   const v = rawDeadline_(map, category);
   if(v instanceof Date && !isNaN(v)){
+    // the calendar day as the sheet shows it — a script whose own timezone
+    // differs from the sheet's would otherwise read 30 April as the 29th
+    const ymd = Utilities.formatDate(v, book_().getSpreadsheetTimeZone(), 'yyyy-M-d').split('-').map(Number);
     const m = MONTHS[lang] || MONTHS.it;
-    return v.getDate() + ' ' + m[v.getMonth()] + ' ' + v.getFullYear();
+    return ymd[2] + ' ' + m[ymd[1] - 1] + ' ' + ymd[0];
   }
   const s = String(v || '').trim();
   return s || CFG.RSVP_BY[lang] || CFG.RSVP_BY.it;
