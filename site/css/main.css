@@ -245,10 +245,17 @@ h1,h2,h3{ font-weight:500; margin:0; }
 }
 .rsvp-who__h{
   font-family:var(--f-ui); text-transform:uppercase; letter-spacing:.14em;
-  font-size:.72rem; color:var(--salvia-deep); margin:0 0 .85rem;
+  font-size:.72rem; color:var(--salvia-deep); margin:0 0 1.1rem;
 }
+/* Each answer wears its own question, so nobody has to work out which of the
+   two a paragraph is answering. A heading now sits between the paragraphs,
+   so their spacing comes from its margins rather than from an adjacency. */
+.rsvp-who__q{
+  font-family:var(--f-display); font-size:1.2rem; color:var(--ink);
+  margin:1.5rem 0 .35rem;
+}
+.rsvp-who__q:first-of-type{ margin-top:0; }
 .rsvp-who__p{ font-size:1rem; color:var(--muted); line-height:1.65; margin:0; }
-.rsvp-who__p + .rsvp-who__p{ margin-top:.85rem; }
 .rsvp-who__p strong{ color:var(--salvia-deep); font-weight:600; }
 
 /* RSVP form */
