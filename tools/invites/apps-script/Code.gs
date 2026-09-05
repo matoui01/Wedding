@@ -69,6 +69,7 @@ const CFG = {
   // created, so the invitation is drawn on a copy of a template whose size
   // was set once by hand. This is the name to look for in the Drive.
   TEMPLATE : 'Wedding HQ · invitation template',
+  SCRATCH  : 'Wedding HQ · invitation (scratch)',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
   IMG_FACTS: function(l){ return 'email-facts-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
@@ -448,6 +449,7 @@ function onOpen(){
     .addSeparator()
     .addItem('Send a test to me',              'sendTestToMe')
     .addItem('Reset invite status — selected rows', 'resetSelectedStatus')
+    .addItem('Clean up leftover scratch files', 'cleanUpScratch')
     .addToUi();
 }
 
@@ -1204,7 +1206,7 @@ function mailBlob_(g){
     // JPEG: a watercolour on ivory, three thousand pixels tall, is a megabyte
     // as PNG and a fraction of that with no visible difference
     return res.getBlob().getAs('image/jpeg').setName('invitation.jpg');
-  } finally { trashOwnFile_(id); }
+  } finally { deleteOwnFile_(id); }
 }
 
 /* A copy of the template, to draw this one invitation on and then bin. The
@@ -1217,7 +1219,7 @@ function copyTemplate_(){
                     'file with exactly that name, then File ▸ Page setup ▸ Custom ▸ ' + CARD.W +
                     ' × 1900, in points');
   }
-  return it.next().makeCopy('Wedding HQ · invitation (scratch)').getId();
+  return it.next().makeCopy(CFG.SCRATCH).getId();
 }
 
 /* Everything the message embeds. The invitation is drawn here and now, for
@@ -1439,15 +1441,36 @@ function deadlineFor_(map, category, lang){
 }
 
 
-/* Bin a file this script made. drive.file is enough for that; DriveApp is
-   not, it asks for every file in the Drive. */
-function trashOwnFile_(id){
+/* Delete a scratch file outright rather than trashing it: it existed for the
+   two seconds it took to draw one invitation, and a bin filling up with
+   copies is its own kind of mess. Falls back to the bin if the delete is
+   refused, and says nothing either way — a leftover scratch file must never
+   be the reason an invitation fails to go out. */
+function deleteOwnFile_(id){
+  if(!id) return;
   try {
-    UrlFetchApp.fetch('https://www.googleapis.com/drive/v3/files/' + id, {
-      method: 'patch', contentType: 'application/json',
-      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-      payload: JSON.stringify({ trashed: true }), muteHttpExceptions: true });
+    const res = UrlFetchApp.fetch('https://www.googleapis.com/drive/v3/files/' + id, {
+      method: 'delete', headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+      muteHttpExceptions: true });
+    if(res.getResponseCode() < 300) return;
   } catch(_){}
+  try { DriveApp.getFileById(id).setTrashed(true); } catch(_){}
+}
+
+/* Any scratch copies an earlier run left behind — a run that timed out, or
+   died before it could clear up after itself. */
+function sweepScratch_(){
+  let gone = 0;
+  try {
+    const it = DriveApp.getFilesByName(CFG.SCRATCH);
+    while(it.hasNext()){ deleteOwnFile_(it.next().getId()); gone++; }
+  } catch(_){}
+  return gone;
+}
+
+function cleanUpScratch(){
+  const gone = sweepScratch_();
+  toast_(gone ? gone + ' leftover scratch file(s) deleted.' : 'No scratch files left behind.');
 }
 
 /* ============================ 4. RSVPs IN ================================ */
