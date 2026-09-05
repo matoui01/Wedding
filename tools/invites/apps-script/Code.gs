@@ -64,7 +64,7 @@ const CFG = {
   // The parts of the invitation that never change per guest — the header
   // (crest, names, tagline, date) and the facts table, one per language —
   // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
-  // The invitation itself is drawn at send time: see mailBlob_.
+  // The invitation itself is drawn at send time: see mailBlobs_.
   // Slides quietly ignores the page size asked for when a presentation is
   // created, so the invitation is drawn on a copy of a template whose size
   // was set once by hand. This is the name to look for in the Drive.
@@ -848,7 +848,7 @@ function sendSelectedRowNow(){
   let imgs;
   try { imgs = inlineImages_(g, 'invite'); }
   catch(err){ toast_('Nothing sent to ' + who + ' — ' + err.message); return; }
-  const m = buildEmail_(g);
+  const m = buildEmail_(g);                          // after the draw: it counts the slices
   GmailApp.sendEmail(to, m.subject, m.text, {
     htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
   });
@@ -1152,7 +1152,7 @@ function scaleLayout_(L, k){
 /* The whole invitation for this guest, as one picture — drawn now, from the
    row as it reads at this moment. Throws, with a sentence a person can act
    on, rather than returning something half-made. */
-function mailBlob_(g){
+function mailBlobs_(g){
   const lang = normLang_(g.lang);
   const c = COPY[lang] || COPY.it;
   const words = {
@@ -1184,114 +1184,152 @@ function mailBlob_(g){
       throw new Error('the template page is ' + (page ? Math.round(page.w) + ' pt' : 'an unknown size') +
                       ' wide — it has to be at least ' + CARD.W + ' pt (Slides ▸ File ▸ Page setup ▸ Custom)');
     }
-    const k = page.w / CARD.W;                       // 1200 pt wide → drawn at 2×
+    const k = page.w / CARD.W;                       // 1800 pt wide → drawn at 3×
     scaleLayout_(L, k);
-    if(L.contentH > page.h + 1){
-      throw new Error('this invitation needs a page ' + Math.round(L.contentH / k) + ' × ' +
-                      Math.round(page.w / k) + ' pt at this width; the template is ' +
-                      Math.round(page.w) + ' × ' + Math.round(page.h) + ' — make it taller');
-    }
-    fitToPage_(L, page.h);
-    const deck  = SlidesApp.openById(id);
-    const slide = deck.getSlides()[0];
-    const slideId = slide.getObjectId();
-    slide.getPageElements().forEach(el => el.remove());
-    slide.getBackground().setSolidFill(T.panna);
 
-    const plain = (shape) => { shape.getBorder().setTransparent(); return shape; };
-    // the letter's own paper, under everything the letter says
-    const panel = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, L.panel.x, L.panel.y, L.panel.w, L.panel.h);
-    panel.getFill().setSolidFill(T.carta);
-    panel.getBorder().setWeight(Math.max(1, Math.round(L.k || 1)));
-    panel.getBorder().getLineFill().setSolidFill(T.lineGold);
+    /* Google exports a slide with the long side capped at 2500 px, so a page
+       three times taller than it is wide came back 750 px across — a quarter
+       of the width, and the reason the invitation looked soft whatever its
+       sources were. Drawn instead as slices no taller than the page is wide,
+       the cap lands on the width: each slice comes back 2500 px across, four
+       times the 600 px it is shown at, and they stack in the email into one
+       picture with no seam. Every slice is a copy of the same drawing, moved
+       up by its own height; Slides clips what falls outside the page, and
+       identical widths mean the cuts meet exactly. */
+    const slice = Math.min(page.h, page.w);
+    const n = Math.max(1, Math.ceil((L.contentH - 0.5) / slice));
 
-    L.shapes.forEach(sp => {
-      if(sp.kind === 'note'){
-        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h))
-          .getFill().setSolidFill(CARD.NOTE.bg);
-        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, 2 * (L.k || 1), sp.h))
-          .getFill().setSolidFill(CARD.NOTE.rule);
-      } else if(sp.kind === 'pw'){
-        const box = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, sp.h);
-        box.getFill().setSolidFill(T.panna2);
-        box.getBorder().setWeight(Math.max(1, Math.round(L.k || 1)));
-        box.getBorder().getLineFill().setSolidFill(T.lineGold);
-      } else if(sp.kind === 'rule'){
-        plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y, sp.w, Math.max(1, sp.h)))
-          .getFill().setSolidFill(T.lineGold);
-      }
-    });
-
-    // every piece is drawn at a known width, so none of them has to be
-    // measured after the fact — which is what left the sign-off line missing
-    L.images.forEach(im => { slide.insertImage(blobs[im.key], im.x, im.y, im.w, im.h); });
-
-    L.text.forEach(t => {
-      // the box is taller than the text needs: text is top-aligned, and a box
-      // too short would make Slides shrink the type to fit it
-      const inset = CARD.INSET * (L.k || 1);
-      const box = slide.insertTextBox(t.str, t.x - inset, t.y - inset,
-                                      t.w + 2 * inset, t.h + 2 * inset + 40 * (L.k || 1));
-      try { box.getAutofit().disableAutofit(); } catch(_){}
-      const tr = box.getText();
-      tr.getTextStyle().setFontFamily(t.spec.font).setFontSize(t.size || t.spec.size)
-        .setForegroundColor(t.color || T.ink)
-        .setItalic(!!t.spec.italic).setBold(false);
-      const ps = tr.getParagraphStyle();
-      /* Leading. Slides has taken this as a percentage of the face's own
-         leading (100 = as drawn) and, in other builds, as a plain multiple —
-         and rejects whichever it isn't with "invalid argument: spacing". Both
-         are offered, and if the call refuses them the paragraph keeps the
-         face's own leading, which is exactly what the block was measured
-         against. Nothing here is worth failing an invitation over. */
-      const ratio = Math.max(1, Math.min(4, (t.spec.lh || 1.4) / (t.spec.natural || 1.2)));
-      try { ps.setLineSpacing(Math.round(ratio * 100)); }
-      catch(_){ try { ps.setLineSpacing(ratio); } catch(__){} }
-      try { ps.setSpaceAbove(0); } catch(_){}
-      try { ps.setSpaceBelow(0); } catch(_){}
-      try {
-        ps.setParagraphAlignment(t.center ? SlidesApp.ParagraphAlignment.CENTER
-                                          : SlidesApp.ParagraphAlignment.START);
-      } catch(_){}
-    });
+    const deck = SlidesApp.openById(id);
+    while(deck.getSlides().length > n) deck.getSlides()[deck.getSlides().length - 1].remove();
+    while(deck.getSlides().length < n) deck.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+    const slides = deck.getSlides();
+    for(let i = 0; i < n; i++) drawSlice_(slides[i], L, blobs, i * slice, slice);
     deck.saveAndClose();
 
-    // Drive exports the page at its own size — 1 pt becomes 1⅓ px — while a
-    // thumbnail caps the long side at 1600 px, which on a page three times
-    // taller than it is wide left the invitation 505 px across.
-    //
-    // The PNG is sent as it comes. Re-encoding it here would go through
-    // Apps Script's own JPEG writer, which has no quality setting and lays
-    // visible blocks over flat cream and fine script — the thing that looked
-    // like a resolution problem and was not. Only a picture too heavy to mail
-    // is converted, and then by Google's own encoder rather than that one.
-    const fetchExport = (fmt) => {
-      const res = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
-        '/export/' + fmt + '?id=' + id + '&pageid=' + slideId,
-        { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
-      return (res.getResponseCode() === 200 && res.getBlob().getBytes().length > 20000) ? res.getBlob() : null;
-    };
-
-    let img = null;
-    try { img = fetchExport('png'); } catch(_){}
-    if(img && img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
-      let jpg = null;
-      try { jpg = fetchExport('jpeg'); } catch(_){}
-      img = jpg || img.getAs('image/jpeg');
-    }
-    if(!img){
-      const thumb = Slides.Presentations.Pages.getThumbnail(id, slideId, {
-        'thumbnailProperties.mimeType': 'PNG', 'thumbnailProperties.thumbnailSize': CARD.THUMB
-      });
-      const res = UrlFetchApp.fetch(thumb.contentUrl, { muteHttpExceptions: true });
-      if(res.getResponseCode() !== 200){
-        throw new Error('could not download the drawn invitation (HTTP ' + res.getResponseCode() + ')');
-      }
-      img = res.getBlob();
-    }
-    LAST_DRAW = drawInfo_(img, page);
-    return img.setName('invitation.' + (img.getContentType() === 'image/png' ? 'png' : 'jpg'));
+    const out = [];
+    for(let i = 0; i < n; i++) out.push(exportPage_(id, slides[i].getObjectId(), i + 1, n, page));
+    return out;
   } finally { deleteOwnFile_(id); }
+}
+
+/* One slice of the invitation: everything drawn where it belongs, moved up by
+   how much came before, with whatever falls off the page clipped by Slides. */
+function drawSlice_(slide, L, blobs, top, sliceH){
+  slide.getPageElements().forEach(el => el.remove());
+  slide.getBackground().setSolidFill(T.panna);
+  const y0 = -top;
+  const shows = (y, h) => (y + h) > top - 1 && y < top + sliceH + 1;
+  const plain = (shape) => { shape.getBorder().setTransparent(); return shape; };
+  const weight = Math.max(1, Math.round(L.k || 1));
+
+  // the letter's own paper, under everything the letter says
+  if(shows(L.panel.y, L.panel.h)){
+    const panel = slide.insertShape(SlidesApp.ShapeType.RECTANGLE,
+      L.panel.x, L.panel.y + y0, L.panel.w, L.panel.h);
+    panel.getFill().setSolidFill(T.carta);
+    panel.getBorder().setWeight(weight);
+    panel.getBorder().getLineFill().setSolidFill(T.lineGold);
+  }
+
+  L.shapes.forEach(sp => {
+    if(!shows(sp.y, sp.h)) return;
+    if(sp.kind === 'note'){
+      plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y + y0, sp.w, sp.h))
+        .getFill().setSolidFill(CARD.NOTE.bg);
+      plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y + y0, 2 * (L.k || 1), sp.h))
+        .getFill().setSolidFill(CARD.NOTE.rule);
+    } else if(sp.kind === 'pw'){
+      const box = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y + y0, sp.w, sp.h);
+      box.getFill().setSolidFill(T.panna2);
+      box.getBorder().setWeight(weight);
+      box.getBorder().getLineFill().setSolidFill(T.lineGold);
+    } else if(sp.kind === 'rule'){
+      plain(slide.insertShape(SlidesApp.ShapeType.RECTANGLE, sp.x, sp.y + y0, sp.w, Math.max(1, sp.h)))
+        .getFill().setSolidFill(T.lineGold);
+    }
+  });
+
+  // every piece is drawn at a known width, so none has to be measured after
+  // the fact — which is what left the sign-off line missing
+  L.images.forEach(im => {
+    if(shows(im.y, im.h)) slide.insertImage(blobs[im.key], im.x, im.y + y0, im.w, im.h);
+  });
+
+  const inset = CARD.INSET * (L.k || 1);
+  L.text.forEach(t => {
+    if(!shows(t.y, t.h)) return;
+    // the box is taller than the text needs: text is top-aligned, and a box
+    // too short would make Slides shrink the type to fit it
+    const box = slide.insertTextBox(t.str, t.x - inset, t.y + y0 - inset,
+                                    t.w + 2 * inset, t.h + 2 * inset + 40 * (L.k || 1));
+    try { box.getAutofit().disableAutofit(); } catch(_){}
+    const tr = box.getText();
+    tr.getTextStyle().setFontFamily(t.spec.font).setFontSize(t.size || t.spec.size)
+      .setForegroundColor(t.color || T.ink)
+      .setItalic(!!t.spec.italic).setBold(false);
+    const ps = tr.getParagraphStyle();
+    /* Leading. Slides has taken this as a percentage of the face's own leading
+       (100 = as drawn) and, in other builds, as a plain multiple, rejecting
+       whichever it isn't. Both are offered; if it refuses them the paragraph
+       keeps the face's own leading, which is what the block was measured
+       against. Nothing here is worth failing an invitation over. */
+    const ratio = Math.max(1, Math.min(4, (t.spec.lh || 1.4) / (t.spec.natural || 1.2)));
+    try { ps.setLineSpacing(Math.round(ratio * 100)); }
+    catch(_){ try { ps.setLineSpacing(ratio); } catch(__){} }
+    try { ps.setSpaceAbove(0); } catch(_){}
+    try { ps.setSpaceBelow(0); } catch(_){}
+    try {
+      ps.setParagraphAlignment(t.center ? SlidesApp.ParagraphAlignment.CENTER
+                                        : SlidesApp.ParagraphAlignment.START);
+    } catch(_){}
+  });
+}
+
+/* The slices, stacked into one column with no space of any kind between them:
+   zero font size and line height on the cells, block images, collapsed
+   borders. Anything else and a client leaves a hairline across the picture. */
+function stackHtml_(n, link){
+  let rows = '';
+  for(let i = 1; i <= n; i++){
+    rows += '<tr><td style="padding:0;margin:0;font-size:0;line-height:0;">' +
+            '<img src="cid:mail' + i + '" width="600" style="display:block;border:0;margin:0;' +
+            'width:600px;max-width:100%;height:auto;"></td></tr>';
+  }
+  const table = '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" ' +
+                'style="width:600px;max-width:100%;border-collapse:collapse;">' + rows + '</table>';
+  return link ? '<a href="' + link + '" style="display:block;width:600px;max-width:100%;">' + table + '</a>' : table;
+}
+
+/* One drawn page, as a picture. The PNG is sent as it comes: re-encoding it
+   here would go through Apps Script's own JPEG writer, which has no quality
+   setting and lays visible blocks over flat cream and fine script. Only a
+   picture too heavy to mail is converted, and then by Google's encoder. */
+function exportPage_(id, pageId, i, n, page){
+  const fetchExport = (fmt) => {
+    const res = UrlFetchApp.fetch('https://docs.google.com/presentation/d/' + id +
+      '/export/' + fmt + '?id=' + id + '&pageid=' + pageId,
+      { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+    return (res.getResponseCode() === 200 && res.getBlob().getBytes().length > 5000) ? res.getBlob() : null;
+  };
+  let img = null;
+  try { img = fetchExport('png'); } catch(_){}
+  if(img && img.getBytes().length > CARD.MAX_MB * 1024 * 1024){
+    let jpg = null;
+    try { jpg = fetchExport('jpeg'); } catch(_){}
+    img = jpg || img.getAs('image/jpeg');
+  }
+  if(!img){
+    const thumb = Slides.Presentations.Pages.getThumbnail(id, pageId, {
+      'thumbnailProperties.mimeType': 'PNG', 'thumbnailProperties.thumbnailSize': CARD.THUMB
+    });
+    const res = UrlFetchApp.fetch(thumb.contentUrl, { muteHttpExceptions: true });
+    if(res.getResponseCode() !== 200){
+      throw new Error('could not download piece ' + i + ' of the invitation (HTTP ' + res.getResponseCode() + ')');
+    }
+    img = res.getBlob();
+  }
+  LAST_DRAW = (i === 1 ? '' : LAST_DRAW + ' + ') + drawInfo_(img, page) + (i === n ? ' × ' + n + ' slices' : '');
+  return img.setName('invitation-' + i + '.' + (img.getContentType() === 'image/png' ? 'png' : 'jpg'));
 }
 
 /* A copy of the template, to draw this one invitation on and then bin. The
@@ -1321,7 +1359,11 @@ function inlineImages_(g, kind){
     if(crest) out.crest = crest;
     return out;
   }
-  return { mail: mailBlob_(g) };
+  const out = {};
+  const pieces = mailBlobs_(g);
+  pieces.forEach((b, i) => { out['mail' + (i + 1)] = b; });
+  g.slices = pieces.length;                          // buildEmail_ stacks exactly these
+  return out;
 }
 
 /* ------------------------- per-category deadlines ------------------------ */
@@ -1481,13 +1523,13 @@ function previewSelectedCard(){
   g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
   toast_('Drawing ' + who + '’s invitation…');
   let png;
-  try { png = mailBlob_(g); }
+  try { png = mailBlobs_(g); }
   catch(err){ toast_('Could not draw it — ' + err.message); return; }
   const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
-  GmailApp.sendEmail(me, '[PREVIEW] ' + who + '’s invitation', 'The letter as it would be drawn right now.', {
-    name: CFG.SENDER_NAME,
-    htmlBody: '<img src="cid:letter" width="600" style="display:block;border:0;width:600px;max-width:100%;height:auto;">',
-    inlineImages: { letter: png }
+  const imgs = {};
+  png.forEach((b, i) => { imgs['mail' + (i + 1)] = b; });
+  GmailApp.sendEmail(me, '[PREVIEW] ' + who + '’s invitation', LAST_DRAW, {
+    name: CFG.SENDER_NAME, htmlBody: stackHtml_(png.length, inviteLink_(g.token || '')), inlineImages: imgs
   });
   toast_('Preview of ' + who + '’s invitation sent to ' + me + ' — ' + LAST_DRAW + '.');
 }
@@ -1699,14 +1741,14 @@ function probeDraw_(params){
     const g = guestFromRow_(ctx, i);
     g.token = String(cell_(ctx, i, 'token') || '').trim() || 'preview';
     g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
-    const blob = mailBlob_(g);
+    const blob = mailBlobs_(g);
     const out = { ok: true, row: i + 2, lang: g.lang, greeting: greetingOf_(g),
                   info: LAST_DRAW, ms: Date.now() - started };
     if(params.mailto){
+      const imgs = {};
+      blob.forEach((b, i) => { imgs['mail' + (i + 1)] = b; });
       GmailApp.sendEmail(String(params.mailto), '[PROBE] invitation', LAST_DRAW, {
-        name: CFG.SENDER_NAME,
-        htmlBody: '<img src="cid:mail" width="600" style="display:block;border:0;width:600px;max-width:100%;height:auto;">',
-        inlineImages: { mail: blob }
+        name: CFG.SENDER_NAME, htmlBody: stackHtml_(blob.length, inviteLink_(g.token || '')), inlineImages: imgs
       });
       out.mailed = true;
     }
@@ -1750,6 +1792,17 @@ function buildEmail_(g){
   const plusText = plusLine_(g);
   const link = inviteLink_(g.token || '');
   const by = c.by(g.replyBy || CFG.RSVP_BY[g.lang]);
+  /* The picture arrives in slices — see mailBlobs_ — stacked in one column
+     with no space of any kind between them: zero font size and line height on
+     the cells, block images, collapsed borders. Anything else and a mail
+     client leaves a hairline of background across the invitation. */
+  const slices = (g.slices || 1);
+  let stack = '';
+  for(let i = 1; i <= slices; i++){
+    stack += '<tr><td style="padding:0;margin:0;font-size:0;line-height:0;">' +
+             '<img src="cid:mail' + i + '" width="600" alt="' + (i === 1 ? esc_(greet) + ' ' + c.body + ' ' + esc_(by) : '') + '"' +
+             ' style="display:block;border:0;margin:0;width:600px;max-width:100%;height:auto;"></td></tr>';
+  }
 
   /* The invitation is one picture, and the picture is the link. Gmail,
      Outlook and Yahoo all strip web fonts, so nothing set in Pinyon Script or
@@ -1773,8 +1826,8 @@ function buildEmail_(g){
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
 <tr><td align="center" style="padding:30px 12px;">
   <a href="${link}" style="display:block;width:600px;max-width:100%;">
-    <img src="cid:mail" width="600" alt="${esc_(greet)} ${c.body} ${esc_(by)}"
-         style="display:block;border:0;width:600px;max-width:100%;height:auto;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+           style="width:600px;max-width:100%;border-collapse:collapse;">${stack}</table>
   </a>
   <div style="padding:14px 20px 0;font-family:${T.fBody};font-size:12px;color:${T.muted};">
     <a href="${link}" style="color:${T.salviaDeep};">${esc_(c.cta)}</a>

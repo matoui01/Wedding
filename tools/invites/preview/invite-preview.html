@@ -274,7 +274,7 @@ const CFG = {
   // The parts of the invitation that never change per guest — the header
   // (crest, names, tagline, date) and the facts table, one per language —
   // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
-  // The invitation itself is drawn at send time: see mailBlob_.
+  // The invitation itself is drawn at send time: see mailBlobs_.
   // Slides quietly ignores the page size asked for when a presentation is
   // created, so the invitation is drawn on a copy of a template whose size
   // was set once by hand. This is the name to look for in the Drive.
@@ -505,6 +505,17 @@ function buildEmail_(g){
   const plusText = plusLine_(g);
   const link = inviteLink_(g.token || '');
   const by = c.by(g.replyBy || CFG.RSVP_BY[g.lang]);
+  /* The picture arrives in slices — see mailBlobs_ — stacked in one column
+     with no space of any kind between them: zero font size and line height on
+     the cells, block images, collapsed borders. Anything else and a mail
+     client leaves a hairline of background across the invitation. */
+  const slices = (g.slices || 1);
+  let stack = '';
+  for(let i = 1; i <= slices; i++){
+    stack += '<tr><td style="padding:0;margin:0;font-size:0;line-height:0;">' +
+             '<img src="cid:mail' + i + '" width="600" alt="' + (i === 1 ? esc_(greet) + ' ' + c.body + ' ' + esc_(by) : '') + '"' +
+             ' style="display:block;border:0;margin:0;width:600px;max-width:100%;height:auto;"></td></tr>';
+  }
 
   /* The invitation is one picture, and the picture is the link. Gmail,
      Outlook and Yahoo all strip web fonts, so nothing set in Pinyon Script or
@@ -528,8 +539,8 @@ function buildEmail_(g){
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
 <tr><td align="center" style="padding:30px 12px;">
   <a href="${link}" style="display:block;width:600px;max-width:100%;">
-    <img src="cid:mail" width="600" alt="${esc_(greet)} ${c.body} ${esc_(by)}"
-         style="display:block;border:0;width:600px;max-width:100%;height:auto;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+           style="width:600px;max-width:100%;border-collapse:collapse;">${stack}</table>
   </a>
   <div style="padding:14px 20px 0;font-family:${T.fBody};font-size:12px;color:${T.muted};">
     <a href="${link}" style="color:${T.salviaDeep};">${esc_(c.cta)}</a>
