@@ -92,7 +92,7 @@ body{width:600px;background:#FAF6EC;-webkit-font-smoothing:antialiased}
 .letter{margin:30px 34px 36px;background:#FDFBF5;border:1px solid #DCC9A4;padding:36px 40px 32px}
 .greet{font-family:Cormorant;font-size:24px;color:#3D352A}
 .body{font-family:EBG;font-size:17px;line-height:1.66;color:#3D352A;margin-top:13px}
-.note{font-family:EBG;font-style:italic;font-size:16px;line-height:1.62;color:#3D352A;margin-top:22px;background:#F6EFE0;border-left:2px solid #C47A54;padding:14px 18px}
+.note{font-family:EBG;font-style:italic;font-size:16px;line-height:1.62;color:#3D352A;margin-top:22px;background:#EEF2E9;border-left:2px solid #93A586;padding:14px 18px}
 .plus{font-family:Cormorant;font-style:italic;font-size:18px;color:#6E7B5B;text-align:center;margin-top:26px}
 .site{font-family:EBG;font-size:16px;line-height:1.62;color:#3D352A;text-align:center;margin-top:26px}
 table.facts{width:100%;border-collapse:collapse;margin-top:26px}
@@ -107,16 +107,16 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 .piece-head{background:#FAF6EC;padding-bottom:28px}
 .piece-facts{width:452px;background:#FDFBF5}
 .piece-facts table.facts{margin-top:0}
-/* Every piece below is drawn at a fixed width so the script knows its
-   proportions without measuring, and every one of them is set in Jost —
-   which Slides cannot render, so anything with real letter-spacing has to
-   arrive as a picture. None of them carries a guest's name. */
-.piece-fixed{width:600px;background:#FAF6EC;display:flex;align-items:center;justify-content:center}
-.piece-fixed.h56{height:56px}
-.piece-fixed.h64{height:64px}
-.piece-ui{font-family:Jost;font-size:11px;letter-spacing:3.2px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
-.piece-cta{width:600px;height:64px;display:flex;align-items:center;justify-content:center;background:#93A586}
-.piece-cta .t{font-family:Jost;font-size:13px;letter-spacing:3.4px;text-transform:uppercase;color:#FBF8EF;white-space:nowrap}
+/* Every piece below is a line of type on nothing: transparent, cropped to the
+   ink, always 600 px wide so the script knows its proportions without
+   measuring. They exist because Slides has neither Jost nor letter-spacing,
+   and the design is mostly both. None carries a guest's name — and the
+   password, which no public file may hold, is drawn the same way into the
+   couple's own Drive instead. */
+.piece-fixed{width:600px;display:flex;align-items:center;justify-content:center;padding:6px 0}
+.piece-ui{font-family:Jost;font-size:11px;letter-spacing:3.4px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
+.piece-ui.on-green{color:#FBF8EF;font-size:12.5px;letter-spacing:3.6px}
+.piece-ui.pw{font-family:Jost;font-size:21px;letter-spacing:5px;color:#3D352A}
 .piece-close .c2{font-family:Cormorant;font-style:italic;font-size:22px;color:#897C68;white-space:nowrap}
 .piece-mark{background:#FAF6EC;padding:16px 26px;display:inline-block}
 .piece-mark .m{font-family:Pinyon;font-size:46px;line-height:1.45;color:#3D352A;white-space:nowrap}
@@ -140,10 +140,11 @@ const markHtml = () => `<div class="m">Ilaria <em>&amp;</em> Maxime</div>`;
 const closeHtml = (lang) => `<div class="c">${(COPY[lang] || COPY.it).close}</div>`;
 /* the four fixed-width pieces: sign-off, password label, reply-by label, button */
 const fixedHtml = {
-  close: (lang) => `<div class="piece-fixed h56"><div class="c2">${(COPY[lang] || COPY.it).close}</div></div>`,
-  pwk:   (lang) => `<div class="piece-fixed h56"><div class="piece-ui">${(COPY[lang] || COPY.it).pwk}</div></div>`,
-  by:    (lang) => `<div class="piece-fixed h56"><div class="piece-ui">${(COPY[lang] || COPY.it).byLabel}</div></div>`,
-  cta:   (lang) => `<div class="piece-cta"><div class="t">${(COPY[lang] || COPY.it).cta}</div></div>`,
+  close: (lang) => `<div class="piece-fixed piece-close"><div class="c2">${(COPY[lang] || COPY.it).close}</div></div>`,
+  pwk:   (lang) => `<div class="piece-fixed"><div class="piece-ui">${(COPY[lang] || COPY.it).pwk}</div></div>`,
+  by:    (lang) => `<div class="piece-fixed"><div class="piece-ui">${(COPY[lang] || COPY.it).byLabel}</div></div>`,
+  cta:   (lang) => `<div class="piece-fixed"><div class="piece-ui on-green">${(COPY[lang] || COPY.it).cta}</div></div>`,
+  pw:    (text) => `<div class="piece-fixed"><div class="piece-ui pw">${esc(text)}</div></div>`,
 };
 const factsHtml = (lang) => {
   const c = COPY[lang] || COPY.it;

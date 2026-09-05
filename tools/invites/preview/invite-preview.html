@@ -275,9 +275,16 @@ const CFG = {
   // (crest, names, tagline, date) and the facts table, one per language —
   // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
   // The invitation itself is drawn at send time: see mailBlobs_.
-  // Slides quietly ignores the page size asked for when a presentation is
-  // created, so the invitation is drawn on a copy of a template whose size
-  // was set once by hand. This is the name to look for in the Drive.
+  /* Slides ignores the page size asked for when a presentation is created,
+     so the invitation is drawn on copies of a template whose size was set
+     once by hand: 1800 × 750 pt.
+
+     Why those numbers. Google exports a slide with its long side capped at
+     2500 px, so 1800 pt wide comes back 2400 px — four times the 600 px the
+     invitation is shown at. And the height decides how tight the spacing can
+     be: the invitation is drawn as a whole number of pages, and whatever is
+     left over is shared out between the blocks, so a short page leaves little
+     to share and the rhythm stays as designed. */
   TEMPLATE : 'Wedding HQ · invitation template',
   SCRATCH  : 'Wedding HQ · invitation (scratch)',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
@@ -287,6 +294,10 @@ const CFG = {
   // of them carries anything about a guest — the password stays live text,
   // because a public asset must never be the place it is written down.
   IMG_PWK  : function(l){ return 'email-pwk-' + l + '.png'; },
+  // The password, set the same way but kept in the couple's own Drive: the
+  // site's gate is that word, and a public file must never be where it is
+  // written down. Made by tools/invites/assets/pw.js.
+  PW_FILE  : 'Wedding HQ · password.png',
   IMG_BY   : function(l){ return 'email-by-' + l + '.png'; },
   IMG_CTA  : function(l){ return 'email-cta-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.

@@ -23,7 +23,7 @@ const { ensureFonts, PAGE_CSS, headHtml, factsHtml, markHtml, closeHtml, fixedHt
 // than that would be stretched to fill it
 const p = await b.newPage({ viewport: { width: 600, height: 800 }, deviceScaleFactor: 4 });
   for(const lang of ['it', 'fr', 'en']){
-    await p.setContent(`<!doctype html><meta charset="utf-8"><style>${PAGE_CSS()}</style>
+    await p.setContent(`<!doctype html><meta charset="utf-8"><style>${PAGE_CSS()}body{background:transparent}</style>
       <div class="piece-head" id="head">${headHtml(lang)}</div>
       <div class="piece-facts" id="facts">${factsHtml(lang)}</div>
       <div class="piece-mark" id="mark">${markHtml()}</div>
@@ -37,7 +37,9 @@ const p = await b.newPage({ viewport: { width: 600, height: 800 }, deviceScaleFa
       const el = await p.$('#' + id);
       const box = await el.boundingBox();
       const out = path.join(IMG, id === 'mark' ? 'email-wordmark.png' : `email-${id}-${lang}.png`);
-      await el.screenshot({ path: out, type: 'png', omitBackground: false });
+      // transparent: these lines sit on cream, on paper and on the green
+      // button, and one file has to work on all three
+      await el.screenshot({ path: out, type: 'png', omitBackground: id !== 'head' && id !== 'facts' });
       console.log(`${path.basename(out)}  ${Math.round(box.width)}×${Math.round(box.height)} css px`);
     }
   }

@@ -65,9 +65,16 @@ const CFG = {
   // (crest, names, tagline, date) and the facts table, one per language —
   // drawn from the site's own CSS by tools/invites/assets/render-pieces.js.
   // The invitation itself is drawn at send time: see mailBlobs_.
-  // Slides quietly ignores the page size asked for when a presentation is
-  // created, so the invitation is drawn on a copy of a template whose size
-  // was set once by hand. This is the name to look for in the Drive.
+  /* Slides ignores the page size asked for when a presentation is created,
+     so the invitation is drawn on copies of a template whose size was set
+     once by hand: 1800 × 750 pt.
+
+     Why those numbers. Google exports a slide with its long side capped at
+     2500 px, so 1800 pt wide comes back 2400 px — four times the 600 px the
+     invitation is shown at. And the height decides how tight the spacing can
+     be: the invitation is drawn as a whole number of pages, and whatever is
+     left over is shared out between the blocks, so a short page leaves little
+     to share and the rhythm stays as designed. */
   TEMPLATE : 'Wedding HQ · invitation template',
   SCRATCH  : 'Wedding HQ · invitation (scratch)',
   IMG_HEAD : function(l){ return 'email-head-' + l + '.png'; },
@@ -77,6 +84,10 @@ const CFG = {
   // of them carries anything about a guest — the password stays live text,
   // because a public asset must never be the place it is written down.
   IMG_PWK  : function(l){ return 'email-pwk-' + l + '.png'; },
+  // The password, set the same way but kept in the couple's own Drive: the
+  // site's gate is that word, and a public file must never be where it is
+  // written down. Made by tools/invites/assets/pw.js.
+  PW_FILE  : 'Wedding HQ · password.png',
   IMG_BY   : function(l){ return 'email-by-' + l + '.png'; },
   IMG_CTA  : function(l){ return 'email-cta-' + l + '.png'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
@@ -974,21 +985,25 @@ const CARD = {
   BODY:  { font: 'EB Garamond', face: 'ebg', size: 17, lh: 1.66, natural: 1.27, gap: 13 },
   // a line in the couple's own hand: its own ground, ruled in terracotta
   NOTE:  { font: 'EB Garamond', face: 'ebg-italic', size: 16, lh: 1.62, natural: 1.27, gap: 22, italic: true,
-           pad: { x: 18, y: 14 }, bg: '#F6EFE0', rule: '#C47A54' },
+           pad: { x: 18, y: 14 }, bg: '#EEF2E9', rule: T.salvia },
   FACTS: { gap: 26, h: 143 },                        // email-facts-<lang>.png, 452 × 143 at 1×
   HEAD:  { h: 383 },                                 // email-head-<lang>.png, 600 × 383
   HERO:  { h: 400 },                                 // email-estate.jpg, 1200 × 801
-  // the reply block, read as one movement: a rule, then how to answer
-  RULE:  { gap: 34, w: 60 },
-  PW:    { gap: 26, w: 300, h: 74, labelH: 26,       // email-pwk-<lang>.png, 600 × 56
-           value: { font: 'Cormorant Garamond', face: 'cormorant', size: 27, lh: 1.2, natural: 1.21 } },
-  CTA:   { gap: 24, w: 330, h: 35 },                 // email-cta-<lang>.png, 600 × 64
-  DEAD:  { gap: 30, labelH: 22,                      // email-by-<lang>.png, 600 × 56
-           date: { font: 'Cormorant Garamond', face: 'cormorant', size: 28, lh: 1.25, natural: 1.21 } },
-  CLOSE: { gap: 40, h: 30 },                         // email-close-<lang>.png, 600 × 56
-  MARK:  { gap: 6, w: 224, h: 63 },                  // email-wordmark.png, 1005 × 297
-  FOOT:  { gap: 30, font: 'EB Garamond', face: 'ebg', size: 12.5, lh: 1.5, natural: 1.27 },
-  END:   { pad: 40 },
+  /* The reply block, read as one movement: a rule to close the letter, then
+     how to answer. Every line of it is a picture — Slides has no Jost and no
+     letter-spacing, and this is where the design is both — drawn at 600 px
+     wide and placed at its own proportions, never stretched. */
+  RULE:  { gap: 26, w: 56 },
+  PW:    { gap: 22, w: 268, h: 76, pad: 15,
+           label: { w: 260, r: 0.0483 },             // email-pwk-<lang>.png
+           value: { w: 232, r: 0.0700 } },           // the password, from the Drive
+  CTA:   { gap: 22, w: 320, h: 46, label: { w: 250, r: 0.0517 } },
+  DEAD:  { gap: 26, label: { w: 260, r: 0.0483 },
+           date: { font: 'Cormorant Garamond', face: 'cormorant', size: 27, lh: 1.25, natural: 1.21 } },
+  CLOSE: { gap: 30, w: 200, r: 0.0783 },             // email-close-<lang>.png
+  MARK:  { gap: 8, w: 210, h: 62 },                  // email-wordmark.png, 1340 × 396
+  FOOT:  { gap: 24, font: 'EB Garamond', face: 'ebg', size: 12.5, lh: 1.5, natural: 1.27 },
+  END:   { pad: 26 },
   // how the slack on a fixed-height page is spent: above the letter, above
   // the reply block, under the sign-off
   SLACK: { panel: 0.25, reply: 0.45 },
@@ -1006,7 +1021,7 @@ function mailLayout_(lang, words){
   const W = CARD.W;
   const colX = CARD.PAD.x + CARD.IN.side;
   const colW = W - 2 * colX;
-  const L = { W, colX, colW, text: [], images: [], shapes: [] };
+  const L = { W, colX, colW, text: [], images: [], shapes: [], anchors: [] };
   let y = 0;
 
   const text = (spec, str, opt) => {
@@ -1028,6 +1043,7 @@ function mailLayout_(lang, words){
   L.images.push({ key: 'hero', x: 0, y, w: W, h: CARD.HERO.h }); y += CARD.HERO.h;
 
   // the letter itself, on its own paper
+  L.anchors.push(y);
   const panelTop = y + CARD.PAD.top;
   y = panelTop + CARD.IN.top;
   text(CARD.GREET, words.greeting, { x: colX });
@@ -1050,39 +1066,49 @@ function mailLayout_(lang, words){
   y += CARD.SPRIG.h + CARD.IN.bottom;
   L.panel = { x: CARD.PAD.x, y: panelTop, w: W - 2 * CARD.PAD.x, h: y - panelTop };
 
-  // how to answer: a rule to close the letter, then the password to type, the
-  // site to open, and the day to answer by, each with room around it
+  // how to answer, in one movement
+  const img = (key, w, r, extra) => {
+    L.images.push({ key, x: (W - w) / 2, y, w, h: w * r });
+    y += w * r;
+    if(extra) y += extra;
+  };
+
   y += CARD.RULE.gap;
+  L.anchors.push(y);
   L.shapes.push({ kind: 'rule', x: (W - CARD.RULE.w) / 2, y, w: CARD.RULE.w, h: 1 });
   y += 1;
 
   y += CARD.PW.gap;
-  L.shapes.push({ kind: 'pw', x: (W - CARD.PW.w) / 2, y, w: CARD.PW.w, h: CARD.PW.h });
+  L.anchors.push(y);
   const pwTop = y;
-  y += 13;
-  L.images.push({ key: 'pwk', x: (W - CARD.PW.w) / 2, y, w: CARD.PW.w, h: CARD.PW.labelH });
-  y += CARD.PW.labelH - 2;
-  text(CARD.PW.value, words.password, { w: CARD.PW.w, center: true });
+  L.shapes.push({ kind: 'pw', x: (W - CARD.PW.w) / 2, y, w: CARD.PW.w, h: CARD.PW.h });
+  y += CARD.PW.pad;
+  img('pwk', CARD.PW.label.w, CARD.PW.label.r, 7);
+  img('pw',  CARD.PW.value.w, CARD.PW.value.r);
   y = pwTop + CARD.PW.h;
 
   y += CARD.CTA.gap;
-  L.images.push({ key: 'cta', x: (W - CARD.CTA.w) / 2, y, w: CARD.CTA.w, h: CARD.CTA.h });
-  y += CARD.CTA.h;
+  L.anchors.push(y);
+  const ctaTop = y;
+  L.shapes.push({ kind: 'cta', x: (W - CARD.CTA.w) / 2, y, w: CARD.CTA.w, h: CARD.CTA.h });
+  y += (CARD.CTA.h - CARD.CTA.label.w * CARD.CTA.label.r) / 2;
+  img('cta', CARD.CTA.label.w, CARD.CTA.label.r);
+  y = ctaTop + CARD.CTA.h;
 
   // the date, set large enough to be remembered rather than read past
   y += CARD.DEAD.gap;
-  L.images.push({ key: 'by', x: (W - 300) / 2, y, w: 300, h: CARD.DEAD.labelH });
-  y += CARD.DEAD.labelH + 2;
+  L.anchors.push(y);
+  img('by', CARD.DEAD.label.w, CARD.DEAD.label.r, 6);
   text(CARD.DEAD.date, words.replyBy, { center: true, color: T.terracotta });
 
   y += CARD.CLOSE.gap;
-  L.images.push({ key: 'close', x: (W - 300) / 2, y, w: 300, h: CARD.CLOSE.h });
-  y += CARD.CLOSE.h;
-  y += CARD.MARK.gap;
+  L.anchors.push(y);
+  img('close', CARD.CLOSE.w, CARD.CLOSE.r, CARD.MARK.gap);
   L.images.push({ key: 'mark', x: (W - CARD.MARK.w) / 2, y, w: CARD.MARK.w, h: CARD.MARK.h });
   y += CARD.MARK.h;
 
   y += CARD.FOOT.gap;
+  L.anchors.push(y);
   text(CARD.FOOT, words.foot, { center: true, color: T.muted });
 
   L.contentH = y + CARD.END.pad;
@@ -1090,22 +1116,29 @@ function mailLayout_(lang, words){
   return L;
 }
 
-/* The page is a fixed height, the letter is not: a note adds lines, a long
-   greeting adds one. The difference is spread over three gaps — above the
-   letter, above the reply block, under the sign-off — so a short invitation
-   reads as generously set rather than as one with a hole in it. */
-function fitToPage_(L, pageH){
+/* The invitation is drawn in slices of one page each, so its height has to
+   come out as a whole number of them — otherwise the last slice is a band of
+   empty cream, which is exactly what it was. The difference is shared out
+   over the gaps between blocks, a little at each, and the invitation ends
+   where the last slice ends. */
+function fitSlices_(L, pageH){
+  const n = Math.max(1, Math.ceil((L.contentH - 0.5) / pageH));
+  const slack = n * pageH - L.contentH;
+  if(slack > 0.5 && L.anchors.length){
+    const step = slack / L.anchors.length;
+    const shift = (y) => {
+      let d = 0;
+      for(let i = 0; i < L.anchors.length; i++){ if(y >= L.anchors[i] - 0.01) d += step; }
+      return d;
+    };
+    L.text.forEach(t => { t.y += shift(t.y); });
+    L.images.forEach(im => { im.y += shift(im.y); });
+    L.shapes.forEach(sp => { sp.y += shift(sp.y); });
+    L.panel.y += shift(L.panel.y);
+  }
+  L.contentH = n * pageH;
   L.pageH = pageH;
-  const slack = pageH - L.contentH;
-  if(Math.abs(slack) < 1) return L;
-  const panelTop = L.panel.y, replyTop = L.panel.y + L.panel.h;
-  const shift = (y) => (y >= panelTop ? slack * CARD.SLACK.panel : 0) +
-                       (y >= replyTop ? slack * CARD.SLACK.reply : 0);
-  L.text.forEach(t => { t.y += shift(t.y); });
-  L.images.forEach(im => { im.y += shift(im.y); });
-  L.shapes.forEach(sp => { sp.y += shift(sp.y); });
-  L.panel.y += shift(panelTop);
-  return L;
+  return n;
 }
 
 /* What was actually produced, in the terms that decide how it looks: the
@@ -1145,6 +1178,7 @@ function scaleLayout_(L, k){
   L.shapes.forEach(sp => S(sp, ['x', 'y', 'w', 'h']));
   S(L.panel, ['x', 'y', 'w', 'h']);
   S(L, ['W', 'colX', 'colW', 'contentH', 'pageH']);
+  L.anchors = L.anchors.map(a => a * k);
   L.k = k;
   return L;
 }
@@ -1157,7 +1191,7 @@ function mailBlobs_(g){
   const c = COPY[lang] || COPY.it;
   const words = {
     greeting: greetingOf_(g), body: c.body, note: normText_(g.note), plus: plusLine_(g),
-    site: c.siteLead, pwLabel: c.pwk, password: sitePassword_(), cta: c.cta,
+    site: c.siteLead, cta: c.cta,
     byLabel: c.byLabel, replyBy: g.replyBy || CFG.RSVP_BY[lang], foot: c.fcLead + ' ' + CFG.REPLY_TO
   };
   const L = mailLayout_(lang, words);
@@ -1170,11 +1204,17 @@ function mailBlobs_(g){
     close: fetchBlob_(CFG.IMG_CLOSE(lang), 'close.png'),
     mark:  fetchBlob_(CFG.IMG_MARK,        'wordmark.png'),
     pwk:   fetchBlob_(CFG.IMG_PWK(lang),   'pwk.png'),
+    pw:    driveBlob_(CFG.PW_FILE,         'pw.png'),
     by:    fetchBlob_(CFG.IMG_BY(lang),    'by.png'),
     cta:   fetchBlob_(CFG.IMG_CTA(lang),   'cta.png')
   };
   const missing = Object.keys(blobs).filter(k => !blobs[k]);
-  if(missing.length) throw new Error('could not fetch ' + missing.join(', ') + ' from ' + CFG.IMG_BASE);
+  if(missing.length){
+    throw new Error(missing.indexOf('pw') >= 0
+      ? 'there is no file named "' + CFG.PW_FILE + '" in the Drive — the password is drawn into it, ' +
+        'and is deliberately not on the public site'
+      : 'could not fetch ' + missing.join(', ') + ' from ' + CFG.IMG_BASE);
+  }
 
   const id = copyTemplate_();
   try {
@@ -1196,8 +1236,8 @@ function mailBlobs_(g){
        picture with no seam. Every slice is a copy of the same drawing, moved
        up by its own height; Slides clips what falls outside the page, and
        identical widths mean the cuts meet exactly. */
-    const slice = Math.min(page.h, page.w);
-    const n = Math.max(1, Math.ceil((L.contentH - 0.5) / slice));
+    const slice = page.h;
+    const n = fitSlices_(L, slice);
 
     const deck = SlidesApp.openById(id);
     while(deck.getSlides().length > n) deck.getSlides()[deck.getSlides().length - 1].remove();
@@ -1334,6 +1374,16 @@ function exportPage_(id, pageId, i, n, page){
   }
   LAST_DRAW = (i === 1 ? '' : LAST_DRAW + ' + ') + drawInfo_(img, page) + (i === n ? ' × ' + n + ' slices' : '');
   return img.setName('invitation-' + i + '.' + (img.getContentType() === 'image/png' ? 'png' : 'jpg'));
+}
+
+/* A picture kept in the couple's own Drive rather than on the public site —
+   the password, and nothing else. */
+function driveBlob_(name, as){
+  try {
+    const it = DriveApp.getFilesByName(name);
+    if(it.hasNext()) return it.next().getBlob().setName(as);
+  } catch(_){}
+  return null;
 }
 
 /* A copy of the template, to draw this one invitation on and then bin. The
