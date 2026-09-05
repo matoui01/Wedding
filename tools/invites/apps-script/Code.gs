@@ -1198,6 +1198,242 @@ function inlineImages_(g, kind){
   return { mail: mailBlob_(g) };
 }
 
+/* ------------------------- per-category deadlines ------------------------ */
+/* Read once per run, not once per guest. "(default)" — or a blank category —
+   catches anyone the Deadlines tab doesn't name. */
+function deadlineMap_(){
+  const map = { __default__: null };
+  const sh = book_().getSheetByName(SHEETS.DEADLINES);
+  if(!sh || sh.getLastRow() < 2) return map;
+  sh.getRange(2, 1, sh.getLastRow() - 1, 2).getValues().forEach(r => {
+    const cat = String(r[0] || '').trim();
+    if(!cat) return;
+    if(/^\(?default\)?$/i.test(cat)) map.__default__ = r[1];
+    else map[cat.toLowerCase()] = r[1];
+  });
+  return map;
+}
+
+
+function guestFromRow_(ctx, i){
+  return {
+    lang:     normLang_(cell_(ctx, i, 'language')),
+    category: String(cell_(ctx, i, 'category') || '').trim(),
+    priority: String(cell_(ctx, i, 'priority') || '').trim(),
+    greeting: String(cell_(ctx, i, 'greeting') || '').trim(),
+    household:String(cell_(ctx, i, 'household') || '').trim(),
+    names:    String(cell_(ctx, i, 'invitee') || '').trim(),
+    plusOne:  truthy_(cell_(ctx, i, 'plus-one')),
+    plusName: String(cell_(ctx, i, 'plus-one name') || '').trim(),
+    kids:     truthy_(cell_(ctx, i, 'kids?')),
+    note:     String(cell_(ctx, i, 'personal note') || '').trim()
+  };
+}
+
+
+/* A row is sendable when it has an email and has not been set aside. A blank
+   Send? counts as Send, so a freshly imported list works before anyone has
+   made a single hold-or-cut decision. */
+function sendable_(ctx, i){
+  if(!String(cell_(ctx, i, 'email') || '').trim()) return false;
+  const st = String(cell_(ctx, i, 'send?') || '').trim().toLowerCase();
+  return st === '' || st === 'send';
+}
+
+
+/* Drafts for a set of rows. Each letter is drawn now, so a big batch takes a
+   few seconds a row; the run stops itself short of the six-minute limit and
+   says how many are left — running the same menu item again continues, since
+   drafted rows are marked and skipped. */
+function runInvites_(ctx, rowIdxs){
+  const deadlines = deadlineMap_();
+  const started = Date.now();
+  let made = 0, skipped = 0, failed = 0, left = 0, firstError = '';
+  for(let k = 0; k < rowIdxs.length; k++){
+    const i = rowIdxs[k];
+    if(Date.now() - started > 4.5 * 60 * 1000){ left++; continue; }
+    const to = String(cell_(ctx, i, 'email') || '').trim();
+    if(!sendable_(ctx, i)){ skipped++; continue; }
+    const g = guestFromRow_(ctx, i);
+    g.token = ensureToken_(ctx, i);
+    g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
+    let imgs;
+    try { imgs = inlineImages_(g, 'invite'); }
+    catch(err){ failed++; if(!firstError) firstError = err.message; continue; }
+    const m = buildEmail_(g);
+    GmailApp.createDraft(to, m.subject, m.text,
+      { htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs });
+    // record the date we actually promised this guest, not today's config
+    setCell_(ctx, i, 'reply by', rawDeadline_(deadlines, g.category));
+    setCell_(ctx, i, 'invite status', 'Draft created');
+    setCell_(ctx, i, 'invite sent', new Date());
+    made++;
+  }
+  toast_(made + ' draft(s) created in Gmail' +
+         (skipped ? ' · ' + skipped + ' skipped (no email, or on Hold/Cut)' : '') +
+         (failed ? ' · ⚠ ' + failed + ' could not be drawn — ' + firstError : '') +
+         (left ? ' · ' + left + ' not reached before the time limit: run this again' : '') +
+         '. Open Gmail ▸ Drafts to review and send.');
+}
+
+
+/* Reminders: anyone invited, still silent, and already past the deadline their
+   own category was given. Someone with a June deadline isn't chased in January
+   just because the family list was. */
+function createReminders(){
+  const ctx = readGuests_();
+  const deadlines = deadlineMap_();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  let made = 0, notDue = 0;
+
+  for(let i = 0; i < ctx.data.length; i++){
+    const to = String(cell_(ctx, i, 'email') || '').trim();
+    if(!sendable_(ctx, i)) continue;
+    if(String(cell_(ctx, i, 'rsvp') || '').trim()) continue;            // already replied
+    if(!String(cell_(ctx, i, 'invite status') || '').trim()) continue;  // never invited
+    if(String(cell_(ctx, i, 'reminder sent') || '').trim()) continue;   // already nudged
+
+    const g = guestFromRow_(ctx, i);
+    const due = cell_(ctx, i, 'reply by') || rawDeadline_(deadlines, g.category);
+    if(due instanceof Date && !isNaN(due) && due >= today){ notDue++; continue; }
+
+    g.token = ensureToken_(ctx, i);
+    g.replyBy = deadlineFor_(deadlines, g.category, g.lang);
+    const m = buildReminder_(g);
+    GmailApp.createDraft(to, m.subject, m.text, {
+      htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO,
+      inlineImages: inlineImages_(g, 'reminder')
+    });
+    setCell_(ctx, i, 'reminder sent', new Date());
+    made++;
+  }
+  toast_(made
+    ? made + ' reminder draft(s) created. Review them in Gmail ▸ Drafts.'
+      + (notDue ? ' · ' + notDue + ' not chased yet — their deadline is still ahead.' : '')
+    : (notDue
+        ? 'Nobody is overdue yet — ' + notDue + ' guest(s) still have time.'
+        : 'Nobody to remind — everyone invited has either replied or been nudged already.'));
+}
+
+
+/* The selected row's invitation — or the first row's — to your own inbox,
+   exactly as that guest would receive it, subject prefixed [TEST]. */
+function sendTestToMe(){
+  const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
+  const ctx = readGuests_();
+  if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
+  const rows = selectedDataRows_(ctx);
+  if(!rows.length){ toast_('Click any cell on the guest row you want to test first.'); return; }
+  const i = rows[0];
+  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
+  const g = guestFromRow_(ctx, i);
+  g.token = ensureToken_(ctx, i);
+  g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
+  toast_('Drawing ' + who + '’s invitation…');
+  let imgs;
+  try { imgs = inlineImages_(g, 'invite'); }
+  catch(err){ toast_('No test sent — ' + err.message); return; }
+  const m = buildEmail_(g);
+  GmailApp.sendEmail(me, '[TEST] ' + m.subject, m.text, {
+    htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
+  });
+  toast_('Test of ' + who + '’s invitation sent to ' + me + '.');
+}
+
+
+/* The selected row's invitation — or the first row's — to your own inbox,
+   exactly as that guest would receive it, subject prefixed [TEST]. */
+function sendTestToMe(){
+  const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
+  const ctx = readGuests_();
+  if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
+  const rows = selectedDataRows_(ctx);
+  if(!rows.length){ toast_('Click any cell on the guest row you want to test first.'); return; }
+  const i = rows[0];
+  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
+  const g = guestFromRow_(ctx, i);
+  g.token = ensureToken_(ctx, i);
+  g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
+  toast_('Drawing ' + who + '’s invitation…');
+  let imgs;
+  try { imgs = inlineImages_(g, 'invite'); }
+  catch(err){ toast_('No test sent — ' + err.message); return; }
+  const m = buildEmail_(g);
+  GmailApp.sendEmail(me, '[TEST] ' + m.subject, m.text, {
+    htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
+  });
+  toast_('Test of ' + who + '’s invitation sent to ' + me + '.');
+}
+/* The selected row's invitation exactly as Send would draw it, sent to you on its
+   own — the picture, and nothing else, to look at the design or a long note. */
+function previewSelectedCard(){
+  const ctx = readGuests_();
+  if(!ctx.data.length){ toast_('Add a guest row first.'); return; }
+  const rows = selectedDataRows_(ctx);
+  if(!rows.length){ toast_('Click any cell on the guest row you want to see first.'); return; }
+  const i = rows[0];
+  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'row ' + (i + 2));
+  const g = guestFromRow_(ctx, i);
+  g.token = ensureToken_(ctx, i);
+  g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
+  toast_('Drawing ' + who + '’s invitation…');
+  let png;
+  try { png = mailBlob_(g); }
+  catch(err){ toast_('Could not draw it — ' + err.message); return; }
+  const me = Session.getActiveUser().getEmail() || CFG.REPLY_TO;
+  GmailApp.sendEmail(me, '[PREVIEW] ' + who + '’s invitation', 'The letter as it would be drawn right now.', {
+    name: CFG.SENDER_NAME,
+    htmlBody: '<img src="cid:letter" width="600" style="display:block;border:0;width:600px;max-width:100%;height:auto;">',
+    inlineImages: { letter: png }
+  });
+  toast_('Preview of ' + who + '’s invitation sent to ' + me + '.');
+}
+
+
+function resetSelectedStatus(){
+  const ctx = readGuests_();
+  selectedDataRows_(ctx).forEach(i => {
+    setCell_(ctx, i, 'invite status', '');
+    setCell_(ctx, i, 'invite sent', '');
+    setCell_(ctx, i, 'reminder sent', '');
+  });
+  toast_('Invite status cleared for the selected rows — they are pending again.');
+}
+
+function rawDeadline_(map, category){
+  const c = String(category || '').trim().toLowerCase();
+  const v = (c && map[c] !== undefined) ? map[c] : map.__default__;
+  return (v === undefined || v === null || v === '') ? '' : v;
+}
+
+
+/* The deadline as the guest reads it, in their own language. A real date is
+   spelled out ("30 aprile 2027"); anything typed as text is used verbatim. */
+function deadlineFor_(map, category, lang){
+  const v = rawDeadline_(map, category);
+  if(v instanceof Date && !isNaN(v)){
+    // the calendar day as the sheet shows it — a script whose own timezone
+    // differs from the sheet's would otherwise read 30 April as the 29th
+    const ymd = Utilities.formatDate(v, book_().getSpreadsheetTimeZone(), 'yyyy-M-d').split('-').map(Number);
+    const m = MONTHS[lang] || MONTHS.it;
+    return ymd[2] + ' ' + m[ymd[1] - 1] + ' ' + ymd[0];
+  }
+  const s = String(v || '').trim();
+  return s || CFG.RSVP_BY[lang] || CFG.RSVP_BY.it;
+}
+
+
+/* Bin a file this script made. drive.file is enough for that; DriveApp is
+   not, it asks for every file in the Drive. */
+function trashOwnFile_(id){
+  try {
+    UrlFetchApp.fetch('https://www.googleapis.com/drive/v3/files/' + id, {
+      method: 'patch', contentType: 'application/json',
+      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+      payload: JSON.stringify({ trashed: true }), muteHttpExceptions: true });
+  } catch(_){}
+}
+
 /* ============================ 4. RSVPs IN ================================ */
 /* The site posts its RSVP form here (form-encoded, no-cors). Every reply is
    logged on the RSVP tab no matter what; if we can identify the guest — by
