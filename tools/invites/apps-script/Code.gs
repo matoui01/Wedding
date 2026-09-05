@@ -41,7 +41,7 @@
    website and the probe run the last *deployed* version, which is a separate
    thing — so when a fix appears to have had no effect, this is the first
    number to look at. */
-const VERSION = '2026-09-05-c';
+const VERSION = '2026-09-05-d';
 
 const CFG = {
   SITE_URL    : 'https://ilariaemaxime.com/',
@@ -1013,7 +1013,7 @@ const CARD = {
   RULE:  { gap: 26, w: 56 },
   PW:    { gap: 22, w: 300, h: 84, pad: 17,
            label: { r: 0.0483 },                     // email-pwk-<lang>.png
-           value: { r: 0.0700 } },                   // the password, from the Drive
+           value: { r: 0.0750 } },                   // the password, from the Drive
   CTA:   { gap: 22, w: 330, h: 48, label: { r: 0.0517 } },
   DEAD:  { gap: 26, label: { r: 0.0483 },
            date: { font: 'Cormorant Garamond', face: 'cormorant', size: 27, lh: 1.25, natural: 1.21 } },

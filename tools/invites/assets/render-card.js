@@ -114,9 +114,15 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
    password, which no public file may hold, is drawn the same way into the
    couple's own Drive instead. */
 .piece-fixed{width:600px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 0}
-.piece-ui{font-family:Jost;font-size:11px;letter-spacing:3.4px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
-.piece-ui.on-green{color:#FBF8EF;font-size:12.5px;letter-spacing:3.6px}
-.piece-ui.pw{font-family:Jost;font-size:21px;letter-spacing:4px;color:#3D352A;text-transform:none}
+/* Letter-spacing puts the space after the last character too, so a tracked
+   line sits half a space left of where it looks centred. The negative margin
+   takes that trailing space back out of the box, and the flex centring then
+   centres the ink itself. */
+.piece-ui{font-family:Jost;font-size:11px;letter-spacing:3.4px;margin-right:-3.4px;text-transform:uppercase;color:#6E7B5B;white-space:nowrap}
+.piece-ui.on-green{color:#FBF8EF;font-size:12.5px;letter-spacing:3.6px;margin-right:-3.6px}
+/* the password is set in the letter's own face, as the design chart has it —
+   not in the small-caps sans of the labels around it */
+.piece-ui.pw{font-family:Cormorant;font-weight:500;font-size:27px;letter-spacing:4.5px;margin-right:-4.5px;color:#3D352A;text-transform:none}
 .piece-close .c2{font-family:Cormorant;font-style:italic;font-size:22px;color:#897C68;white-space:nowrap}
 .piece-mark{background:#FAF6EC;padding:16px 26px;display:inline-block}
 .piece-mark .m{font-family:Pinyon;font-size:46px;line-height:1.45;color:#3D352A;white-space:nowrap}
