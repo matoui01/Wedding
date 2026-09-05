@@ -1649,8 +1649,13 @@ function doGet(e){
         out.ok       = true;
         out.invitee  = String(get('Invitee') || '');
         out.household= String(get('Household') || '');
-        out.lang     = lang;
+        // their own address, back to them: the token is their private link,
+        // and typing an address the sheet already holds is a way to arrive
+        // under a spelling that matches nothing
+        out.email    = String(get('Email') || '').split(/[,;]/)[0].trim();
         out.plusOne  = truthy_(get('Plus-one'));
+        out.seats    = Number(get('Seats')) || 0;
+        out.lang     = lang;
         out.plusName = String(get('Plus-one name') || '');
         out.kids     = truthy_(get('Kids?'));
         out.kidsEst  = Number(get('Kids est.')) || 0;

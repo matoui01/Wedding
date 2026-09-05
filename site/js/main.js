@@ -147,8 +147,16 @@ async function prefillFromToken(form, token, update){
     if(!localStorage.getItem('lang') && g.lang) setLang(g.lang);
   }catch(_){}
 
-  const name = form.querySelector('#rsvp-name');
-  if(name && !name.value) name.value = g.invitee || g.household || '';
+  /* Everything the sheet already knows, filled in — and nothing else touched,
+     so a guest who has started typing never has their words replaced. The
+     couple's own guesses are offered as answers to confirm, not as facts:
+     every one of them can be changed before sending. */
+  const set = (sel, value) => {
+    const el = form.querySelector(sel);
+    if(el && !el.value && value) el.value = value;
+  };
+  set('#rsvp-name', g.household || g.invitee);
+  set('#rsvp-email', g.email);
 
   /* their own deadline, not the general one: each circle was given its own,
      and the sheet knows which applies to them. Kept as a date rather than a
@@ -168,9 +176,12 @@ async function prefillFromToken(form, token, update){
     const wrap = plusOpt ? plusOpt.closest('.rsvp-radio') : null;
     if(wrap) wrap.hidden = true;
     if(plusNote) plusNote.hidden = true;
-  }else if(g.plusName){
-    const pn = form.querySelector('#rsvp-plusname');
-    if(pn && !pn.value) pn.value = g.plusName;
+  }else{
+    /* they were invited with someone: the answer is offered already chosen,
+       with the name in it, since that is what their invitation said */
+    if(plusOpt && !form.querySelector('input[data-party]:checked')) plusOpt.checked = true;
+    if(g.plusName) set('#rsvp-plusname', g.plusName);
+    if(plusNote) plusNote.hidden = true;      // it explains who may bring one; they know
   }
 
   /* what we guessed about their children, offered back for confirmation */
