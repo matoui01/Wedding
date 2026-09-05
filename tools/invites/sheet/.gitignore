@@ -1,0 +1,4 @@
+# The live export carries every guest's private token. Anyone holding a token
+# can submit an RSVP as that household, so it must never reach a public repo.
+# Re-export it from the sheet whenever it is needed.
+guests-live.csv
