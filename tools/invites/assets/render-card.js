@@ -68,6 +68,7 @@ const dataUri = (f, mime) => `data:${mime};base64,` + fs.readFileSync(f).toStrin
 
 function html(g){
   const c = COPY[g.lang] || COPY.it;
+  const plus = g.plusOne ? (g.plusName ? c.plusNamed(esc(g.plusName)) : c.plus) : '';
   const face = (fam, file, style) =>
     `@font-face{font-family:'${fam}';font-style:${style||'normal'};src:url('${dataUri(path.join(FONTS,file),'font/ttf')}');}`;
 
@@ -88,8 +89,11 @@ body{width:600px;background:#FAF6EC;-webkit-font-smoothing:antialiased}
 .tag{font-family:Cormorant;font-style:italic;font-size:23px;color:#897C68;margin-top:2px}
 .date{font-family:Jost;font-size:13px;letter-spacing:4px;color:#3D352A;text-transform:uppercase;margin-top:14px}
 .hero{width:100%;display:block;margin-top:28px}
-.letter{margin:30px 34px 36px;background:#FDFBF5;border:1px solid #DCC9A4;padding:34px 40px 30px}
-.body{font-family:EBG;font-size:17px;line-height:1.66;color:#3D352A}
+.letter{margin:30px 34px 36px;background:#FDFBF5;border:1px solid #DCC9A4;padding:36px 40px 32px}
+.greet{font-family:Cormorant;font-size:24px;color:#3D352A}
+.body{font-family:EBG;font-size:17px;line-height:1.66;color:#3D352A;margin-top:13px}
+.note{font-family:EBG;font-style:italic;font-size:16px;line-height:1.62;color:#3D352A;margin-top:22px}
+.plus{font-family:Cormorant;font-style:italic;font-size:18px;color:#6E7B5B;text-align:center;margin-top:26px}
 table.facts{width:100%;border-collapse:collapse;margin-top:26px}
 table.facts td{padding:13px 0;vertical-align:middle}
 table.facts tr+tr td{border-top:1px solid #E4DCC9}
@@ -106,12 +110,15 @@ table.facts tr+tr td{border-top:1px solid #E4DCC9}
 </div>
 <img class="hero" src="${dataUri(path.join(IMG,'email-estate.jpg'),'image/jpeg')}">
 <div class="letter">
+  <div class="greet">${esc(g.greeting)}</div>
   <div class="body">${c.body}</div>
+  ${g.note ? `<div class="note">${esc(g.note)}</div>` : ''}
   <table class="facts">
     <tr><td class="k">${c.kDay}</td><td class="v">${c.vDay}</td></tr>
     <tr><td class="k">${c.kWhere}</td><td class="v">${c.vWhere}</td></tr>
     <tr><td class="k">${c.kDress}</td><td class="v">${c.vDress}</td></tr>
   </table>
+  ${plus ? `<div class="plus">${plus}</div>` : ''}
   <img class="sprig" src="${dataUri(path.join(IMG,'email-sprig.png'),'image/png')}">
 </div>`;
 }

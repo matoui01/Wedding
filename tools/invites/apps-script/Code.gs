@@ -61,11 +61,16 @@ const CFG = {
   // will not load Cormorant, and these are where the design lives.
   IMG_TAG  : function(l){ return 'email-tag-' + l + '.png'; },
   IMG_CLOSE: function(l){ return 'email-close-' + l + '.png'; },
-  // One card per language, not one per guest. Everything that varies between
-  // guests — their greeting, their note, whether they have a plus-one — is
-  // live text in the email around it, so there are three files here instead of
-  // eighty-seven, nothing to upload, and nothing personal stored anywhere.
-  IMG_CARD : function(lang){ return 'card-' + lang + '.jpg'; },
+  // The whole invitation, per guest, drawn from the real fonts. Nothing about
+  // the invitation is live text: the greeting sits where the design puts it,
+  // after the villa, and no mail client can restyle any of it.
+  //
+  // The cards live in a Drive folder rather than on the website, because each
+  // one carries a guest's name and their personal note — and the website's
+  // repository is public. The script runs as the couple's own account, so it
+  // reads them straight out of Drive; nothing about a guest is ever published.
+  CARDS_FOLDER : 'Wedding cards',
+  IMG_CARD : function(token){ return 'card-' + token + '.jpg'; },
   // An email-weight copy of the hero — the site's own cut-out is 1.5 MB.
   IMG_HERO : 'email-estate.jpg',
 
@@ -271,6 +276,8 @@ function onOpen(){
     .addItem('Set up / repair the workbook',   'setupWorkbook')
     .addSeparator()
     .addItem('Generate missing invite links',  'generateLinks')
+    .addItem('Send this invitation now',       'sendSelectedRowNow')
+    .addSeparator()
     .addItem('Create drafts — selected rows',  'createDraftsForSelected')
     .addItem('Create drafts — filtered rows',  'createDraftsForFiltered')
     .addItem('Create drafts — a whole wave…',  'createDraftsForWave')
@@ -562,6 +569,55 @@ function inviteLink_(token){
 }
 
 /* =========================== 3. INVITES OUT ============================== */
+/* One row, sent immediately. The couple pick a guest, press the button, and
+   that guest's invitation leaves — no draft to find, no batch to review. It
+   refuses rather than sends something wrong: a guest with no email, a guest
+   set to Hold or Cut, or a guest whose card has not been published yet. */
+function sendSelectedRowNow(){
+  const ui = SpreadsheetApp.getUi();
+  const ctx = readGuests_();
+  const rows = selectedDataRows_(ctx);
+  if(rows.length !== 1){
+    toast_('Select exactly one guest row first — you have ' + rows.length + ' selected.');
+    return;
+  }
+  const i = rows[0];
+  const to = String(cell_(ctx, i, 'email') || '').trim();
+  const who = String(cell_(ctx, i, 'household') || cell_(ctx, i, 'invitee') || 'this guest');
+  if(!to){ toast_('No email address for ' + who + '.'); return; }
+  const state = String(cell_(ctx, i, 'send?') || '').trim();
+  if(state && state.toLowerCase() !== 'send'){
+    toast_(who + ' is set to ' + state + '. Change Send? to Send first.'); return;
+  }
+
+  const g = guestFromRow_(ctx, i);
+  g.token = ensureToken_(ctx, i);
+  g.replyBy = deadlineFor_(deadlineMap_(), g.category, g.lang);
+
+  const imgs = inlineImages_(g, 'invite');
+  if(!imgs.card){
+    toast_(cardsFolder_()
+      ? 'No card named ' + CFG.IMG_CARD(g.token) + ' in the "' + CFG.CARDS_FOLDER +
+        '" Drive folder. Nothing sent.'
+      : 'No Drive folder named "' + CFG.CARDS_FOLDER + '". Nothing sent.');
+    return;
+  }
+
+  const answer = ui.alert('Send now?',
+    'Send ' + who + '\'s invitation to ' + to + ' straight away?',
+    ui.ButtonSet.OK_CANCEL);
+  if(answer !== ui.Button.OK) return;
+
+  const m = buildEmail_(g);
+  GmailApp.sendEmail(to, m.subject, m.text, {
+    htmlBody: m.html, name: CFG.SENDER_NAME, replyTo: CFG.REPLY_TO, inlineImages: imgs
+  });
+  setCell_(ctx, i, 'reply by', rawDeadline_(deadlineMap_(), g.category));
+  setCell_(ctx, i, 'invite status', 'Sent');
+  setCell_(ctx, i, 'invite sent', new Date());
+  toast_('Invitation sent to ' + who + ' at ' + to + '.');
+}
+
 function createDraftsForSelected(){
   const ctx = readGuests_();
   const rows = selectedDataRows_(ctx);
@@ -627,6 +683,28 @@ function fetchBlob_(file, name){
   } catch(_){ return null; }
 }
 
+/* The guest's card, read from the Drive folder named in CFG.CARDS_FOLDER.
+   The folder handle is looked up once per run, not once per guest. */
+let CARDS_FOLDER_ = undefined;
+function cardsFolder_(){
+  if(CARDS_FOLDER_ !== undefined) return CARDS_FOLDER_;
+  try {
+    const it = DriveApp.getFoldersByName(CFG.CARDS_FOLDER);
+    CARDS_FOLDER_ = it.hasNext() ? it.next() : null;
+  } catch(_){ CARDS_FOLDER_ = null; }
+  return CARDS_FOLDER_;
+}
+
+function cardBlob_(token){
+  if(!token) return null;
+  const folder = cardsFolder_();
+  if(!folder) return null;
+  try {
+    const files = folder.getFilesByName(CFG.IMG_CARD(token));
+    return files.hasNext() ? files.next().getBlob().setName('card.jpg') : null;
+  } catch(_){ return null; }
+}
+
 /* Every image the message shows, embedded. Nothing is left for the guest's
    client to fetch: no proxy to refuse it, no "display images" to click, and
    nothing that breaks when a host changes years from now. */
@@ -643,7 +721,7 @@ function inlineImages_(g, kind){
     // only the invitation carries a card, and only the crest the reminder
     // shows — attaching both to both put 238 KB of unused crest in every
     // invitation
-    const card = fetchBlob_(CFG.IMG_CARD(g.lang), 'card.jpg');
+    const card = cardBlob_(g.token);
     if(card) out.card = card;
   }
   return out;
@@ -671,7 +749,8 @@ function runInvites_(ctx, rowIdxs){
   });
   toast_(made + ' draft(s) created in Gmail' +
          (skipped ? ' · ' + skipped + ' skipped (no email, or on Hold/Cut)' : '') +
-         (missingCards ? ' · ⚠ ' + missingCards + ' without a card — the card images are not reachable' : '') +
+         (missingCards ? ' · ⚠ ' + missingCards + ' without a card in the "' +
+            CFG.CARDS_FOLDER + '" Drive folder' : '') +
          '. Open Gmail ▸ Drafts to review and send.');
 }
 
@@ -736,8 +815,8 @@ function sendTestToMe(){
   });
   toast_(imgs.card
     ? 'Test sent to ' + me + '.'
-    : 'Test sent to ' + me + ' — but WITHOUT the invitation card: card-' + g.lang +
-      '.jpg is not reachable on the site yet.');
+    : 'Test sent to ' + me + ' — but WITHOUT the invitation card: no ' +
+      CFG.IMG_CARD(g.token) + ' in the "' + CFG.CARDS_FOLDER + '" Drive folder.');
 }
 
 function resetSelectedStatus(){
@@ -930,9 +1009,7 @@ function matchGuestRow_(sh, token, email){
 function buildEmail_(g){
   const c = COPY[g.lang] || COPY.it;
   const greet = g.greeting || (g.names ? greetingFromNames_(g.names, g.lang) : c.fallbackGreet);
-  const note = (g.note ? noteBlock_(esc_(g.note)) : '');
   const plusText = plusLine_(c, g);
-  const plus = (g.plusOne ? plusBlock_(plusText) : '');
   const link = inviteLink_(g.token || '');
   const I = CFG.IMG_BASE;
 
@@ -944,6 +1021,9 @@ function buildEmail_(g){
   /* Three movements, not a card with leftovers stapled underneath:
      a personal opening in the couple's own voice, the formal invitation
      itself, and one compact strip telling the guest how to reply. */
+  /* The invitation is the card and nothing else. Below it sits only what a
+     guest has to act on — the password to read, the button to press, the date
+     to remember — which is the one part where a typeface does not matter. */
   const html =
 `<!doctype html><html lang="${g.lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -951,20 +1031,18 @@ function buildEmail_(g){
 <style>a{text-decoration:none} @media (max-width:620px){.px{padding-left:26px!important;padding-right:26px!important}}</style>
 </head>
 <body style="margin:0;padding:0;background:${T.panna2};">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc_(greet)} ${c.tag} — ${c.date}, Villa Corsini a Mezzomonte.</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="background:${T.panna2};">
 <tr><td align="center" style="padding:30px 12px;">
 
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="${T.panna}" style="width:600px;max-width:100%;background:${T.panna};">
 
-    <tr><td class="px" style="padding:44px 56px 0;font-family:${T.fDisplay};font-size:23px;line-height:1.3;color:${T.ink};">${esc_(greet)}</td></tr>
-${note}${plus}
-    <tr><td style="padding:20px 0 0;">
-      <img src="cid:card" width="600" alt="${c.tag} — ${c.vDay}, ${c.vWhere}." style="display:block;border:0;width:100%;height:auto;">
+    <tr><td style="padding:0;">
+      <img src="cid:card" width="600" alt="${esc_(greet)} ${c.body}" style="display:block;border:0;width:100%;height:auto;">
     </td></tr>
 
-    <tr><td class="px" align="center" style="padding:6px 56px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
+    <tr><td class="px" align="center" style="padding:4px 56px 0;font-family:${T.fBody};font-size:16px;line-height:1.62;color:${T.ink};">${c.siteLead}</td></tr>
 
     <tr><td align="center" style="padding:20px 40px 0;">
       <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="${T.panna2}" style="border:1px solid ${T.lineGold};background:${T.panna2};">
@@ -990,7 +1068,7 @@ ${note}${plus}
       <img src="cid:wordmark" width="180" alt="Ilaria &amp; Maxime" style="display:block;border:0;width:180px;max-width:100%;height:auto;margin:0 auto;">
     </td></tr>
 
-    <tr><td align="center" class="px" style="padding:38px 56px 40px;font-family:${T.fBody};font-size:12.5px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
+    <tr><td align="center" class="px" style="padding:36px 56px 40px;font-family:${T.fBody};font-size:12.5px;color:${T.muted};">${c.fcLead} <a href="mailto:${CFG.REPLY_TO}" style="color:${T.salviaDeep};">${CFG.REPLY_TO}</a></td></tr>
 
   </table>
 </td></tr></table>
@@ -1121,23 +1199,6 @@ function factRow_(k, v, first){
     '<td style="' + top + 'padding:12px 14px 12px 0;font-family:' + T.fUi + ';font-size:10px;letter-spacing:3px;text-transform:uppercase;color:' + T.salviaDeep + ';white-space:nowrap;vertical-align:middle;">' + k + '</td>' +
     '<td align="right" style="' + top + 'padding:12px 0;font-family:' + T.fBody + ';font-size:16px;color:' + T.ink + ';vertical-align:middle;">' + v + '</td>' +
   '</tr>';
-}
-/* Both fragments sit inside the letter panel, so they take the letter's inset
-   (lx / 36px) — the card's wider 52px would read as a double margin. */
-function noteBlock_(noteHtml){
-  return '<tr><td class="px" style="padding:16px 56px 0;font-family:' + T.fBody +
-    ';font-style:italic;font-size:16px;line-height:1.66;color:' + T.ink + ';">' + noteHtml + '</td></tr>';
-}
-/* "…and we'd love to see Sophie too" reads better than "bring a plus-one" —
-   but only when we actually know the name. Placeholders like "femme" or
-   "copine" in the sheet are left blank, and the guest gets the general line. */
-function plusLine_(c, g){
-  return (g.plusName && c.plusNamed) ? c.plusNamed(esc_(g.plusName)) : c.plus;
-}
-
-function plusBlock_(txt){
-  return '<tr><td class="px" style="padding:12px 56px 0;font-family:' + T.fBody +
-    ';font-style:italic;font-size:16px;line-height:1.66;color:' + T.ink + ';">' + txt + '</td></tr>';
 }
 
 /* ====================== 6. sheet plumbing =============================== */
