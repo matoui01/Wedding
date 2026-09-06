@@ -310,15 +310,15 @@ const MASCULINE = {
    to work out from the greeting whether they may bring someone. Three cases:
    an open plus-one, two named people, one person on their own. */
 const SEATS_COPY = {
-  it:{ open:'Saremo felici di accogliere anche il vostro accompagnatore.',
-       two: 'Abbiamo riservato due posti, per voi due.',
-       one: 'Abbiamo riservato un posto a vostro nome.' },
-  fr:{ open:"Vous pouvez venir accompagné·e — nous serons ravis de l'accueillir.",
-       two: 'Nous avons réservé deux places, pour vous deux.',
-       one: 'Nous avons réservé une place à votre nom.' },
-  en:{ open:"You're warmly invited to bring a plus-one.",
-       two: 'We have kept two seats, for the two of you.',
-       one: 'We have kept one seat, in your name.' }
+  it:{ open:'Un posto è riservato per voi, e uno per la persona che vorrete portare.',
+       two: 'Due posti sono riservati per voi.',
+       one: 'Un posto è riservato per voi.' },
+  fr:{ open:'Une place vous est réservée, et une pour la personne de votre choix.',
+       two: 'Deux places vous sont réservées.',
+       one: 'Une place vous est réservée.' },
+  en:{ open:'One seat is reserved for you, and one for a guest of your choosing.',
+       two: 'Two seats are reserved for you.',
+       one: 'One seat is reserved for you.' }
 };
 
 function normLang_(v){ v = String(v || '').trim().toLowerCase().slice(0, 2); return (v === 'fr' || v === 'en' || v === 'it') ? v : 'it'; }
