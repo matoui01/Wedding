@@ -224,6 +224,10 @@ h1,h2,h3{ font-weight:500; margin:0; }
 @media(min-width:680px){ .grid--2{ grid-template-columns:1fr 1fr; } }
 .card h3{ font-family:var(--f-display); font-size:1.45rem; margin:0 0 .4rem; }
 .card .icon{ width:34px; height:34px; color:var(--salvia); margin-bottom:.6rem; }
+/* A line that stands on its own inside a card. The shuttle uses it: it is the
+   only part of that card asking the reader to do something, and read as the
+   tail of the taxi sentence it disappears. */
+.card__note{ display:block; margin-top:.9rem; font-weight:600; }
 
 /* ---- RSVP ---------------------------------------------------------------- */
 .rsvp__embed{ max-width:720px; margin:2.2rem auto 0; }
