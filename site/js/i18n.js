@@ -34,7 +34,7 @@ const I18N = {
     "travel.over":"Soggiorno & viaggio","travel.title":"Come arrivare e dove dormire",
     "travel.air.h":"In aereo","travel.air.b":"Firenze (FLR) ~30 min · Pisa (PSA) ~1h20 · Bologna (BLQ) ~1h30.",
     "travel.train.h":"In treno","travel.train.b":"Firenze Santa Maria Novella (alta velocità da Roma, Milano, ecc.).",
-    "travel.car.h":"Transfer","travel.car.b":"Auto o taxi dal centro, ~25–30 min.<strong class='card__note'>La navetta da e per il centro di Firenze è ancora da confermare: segnalatecelo nel modulo RSVP se vi interessa un posto, e vi daremo i dettagli quando sapremo quanti siete.</strong>",
+    "travel.car.h":"Transfer","travel.car.b":"Auto o taxi dal centro, ~25–30 min.<strong class='card__note'>La navetta da e per il centro di Firenze è ancora da confermare: se vi interessa un posto, ditecelo quando confermate la presenza, e vi daremo i dettagli appena sapremo quanti siete.</strong>",
     "travel.stay.h":"Dove dormire","travel.stay.b":"<em>[DA AGGIUNGERE: 3–5 hotel — qualcuno in centro a Firenze, qualcuno vicino a Impruneta.]</em>",
 
     "flo.over":"Firenze","flo.title":"Cosa fare a Firenze",
@@ -88,7 +88,7 @@ const I18N = {
     "travel.over":"Séjour & voyage","travel.title":"Venir & se loger",
     "travel.air.h":"En avion","travel.air.b":"Florence (FLR) ~30 min · Pise (PSA) ~1h20 · Bologne (BLQ) ~1h30.",
     "travel.train.h":"En train","travel.train.b":"Florence Santa Maria Novella (grande vitesse depuis Rome, Milan, etc.).",
-    "travel.car.h":"Transfert","travel.car.b":"Voiture ou taxi depuis le centre, ~25–30 min.<strong class='card__note'>La navette depuis et vers le centre de Florence reste à confirmer : dites-le-nous dans votre RSVP si une place vous intéresse, et nous vous donnerons les détails une fois que nous saurons combien vous êtes.</strong>",
+    "travel.car.h":"Transfert","travel.car.b":"Voiture ou taxi depuis le centre, ~25–30 min.<strong class='card__note'>La navette depuis et vers le centre de Florence reste à confirmer : si vous souhaitez une place, dites-le-nous en confirmant votre présence, et nous vous communiquerons les détails dès que nous saurons combien vous êtes.</strong>",
     "travel.stay.h":"Où dormir","travel.stay.b":"<em>[À AJOUTER : 3–5 hôtels — quelques-uns dans Florence, quelques-uns près d'Impruneta.]</em>",
 
     "flo.over":"Florence","flo.title":"Que faire à Florence",
