@@ -19,7 +19,7 @@ const I18N = {
     "welcome.body":"Insieme alle nostre famiglie, abbiamo la gioia di invitarvi a celebrare il nostro matrimonio. Ci sposiamo tra le colline di Firenze, a Villa Corsini a Mezzomonte: una giornata di festa fra giardini, arte e buon vino, con le persone che amiamo.",
 
     "story.over":"La nostra storia","story.title":"Dalla Martinica a Firenze",
-    "story.body":"Maxime è martinicano, Ilaria è fiorentina, e ci siamo conosciuti in una città che non è di nessuno dei due. Da allora litighiamo sul caffè. A luglio ci sposiamo sulle colline di Ilaria — e ci farebbe piacere avervi lì.","story.body2":"Dopo un cammino che ci ha portati fin qui, abbiamo la gioia di sposarci circondati dalle persone che contano di più per noi. Questo giorno apre un nuovo capitolo — un capitolo che non vediamo l'ora di condividere con voi. Siamo felicissimi che ci sarete.",
+    "story.body":"Maxime è martinicano, Ilaria è toscana, e ci siamo conosciuti in una città che non è di nessuno dei due. Da allora litighiamo sul caffè.","story.body2":"A luglio ci sposiamo sulle colline di Ilaria, circondati dalle persone che contano di più per noi. È l'inizio di un nuovo capitolo, e ci farebbe piacere avervi lì.",
 
     "day.over":"Il giorno","day.title":"Il programma","day.note":"Gli orari saranno confermati.",
     "day.t1":"Arrivo & benvenuto","day.t2":"Cerimonia","day.t3":"Aperitivo nei giardini","day.t4":"Cena nella galleria affrescata","day.t5":"Si balla","day.t6":"Saluti","day.t6.time":"tardi",
@@ -73,7 +73,7 @@ const I18N = {
     "welcome.body":"Avec nos familles, nous avons la joie de vous inviter à célébrer notre mariage. Nous nous marions sur les collines de Florence, à la Villa Corsini a Mezzomonte : une journée de fête entre jardins, art et bon vin, avec ceux que nous aimons.",
 
     "story.over":"Notre histoire","story.title":"De la Martinique à Florence",
-    "story.body":"Maxime est martiniquais, Ilaria est florentine, et nous nous sommes rencontrés dans une ville qui n'appartient ni à l'un ni à l'autre. Depuis, nous nous disputons à propos du café. En juillet, nous nous marions sur les collines d'Ilaria — nous aimerions vous y voir.","story.body2":"C'est avec une grande joie que nous nous marions, entourés de celles et ceux qui comptent le plus pour nous. Ce jour ouvre un nouveau chapitre — un chapitre que nous avons hâte de partager avec vous. Nous sommes si heureux que vous soyez là.",
+    "story.body":"Maxime est martiniquais, Ilaria est toscane, et nous nous sommes rencontrés dans une ville qui n'appartient ni à l'un ni à l'autre. Depuis, nous nous disputons à propos du café.","story.body2":"En juillet, nous nous marions sur les collines d'Ilaria, entourés de celles et ceux qui comptent le plus pour nous. C'est le début d'un nouveau chapitre, et nous aimerions vous y voir.",
 
     "day.over":"Le jour J","day.title":"Le déroulé","day.note":"Les horaires seront confirmés.",
     "day.t1":"Arrivée & accueil","day.t2":"Cérémonie","day.t3":"Cocktail dans les jardins","day.t4":"Dîner dans la galerie à fresques","day.t5":"Soirée dansante","day.t6":"Fin de soirée","day.t6.time":"tard",
@@ -127,7 +127,7 @@ const I18N = {
     "welcome.body":"Together with our families, we are delighted to invite you to celebrate our wedding. We're getting married in the hills of Florence, at Villa Corsini a Mezzomonte — a day of celebration among gardens, art and good wine, with the people we love.",
 
     "story.over":"Our story","story.title":"From Martinique to Florence",
-    "story.body":"Maxime is Martiniquais, Ilaria Florentine, and we met in a city that belongs to neither of us. We have been arguing about coffee ever since. In July we are getting married in Ilaria's hills — we would like you there.","story.body2":"After a journey that has brought us to this moment, we are delighted to be marrying surrounded by the people who matter most to us. This day begins a new chapter — one we look forward to sharing with you. We are so happy that you will be here for it.",
+    "story.body":"Maxime is Martiniquais, Ilaria is Tuscan, and we met in a city that belongs to neither of us. We have been arguing about coffee ever since.","story.body2":"In July we are getting married in Ilaria's hills, surrounded by the people who matter most to us. It is the start of a new chapter, and we would like you there for it.",
 
     "day.over":"The day","day.title":"The programme","day.note":"Times to be confirmed.",
     "day.t1":"Arrival & welcome","day.t2":"Ceremony","day.t3":"Aperitivo in the gardens","day.t4":"Dinner in the frescoed gallery","day.t5":"Dancing","day.t6":"Farewell","day.t6.time":"late",
