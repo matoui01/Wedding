@@ -77,7 +77,7 @@ const I18N = {
 
     "day.over":"Le jour J","day.title":"Le déroulé","day.note":"Les horaires seront confirmés.",
     "day.t1":"Arrivée & accueil","day.t2":"Cérémonie","day.t3":"Cocktail dans les jardins","day.t4":"Dîner dans la galerie à fresques","day.t5":"Soirée dansante","day.t6":"Fin de soirée","day.t6.time":"tard",
-    "day.dress.label":"Tenue","day.dress.value":"Tenue de soirée estivale. Nous demandons aux messieurs le smoking ou le costume ; aux dames, une robe, une combinaison, un tailleur ou le smoking. Le blanc, dans toutes ses nuances, appartient à la mariée. Ni baskets, ni tongs, ni shorts, ni jeans.","day.dress.women":"Exemples de tenues de soirée pour les invitées","day.dress.men":"Exemples de costumes élégants pour les invités","day.map.cap":"Les jardins et le plan de table.",
+    "day.dress.label":"Tenue","day.dress.value":"Formelle estivale. Nous demandons aux messieurs le smoking ou le costume ; aux dames, une robe, une combinaison, un tailleur ou le smoking. Le blanc, dans toutes ses nuances, appartient à la mariée. Ni baskets, ni tongs, ni shorts, ni jeans.","day.dress.women":"Exemples de tenues de soirée pour les invitées","day.dress.men":"Exemples de costumes élégants pour les invités","day.map.cap":"Les jardins et le plan de table.",
 
     "venue.over":"Le lieu","venue.title":"Villa Corsini a Mezzomonte",
     "venue.body":"Une villa médicéenne du XVᵉ siècle sur les collines au sud de Florence, achetée par Laurent le Magnifique en 1480 et ornée de fresques dans les années 1630 pour le prince Giovan Carlo de' Medici. Aux Corsini depuis 1644 : jardins à l'italienne, cyprès et oliveraies dominant les collines du Chianti.",
