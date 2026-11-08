@@ -43,11 +43,11 @@ window.swapRsvp = function(lang){
 };
 
 /* ---- Countdown to the wedding ------------------------------------------- *
- * Ticks down to the ceremony: 23 July 2027, 16:00 Italy time (CEST = UTC+2). */
+ * Ticks down to the ceremony: 23 July 2027, 17:00 Italy time (CEST = UTC+2). */
 function initCountdown(){
   const el = document.getElementById('countdown');
   if(!el) return;
-  const target = new Date('2027-07-23T16:00:00+02:00').getTime();
+  const target = new Date('2027-07-23T17:00:00+02:00').getTime();
   const out = {
     days:  el.querySelector('[data-cd="days"]'),
     hours: el.querySelector('[data-cd="hours"]'),
